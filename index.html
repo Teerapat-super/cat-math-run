@@ -1,0 +1,2489 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CAT MATH RUN: วิ่งเก็บเหรียญ พิชิตโจทย์คณิต</title>
+<meta name="description" content="เกมคณิตศาสตร์ 3 มิติ แมววิ่งเก็บเหรียญ ฝึกบวก–ลบเลข 1 หลัก 2 หลัก และจำนวนเต็ม เล่นได้ทันทีบนเบราว์เซอร์">
+<meta name="theme-color" content="#ff8a3d">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%90%B1%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- ฟอนต์ภายนอก (ถ้าโหลดไม่ได้ จะใช้ฟอนต์ไทยของเครื่องแทนโดยอัตโนมัติ) -->
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --orange:#ff8a3d; --orange-d:#e0661a; --yellow:#ffd23f; --sky:#4cc9f0; --sky-d:#1f8fc4;
+    --green:#4caf50; --green-l:#6bd16b; --red:#e63946; --navy:#23395b; --cream:#fff8ec;
+    --card:#ffffff; --shadow:0 6px 0 rgba(0,0,0,.18), 0 10px 24px rgba(0,0,0,.18);
+    --font:'Mitr','Sarabun','Noto Sans Thai','Leelawadee UI','Thonburi','Tahoma',sans-serif;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none !important}
+  html,body{height:100%;margin:0}
+  body{
+    font-family:var(--font); color:var(--navy); background:#163a5f;
+    overflow:hidden; -webkit-tap-highlight-color:transparent; touch-action:manipulation;
+    -webkit-user-select:none; user-select:none;
+  }
+  button{font-family:inherit; cursor:pointer; touch-action:manipulation}
+  button:focus-visible{outline:4px solid var(--yellow); outline-offset:3px}
+
+  /* ---------- โครงหน้าจอเกม ---------- */
+  #app{position:fixed; inset:0; display:flex; justify-content:center}
+  #gameScreen{
+    width:100%; max-width:960px; height:100%; display:flex; flex-direction:column;
+    background:linear-gradient(#5ec8f2,#bdf0ff);
+  }
+
+  /* HUD ส่วนบน */
+  #hud{
+    display:flex; align-items:stretch; gap:6px; padding:8px;
+    padding-top:max(8px, env(safe-area-inset-top));
+    background:linear-gradient(#ffb067,var(--orange)); box-shadow:0 3px 0 var(--orange-d);
+    z-index:2;
+  }
+  .hud-item{
+    flex:1 1 0; min-width:0; background:var(--cream); border-radius:14px; padding:4px 6px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.15;
+    box-shadow:inset 0 -3px 0 rgba(0,0,0,.08);
+  }
+  .hud-top{display:flex; align-items:center; gap:4px; font-size:.78rem; white-space:nowrap}
+  .hud-item b{font-size:1.25rem; font-weight:600}
+  .hud-item small{font-size:.7rem; opacity:.8; white-space:nowrap}
+  .hearts-row{display:flex; gap:2px; font-size:1.25rem}
+  .hearts-row span{display:inline-block; transition:transform .2s, filter .2s, opacity .2s}
+  .hearts-row span.lost{filter:grayscale(1); opacity:.45; transform:scale(.85)}
+  .hearts-row span.pop{animation:heartPop .6s ease}
+  @keyframes heartPop{0%{transform:scale(1)}30%{transform:scale(1.6) rotate(-15deg)}60%{transform:scale(.7) rotate(10deg)}100%{transform:scale(.85)}}
+  .icon-btn{
+    flex:0 0 auto; width:46px; border:none; border-radius:14px; background:var(--cream);
+    font-size:1.3rem; box-shadow:inset 0 -3px 0 rgba(0,0,0,.08);
+  }
+
+  /* ฉากวิ่ง: canvas 3 มิติ (WebGL) อยู่ล่าง, canvas 2 มิติอยู่บน (ใช้วาดเอฟเฟกต์ หรือเป็นฉากสำรอง) */
+  #stage{position:relative; flex:1 1 auto; min-height:150px; overflow:hidden;
+    background:linear-gradient(#5ec8f2 0%,#bdf0ff 36%,#6fd05a 36%,#5ec24c 100%)}
+  #scene3d,#scene{position:absolute; inset:0; width:100%; height:100%; display:block}
+  #stage.shake{animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+  #banner{
+    position:absolute; left:50%; top:14%; transform:translateX(-50%); pointer-events:none;
+    font-size:clamp(1.4rem,6vw,2.6rem); font-weight:600; color:#fff; white-space:nowrap; opacity:0;
+    text-shadow:0 3px 0 var(--orange-d), 0 0 14px rgba(255,180,0,.8);
+  }
+  #banner.show{animation:bannerPop 1.2s ease forwards}
+  #banner.combo{color:var(--yellow); text-shadow:0 3px 0 #b5179e,0 0 18px #ff4fd8}
+  #banner.perfect{color:#fff; font-size:clamp(1.8rem,8vw,3.4rem); text-shadow:0 4px 0 #e0661a,0 0 24px #ffd23f,0 0 40px #ff8a3d}
+  #banner.bad{color:#fff; text-shadow:0 3px 0 #9d0208,0 0 12px rgba(230,57,70,.9)}
+  @keyframes bannerPop{0%{opacity:0;transform:translateX(-50%) scale(.4)}18%{opacity:1;transform:translateX(-50%) scale(1.15)}30%{transform:translateX(-50%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-24px) scale(1)}}
+
+  /* แผงโจทย์ */
+  #panel{
+    background:var(--card); border-radius:22px 22px 0 0; padding:10px 12px;
+    padding-bottom:max(12px, env(safe-area-inset-bottom));
+    box-shadow:0 -4px 0 rgba(0,0,0,.08); z-index:2;
+  }
+  .q-row{display:flex; align-items:center; gap:10px}
+  .avatar{width:64px; height:58px; flex:0 0 auto}
+  .avatar svg,.hero-cat svg,.end-cat svg{width:100%; height:100%; display:block}
+  .q-main{flex:1; text-align:center; min-width:0}
+  #qLabel{font-size:.95rem; color:var(--sky-d); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  #equation{font-size:clamp(2rem,9vw,3.4rem); font-weight:600; line-height:1.1; letter-spacing:1px; white-space:nowrap}
+  #equation.long{font-size:clamp(1.45rem,6.4vw,2.8rem); letter-spacing:0}
+  .neg{color:#c1121f}
+  .timer-num{
+    width:58px; height:58px; flex:0 0 auto; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:1.8rem; font-weight:600; color:#fff; background:var(--sky-d); box-shadow:0 4px 0 #136c96;
+  }
+  .timer-wrap{height:14px; background:#e6eef5; border-radius:99px; overflow:hidden; margin:8px 0 10px}
+  .timer-bar{height:100%; width:100%; background:linear-gradient(90deg,var(--green-l),var(--yellow)); border-radius:99px; transform-origin:left center; transform:scaleX(1)}
+  .timer-wrap.danger .timer-bar{background:linear-gradient(90deg,var(--red),#ff7b54)}
+  .danger-num{background:var(--red) !important; box-shadow:0 4px 0 #9d0208 !important; animation:pulse .5s infinite alternate}
+  @keyframes pulse{to{transform:scale(1.08)}}
+
+  .choices{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .choice{
+    position:relative; min-height:76px; border:none; border-radius:20px; color:#fff;
+    font-size:clamp(2rem,8vw,2.8rem); font-weight:600; display:flex; align-items:center; justify-content:center; gap:10px;
+    box-shadow:0 6px 0 rgba(0,0,0,.22); transition:transform .08s, filter .2s, opacity .2s;
+  }
+  #choice0{background:linear-gradient(#5fd3ff,#1f9ad6)}
+  #choice1{background:linear-gradient(#ffc56b,#ff8a3d)}
+  .choice:active:not(:disabled){transform:translateY(4px); box-shadow:0 2px 0 rgba(0,0,0,.22)}
+  .choice:disabled{cursor:default}
+  .choice .arrow{font-size:.5em; opacity:.85}
+  .choice .mark{position:absolute; top:6px; right:10px; font-size:.95rem; font-weight:600; background:#fff; border-radius:99px; padding:0 8px; display:none}
+  .choice.is-correct{background:linear-gradient(#7be07b,#2e9e3e) !important; outline:4px solid #1b5e20}
+  .choice.is-correct .mark{display:block; color:#1b5e20}
+  .choice.is-wrong{background:linear-gradient(#ff8a8a,#d62828) !important; outline:4px solid #7f0000}
+  .choice.is-wrong .mark{display:block; color:#7f0000}
+  .choice.faded{opacity:.45}
+  #feedback{min-height:1.5em; text-align:center; font-weight:500; margin-top:8px; font-size:1rem}
+  #feedback.ok{color:#1b7a2c} #feedback.bad{color:#c1121f}
+  .key-hint{display:none; text-align:center; font-size:.75rem; opacity:.6; margin-top:2px}
+  @media (hover:hover) and (pointer:fine){ .key-hint{display:block} }
+
+  /* อารมณ์ของหน้าแมว */
+  .eyes-happy,.eyes-sad,.mouth-happy,.mouth-sad{display:none}
+  .mood-happy .eyes-normal,.mood-happy .mouth-normal,.mood-sad .eyes-normal,.mood-sad .mouth-normal{display:none}
+  .mood-happy .eyes-happy,.mood-happy .mouth-happy,.mood-sad .eyes-sad,.mood-sad .mouth-sad{display:inline}
+  .avatar.mood-happy{animation:hop .5s ease}
+  .avatar.mood-sad{animation:wobble .5s ease}
+  @keyframes hop{0%,100%{transform:translateY(0)}40%{transform:translateY(-10px) rotate(-6deg)}}
+  @keyframes wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+
+  /* ---------- หน้าจอซ้อนทับ (เริ่ม / จบ / ชนะ) ---------- */
+  .screen{
+    position:fixed; inset:0; z-index:10; display:flex; align-items:center; justify-content:center;
+    padding:16px; overflow-y:auto; background:rgba(22,58,95,.45);
+    -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px);
+  }
+  .card{
+    position:relative; width:100%; max-width:440px; margin:auto; background:var(--card); border-radius:28px;
+    padding:18px 18px 20px; text-align:center; box-shadow:var(--shadow); border:5px solid var(--yellow); overflow:hidden;
+  }
+  .title{
+    margin:0; font-size:clamp(2.1rem,10vw,3rem); font-weight:600; line-height:1; letter-spacing:1px;
+    color:var(--orange); text-shadow:0 3px 0 var(--orange-d), 0 6px 0 rgba(0,0,0,.12);
+  }
+  .subtitle{margin:6px 0 0; font-size:1.05rem; color:var(--sky-d); font-weight:500}
+  .hero-cat{width:120px; height:110px; margin:6px auto 0; animation:float 2.4s ease-in-out infinite}
+  @keyframes float{50%{transform:translateY(-8px)}}
+  .tagline{margin:2px 0 8px; font-size:1.1rem; font-weight:600; color:var(--green)}
+  .pick-label{font-weight:600; font-size:.95rem; margin:0 0 6px; text-align:left}
+  .levels{display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:0 0 6px}
+  @media (max-width:420px){ .levels{grid-template-columns:repeat(2,1fr)} .level-btn{padding:6px 4px} }
+  .level-btn{
+    border:3px solid #d8e6f0; background:#fff; border-radius:16px; padding:8px 4px; font-size:1.02rem; font-weight:600;
+    color:var(--navy); line-height:1.25; box-shadow:0 3px 0 #d8e6f0;
+  }
+  .level-btn small{display:block; font-weight:400; font-size:.72rem; opacity:.8}
+  .level-btn[aria-pressed="true"]{border-color:var(--orange); background:#fff3e6; box-shadow:0 4px 0 var(--orange-d)}
+  .level-desc{font-size:.85rem; color:var(--sky-d); min-height:1.3em; margin:2px 0 8px}
+  .rules{list-style:none; margin:0 0 10px; padding:8px 12px; background:#f2fbff; border-radius:16px; text-align:left; font-size:.9rem; line-height:1.55}
+  .btn{
+    display:block; width:100%; border:none; border-radius:18px; padding:14px 16px; font-size:1.35rem; font-weight:600;
+    color:#fff; box-shadow:0 6px 0 rgba(0,0,0,.22); margin-top:10px;
+  }
+  .btn:active{transform:translateY(4px); box-shadow:0 2px 0 rgba(0,0,0,.22)}
+  .btn-primary{background:linear-gradient(#7be07b,#2e9e3e)}
+  .btn-secondary{background:linear-gradient(#5fd3ff,#1f9ad6)}
+  .start-foot{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:8px; margin-top:12px; font-size:.88rem}
+  .pill-btn{border:2px solid #d8e6f0; background:#fff; border-radius:12px; padding:6px 10px; font-size:.9rem; color:var(--navy)}
+  .gfx-note{font-size:.8rem; opacity:.75}
+  .best{width:100%; font-size:.9rem}
+  .end-title{margin:0; font-size:clamp(2rem,9vw,2.8rem); font-weight:600; line-height:1.05}
+  .over-title{color:var(--red); text-shadow:0 3px 0 #9d0208}
+  .win-title{color:var(--orange); text-shadow:0 3px 0 var(--orange-d)}
+  .end-cat{width:110px; height:100px; margin:8px auto 4px}
+  .stars{font-size:2rem; letter-spacing:4px; margin:2px 0; color:#f4b400; text-shadow:0 2px 0 #b07d00}
+  .stats{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0 4px}
+  .stat{background:#f2fbff; border-radius:14px; padding:8px 6px}
+  .stat span{display:block; font-size:.82rem; opacity:.75}
+  .stat b{font-size:1.2rem; line-height:1.25}
+  .stat b small{display:block; font-size:.75rem; font-weight:400; opacity:.75}
+  .stat.wide{grid-column:1/-1}
+  .end-msg{margin:8px 0 0; font-weight:500}
+  .confetti{position:absolute; inset:0; pointer-events:none; overflow:hidden}
+  .confetti i{position:absolute; top:-12px; width:9px; height:14px; border-radius:2px; opacity:.9; animation:fall linear infinite}
+  @keyframes fall{to{transform:translateY(720px) rotate(720deg)}}
+
+  /* ---------- รองรับจอเล็ก / แนวนอน ---------- */
+  @media (max-width:480px){
+    .hud-top .lbl{display:none}
+    .hud-item b{font-size:1.1rem}
+    .hearts-row{font-size:1.05rem}
+    .icon-btn{width:40px}
+    .avatar{width:52px; height:48px}
+    .timer-num{width:50px; height:50px; font-size:1.5rem}
+  }
+  @media (max-height:760px){
+    .hero-cat{width:84px; height:76px}
+    .tagline{margin:0 0 6px; font-size:1rem}
+    .rules{font-size:.82rem; line-height:1.4; padding:6px 10px}
+    .card{padding:14px 14px 16px}
+  }
+  @media (max-width:360px){
+    .avatar{display:none}
+    #equation.long{font-size:1.45rem}
+  }
+  @media (max-height:560px){
+    .avatar{display:none}
+    #equation{font-size:2rem}
+    #equation.long{font-size:1.6rem}
+    .choice{min-height:56px; font-size:1.9rem}
+    .timer-wrap{margin:5px 0 7px}
+    #feedback{margin-top:4px; font-size:.9rem}
+    .hud-item small{display:none}
+    .hero-cat{width:80px; height:72px}
+    .rules{font-size:.82rem; line-height:1.4}
+  }
+  /* โทรศัพท์แนวนอน (ความสูงน้อยมาก): ย่อ HUD และแผงโจทย์ ให้ปุ่มคำตอบอยู่ในจอเสมอ */
+  @media (max-height:460px){
+    #stage{min-height:80px}
+    #hud{padding:4px 6px; gap:4px}
+    .hud-item{padding:2px 4px; flex-direction:row; gap:6px}
+    .hud-top .lbl{display:none}
+    .hud-item b{font-size:1rem}
+    .hearts-row{font-size:1rem}
+    .icon-btn{width:38px; font-size:1.1rem}
+    #panel{padding:6px 10px; padding-bottom:max(6px, env(safe-area-inset-bottom)); border-radius:16px 16px 0 0}
+    #qLabel{font-size:.8rem}
+    #equation{font-size:1.7rem}
+    #equation.long{font-size:1.4rem}
+    .timer-num{width:42px; height:42px; font-size:1.3rem}
+    .timer-wrap{height:10px; margin:4px 0 6px}
+    .choice{min-height:48px; font-size:1.7rem}
+    #feedback{min-height:1.2em; margin-top:3px; font-size:.82rem}
+    .key-hint{display:none !important}
+  }
+
+  /* ผู้ใช้ตั้งค่าลดการเคลื่อนไหว */
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important}
+    .confetti{display:none}
+    #banner.show{animation:none; opacity:1}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ===================== หน้าจอระหว่างเล่น ===================== -->
+  <main id="gameScreen" aria-label="หน้าจอเกม CAT MATH RUN">
+    <header id="hud">
+      <div class="hud-item">
+        <div class="hud-top"><span aria-hidden="true">⭐</span><span class="lbl">คะแนน</span></div>
+        <b id="hudScore">0</b>
+      </div>
+      <div class="hud-item">
+        <div class="hud-top"><span aria-hidden="true">🪙</span><span class="lbl">เหรียญ</span></div>
+        <b id="hudCoins">0</b>
+      </div>
+      <div class="hud-item">
+        <div class="hearts-row" id="hudHearts" role="img" aria-label="หัวใจเหลือ 3 จาก 3 ดวง">
+          <span>❤️</span><span>❤️</span><span>❤️</span>
+        </div>
+        <small>หัวใจ</small>
+      </div>
+      <div class="hud-item">
+        <div class="hud-top"><span aria-hidden="true">📘</span><span class="lbl">ตอบแล้ว</span></div>
+        <b id="hudProgress">0/10</b>
+        <small id="hudRemain">เหลือ 10 ข้อ</small>
+      </div>
+      <div class="hud-item">
+        <div class="hud-top"><span aria-hidden="true">🔥</span><span class="lbl">Streak</span></div>
+        <b id="hudStreak">0</b>
+        <small>สูงสุด <span id="hudBest">0</span></small>
+      </div>
+      <button class="icon-btn sound-btn" type="button" data-style="icon" aria-pressed="true" aria-label="ปิดเสียง">🔊</button>
+    </header>
+
+    <section id="stage" aria-hidden="true">
+      <canvas id="scene3d" hidden></canvas>
+      <canvas id="scene"></canvas>
+      <div id="banner"></div>
+    </section>
+
+    <section id="panel" aria-label="โจทย์คณิตศาสตร์">
+      <div class="q-row">
+        <div id="avatar" class="avatar mood-normal" aria-hidden="true"></div>
+        <div class="q-main">
+          <div id="qLabel">กด “เริ่มเกม” เพื่อออกวิ่ง!</div>
+          <div id="equation" aria-live="polite">? + ? = ?</div>
+        </div>
+        <div class="timer-num" id="timerNum" role="timer" aria-label="เวลาที่เหลือ">5</div>
+      </div>
+      <div class="timer-wrap" id="timerWrap" aria-hidden="true"><div class="timer-bar" id="timerBar"></div></div>
+      <div class="choices">
+        <button id="choice0" class="choice" type="button" disabled aria-label="ตัวเลือกซ้าย">
+          <span class="arrow" aria-hidden="true">◀</span><span class="num">?</span><span class="mark"></span>
+        </button>
+        <button id="choice1" class="choice" type="button" disabled aria-label="ตัวเลือกขวา">
+          <span class="num">?</span><span class="arrow" aria-hidden="true">▶</span><span class="mark"></span>
+        </button>
+      </div>
+      <div id="feedback" role="status" aria-live="polite"></div>
+      <div class="key-hint">คีย์บอร์ด: กด ← หรือ 1 = ซ้าย · กด → หรือ 2 = ขวา</div>
+    </section>
+  </main>
+
+  <!-- ===================== หน้าเริ่มต้น ===================== -->
+  <section id="startScreen" class="screen" aria-labelledby="startTitle">
+    <div class="card">
+      <h1 class="title" id="startTitle">CAT MATH RUN</h1>
+      <p class="subtitle">วิ่งเก็บเหรียญ พิชิตโจทย์คณิต</p>
+      <div class="hero-cat" id="startCat" aria-hidden="true"></div>
+      <p class="tagline">ตอบให้ไว เก็บเหรียญให้ครบ 10 ข้อ!</p>
+      <p class="pick-label" id="levelLabel">เลือกระดับความยาก</p>
+      <div class="levels" role="group" aria-labelledby="levelLabel">
+        <button class="level-btn" type="button" data-level="easy" aria-pressed="true">ง่าย<small>เลข 1 หลัก</small></button>
+        <button class="level-btn" type="button" data-level="medium" aria-pressed="false">ปานกลาง<small>2 หลัก ไม่ทด/ไม่ยืม</small></button>
+        <button class="level-btn" type="button" data-level="hard" aria-pressed="false">ท้าทาย<small>2 หลัก มีทด/ยืม</small></button>
+        <button class="level-btn" type="button" data-level="integer" aria-pressed="false">จำนวนเต็ม<small>มีจำนวนลบ</small></button>
+      </div>
+      <div class="level-desc" id="levelDesc"></div>
+      <ul class="rules">
+        <li>🧮 โจทย์บวก–ลบ รอบละ 10 ข้อ เลือกคำตอบ 1 ใน 2</li>
+        <li>❤️ มีหัวใจ 3 ดวง ตอบผิดหรือหมดเวลาเสีย 1 ดวง</li>
+        <li>⭐ ถูก 1 ข้อ = 10 คะแนน + 1 เหรียญ</li>
+        <li>🔥 ถูกติดกันตั้งแต่ข้อที่ 3 ได้โบนัส +5 คะแนน +1 เหรียญ</li>
+      </ul>
+      <button id="startBtn" class="btn btn-primary" type="button">▶ เริ่มเกม</button>
+      <div class="start-foot">
+        <button class="sound-btn pill-btn" type="button" data-style="full" aria-pressed="true">🔊 เสียง: เปิด</button>
+        <button id="gfxBtn" class="pill-btn" type="button" aria-pressed="true" hidden>🧊 ภาพ 3 มิติ: เปิด</button>
+        <span id="gfxNote" class="gfx-note" hidden>เครื่องนี้แสดงภาพแบบ 2 มิติ</span>
+        <span id="bestScore" class="best"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== หน้าจอจบเกม ===================== -->
+  <section id="overScreen" class="screen" hidden aria-labelledby="overTitle">
+    <div class="card">
+      <h2 class="end-title over-title" id="overTitle">GAME OVER</h2>
+      <div class="end-cat mood-sad" id="overCat" aria-hidden="true"></div>
+      <div class="stats" id="overStats"></div>
+      <p class="end-msg" id="overMsg"></p>
+      <button id="overRetry" class="btn btn-primary" type="button">🔄 เล่นอีกครั้ง</button>
+      <button id="overHome" class="btn btn-secondary" type="button">🏠 กลับหน้าหลัก</button>
+    </div>
+  </section>
+
+  <!-- ===================== หน้าจอชนะ ===================== -->
+  <section id="winScreen" class="screen" hidden aria-labelledby="winTitle">
+    <div class="card">
+      <div class="confetti" id="confetti" aria-hidden="true"></div>
+      <h2 class="end-title win-title" id="winTitle">CAT MATH MASTER!</h2>
+      <div class="end-cat mood-happy" id="winCat" aria-hidden="true"></div>
+      <div class="stars" id="winStars" role="img"></div>
+      <div class="stats" id="winStats"></div>
+      <p class="end-msg" id="winMsg"></p>
+      <button id="winRetry" class="btn btn-primary" type="button">🔄 เล่นอีกครั้ง</button>
+      <button id="winHome" class="btn btn-secondary" type="button">🏠 กลับหน้าหลัก</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =====================================================================
+   * 1) ค่าคงที่ของเกม (แก้ไขกติกาได้ที่นี่ที่เดียว)
+   * ===================================================================== */
+  var CFG = {
+    TOTAL_Q: 10,            // จำนวนข้อต่อรอบ
+    MAX_HEARTS: 3,          // หัวใจเริ่มต้น
+    BASE_POINTS: 10,        // คะแนนต่อข้อที่ตอบถูก
+    BONUS_POINTS: 5,        // โบนัสเมื่อ Streak ถึงเกณฑ์
+    BONUS_FROM_STREAK: 3,   // เริ่มให้โบนัสตั้งแต่ถูกติดกันข้อที่ 3
+    COMBO_STREAK: 5,        // แสดง COMBO ตั้งแต่ถูกติดกัน 5 ข้อ
+    NEXT_DELAY_OK: 950,     // หน่วงก่อนข้อต่อไป เมื่อตอบถูก
+    NEXT_DELAY_BAD: 1600,   // หน่วงก่อนข้อต่อไป เมื่อตอบผิด/หมดเวลา (ให้เห็นคำตอบที่ถูก)
+    END_DELAY: 1100,        // หน่วงก่อนแสดงหน้าสรุป (ให้เห็นแอนิเมชันสุดท้าย)
+    BASE_SPEED: 6.5,        // ความเร็ววิ่งพื้นฐานในฉาก
+    STORAGE_KEY: 'catMathRun.v2',
+    // ระดับความยาก: time = เวลาตอบต่อข้อ (มิลลิวินาที) แก้ได้ตามความเหมาะสมของนักเรียน
+    LEVELS: {
+      easy:    { name: 'ง่าย',      detail: 'บวก–ลบเลข 1 หลัก (0–9) ผลลัพธ์ไม่เกิน 9',                 time: 5000,  min: 0, max: 9 },
+      medium:  { name: 'ปานกลาง',  detail: 'บวก–ลบเลข 2 หลัก ไม่มีการทด/ไม่มีการยืม ผลลัพธ์ไม่เกิน 99', time: 7000,  min: 0, max: 99 },
+      hard:    { name: 'ท้าทาย',    detail: 'บวก–ลบเลข 2 หลัก มีการทด/มีการยืม ผลลัพธ์ไม่เกิน 99',     time: 10000, min: 0, max: 99 },
+      // range = ขนาดสูงสุดของตัวเลขแต่ละตัว (−range ถึง range) ผลลัพธ์จึงอยู่ระหว่าง −2×range ถึง 2×range
+      integer: { name: 'จำนวนเต็ม', detail: 'บวก–ลบจำนวนเต็มบวกและลบ (−10 ถึง 10) เช่น (−5) + 3, 4 − (−6)', time: 8000, min: -20, max: 20, range: 10 }
+    }
+  };
+
+  var STATE = { READY: 'READY', PLAYING: 'PLAYING', ANSWERED: 'ANSWERED', GAME_OVER: 'GAME_OVER', VICTORY: 'VICTORY' };
+
+  /* =====================================================================
+   * 2) ระบบโจทย์คณิตศาสตร์ (ฟังก์ชันบริสุทธิ์ ทดสอบแยกได้)
+   * ===================================================================== */
+  var MathCore = {
+    cache: {},
+    randInt: function (min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; },
+
+    shuffle: function (arr) {
+      for (var i = arr.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+      }
+      return arr;
+    },
+
+    /** ลำดับเครื่องหมายของทั้งรอบ: บวกครึ่งหนึ่ง ลบครึ่งหนึ่ง แล้วสลับตำแหน่งแบบสุ่ม (10 ข้อ = 5 บวก + 5 ลบ) */
+    buildOpSequence: function (n) {
+      var ops = [];
+      for (var i = 0; i < n; i++) ops.push(i % 2 === 0 ? '+' : '-');
+      return MathCore.shuffle(ops);
+    },
+
+    hasCarry: function (a, b) { return (a % 10) + (b % 10) >= 10; },
+    hasBorrow: function (a, b) { return (a % 10) < (b % 10); },
+
+    /**
+     * คู่ตัวเลขทั้งหมดที่ถูกต้องตามกติกาของแต่ละระดับ (คำนวณครั้งเดียวแล้วเก็บไว้)
+     * - easy  : ตัวตั้ง/ตัวบวก 0–9, ผลบวก ≤ 9, ผลลบ ≥ 0 (ตัด 0+0 และ 0−0)
+     * - medium: ตัวตั้ง 10–99, ตัวบวก/ตัวลบ 1–99, ผลบวก ≤ 99, ไม่มีการทด / ไม่มีการยืม, ผลลบ ≥ 0
+     * - hard  : ตัวตั้ง 10–99, ตัวบวก/ตัวลบ 1–99, ผลบวก ≤ 99, ต้องมีการทด / ต้องมีการยืม, ผลลบ ≥ 0
+     * - integer: ตัวเลข −10 ถึง 10 ทุกข้อต้องมีจำนวนลบอย่างน้อย 1 จุด (ตัวตั้ง ตัวบวก/ตัวลบ หรือคำตอบ)
+     *            ตัดโจทย์ที่ง่ายเกินไป: มี 0 เป็นตัวเลขตัวใดตัวหนึ่ง
+     */
+    validPairs: function (level, op) {
+      var key = level + op;
+      if (MathCore.cache[key]) return MathCore.cache[key];
+      var list = [], a, b;
+      if (level === 'integer') {
+        var R = CFG.LEVELS.integer.range;
+        for (a = -R; a <= R; a++) {
+          for (b = -R; b <= R; b++) {
+            if (a === 0 || b === 0) continue;
+            var ans = op === '+' ? a + b : a - b;
+            if (a < 0 || b < 0 || ans < 0) list.push([a, b]);
+          }
+        }
+      } else if (level === 'easy') {
+        for (a = 0; a <= 9; a++) {
+          for (b = 0; b <= 9; b++) {
+            if (a === 0 && b === 0) continue;
+            if (op === '+' && a + b <= 9) list.push([a, b]);
+            if (op === '-' && a - b >= 0) list.push([a, b]);
+          }
+        }
+      } else {
+        var wantRegroup = level === 'hard';
+        for (a = 10; a <= 99; a++) {
+          for (b = 1; b <= 99; b++) {
+            if (op === '+') {
+              if (a + b > 99) continue;
+              if (MathCore.hasCarry(a, b) === wantRegroup) list.push([a, b]);
+            } else {
+              if (b >= a) continue;
+              if (MathCore.hasBorrow(a, b) === wantRegroup) list.push([a, b]);
+            }
+          }
+        }
+      }
+      MathCore.cache[key] = list;
+      return list;
+    },
+
+    /**
+     * สร้างคำตอบที่ผิดแบบสมเหตุสมผล ไม่ติดลบ ไม่เกินช่วงของระดับ และไม่ซ้ำคำตอบจริง
+     * - เลข 1 หลัก : ±1, ±2 หรือสลับบวก/ลบ
+     * - เลข 2 หลัก : ±1, ±2, ±10 และความผิดพลาดที่นักเรียนทำบ่อย
+     *   (ลืมทด, ลืมยืม/เอาตัวน้อยลบตัวมากในหลักหน่วย, ตั้งหลักผิด, สลับบวก/ลบ)
+     */
+    makeWrongAnswer: function (q) {
+      var min = CFG.LEVELS[q.level].min, max = CFG.LEVELS[q.level].max, near = [], errs = [];
+      function add(list, v) {
+        if (v >= min && v <= max && v !== q.answer && near.indexOf(v) === -1 && errs.indexOf(v) === -1) list.push(v);
+      }
+      add(near, q.answer - 1); add(near, q.answer + 1); add(near, q.answer - 2); add(near, q.answer + 2);
+      if (q.level === 'integer') {
+        // ความผิดพลาดที่พบบ่อยเรื่องจำนวนเต็ม
+        add(errs, -q.answer);                                                   // เครื่องหมายผิด
+        var sb = q.op === '+' ? q.b : -q.b;                                     // เขียนใหม่เป็นการบวก: a + sb
+        if ((q.a < 0) !== (sb < 0)) {                                           // เครื่องหมายต่างกัน: เอาค่าสัมบูรณ์มาบวกกัน
+          add(errs, (q.answer < 0 ? -1 : 1) * (Math.abs(q.a) + Math.abs(sb)));
+        } else {                                                                // เครื่องหมายเหมือนกัน: เอาค่าสัมบูรณ์มาลบกัน
+          add(errs, (q.a < 0 ? -1 : 1) * Math.abs(Math.abs(q.a) - Math.abs(sb)));
+        }
+        if (q.op === '-' && q.b < 0) add(errs, q.a + q.b);                      // ลบด้วยจำนวนลบ แต่ลืมเปลี่ยนเป็นบวก
+        if (q.op === '-' && q.b > 0) add(errs, q.a + q.b);                      // สลับเป็นการบวก
+      } else if (q.level === 'easy') {
+        add(errs, q.op === '+' ? Math.abs(q.a - q.b) : q.a + q.b);
+      } else {
+        add(near, q.answer - 10); add(near, q.answer + 10);
+        if (q.op === '+') {
+          if (MathCore.hasCarry(q.a, q.b)) add(errs, q.answer - 10);           // ลืมทด
+          if (q.b < 10) add(errs, q.a + q.b * 10);                              // ตั้งหลักผิด
+        } else {
+          if (MathCore.hasBorrow(q.a, q.b)) {                                   // เอาตัวน้อยลบตัวมากในหลักหน่วย
+            add(errs, (Math.floor(q.a / 10) - Math.floor(q.b / 10)) * 10 + Math.abs(q.a % 10 - q.b % 10));
+          }
+          add(errs, q.a + q.b);                                                 // สลับเป็นการบวก
+        }
+      }
+      var pool = errs.length && Math.random() < 0.5 ? errs : near.concat(errs);
+      if (pool.length === 0) { // กันพลาดทางทฤษฎี
+        for (var k = min; k <= max; k++) if (k !== q.answer) pool.push(k);
+      }
+      return pool[MathCore.randInt(0, pool.length - 1)];
+    },
+
+    /** สร้างโจทย์ 1 ข้อ ตามระดับ โดยไม่ซ้ำกับโจทย์ในชุด usedKeys */
+    generateQuestion: function (level, op, usedKeys) {
+      var pairs = MathCore.validPairs(level, op), p = null;
+      for (var t = 0; t < 60 && !p; t++) {               // สุ่มหาคู่ที่ยังไม่เคยใช้
+        var c = pairs[MathCore.randInt(0, pairs.length - 1)];
+        if (!usedKeys.has(c[0] + op + c[1])) p = c;
+      }
+      if (!p) {                                           // ถ้าสุ่มไม่เจอ ให้กรองหาตรง ๆ
+        var fresh = pairs.filter(function (x) { return !usedKeys.has(x[0] + op + x[1]); });
+        var pool = fresh.length ? fresh : pairs;
+        p = pool[MathCore.randInt(0, pool.length - 1)];
+      }
+      var q = { a: p[0], b: p[1], op: op, level: level };
+      q.key = q.a + op + q.b;
+      q.answer = op === '+' ? q.a + q.b : q.a - q.b;
+      var wrong = MathCore.makeWrongAnswer(q);
+      q.correctIndex = MathCore.randInt(0, 1);
+      q.choices = q.correctIndex === 0 ? [q.answer, wrong] : [wrong, q.answer];
+      usedKeys.add(q.key);
+      return q;
+    }
+  };
+
+  /** กติกาคะแนน: ใช้ Streak หลังจากนับข้อที่เพิ่งตอบถูกแล้ว (เหมือนกันทุกระดับ) */
+  var Scoring = {
+    pointsFor: function (streak) { return CFG.BASE_POINTS + (streak >= CFG.BONUS_FROM_STREAK ? CFG.BONUS_POINTS : 0); },
+    coinsFor: function (streak) { return 1 + (streak >= CFG.BONUS_FROM_STREAK ? 1 : 0); }
+  };
+
+  /* =====================================================================
+   * 3) สถานะเกม
+   * ===================================================================== */
+  var game = {
+    state: STATE.READY, round: 0, level: 'easy', timeLimit: CFG.LEVELS.easy.time,
+    qIndex: 0, answered: 0, score: 0, coins: 0, hearts: CFG.MAX_HEARTS, streak: 0, maxStreak: 0,
+    correct: 0, wrong: 0, timeouts: 0,
+    question: null, deadline: 0, paused: false, pausedRemaining: 0,
+    usedKeys: new Set(), ops: [], nextTimer: null, endTimer: null, backupTimer: null
+  };
+
+  function resetGameData() {
+    game.qIndex = 0; game.answered = 0; game.score = 0; game.coins = 0;
+    game.hearts = CFG.MAX_HEARTS; game.streak = 0; game.maxStreak = 0;
+    game.correct = 0; game.wrong = 0; game.timeouts = 0;
+    game.question = null; game.deadline = 0; game.paused = false; game.pausedRemaining = 0;
+    game.usedKeys = new Set(); game.ops = MathCore.buildOpSequence(CFG.TOTAL_Q);
+  }
+
+  function clearTimers() {
+    if (game.nextTimer) { clearTimeout(game.nextTimer); game.nextTimer = null; }
+    if (game.endTimer) { clearTimeout(game.endTimer); game.endTimer = null; }
+    if (game.backupTimer) { clearTimeout(game.backupTimer); game.backupTimer = null; }
+  }
+
+  /* =====================================================================
+   * 4) อ้างอิงองค์ประกอบหน้าเว็บ
+   * ===================================================================== */
+  function $(id) { return document.getElementById(id); }
+  var el = {
+    startScreen: $('startScreen'), overScreen: $('overScreen'), winScreen: $('winScreen'),
+    startBtn: $('startBtn'), soundBtns: document.querySelectorAll('.sound-btn'), bestScore: $('bestScore'),
+    levelBtns: document.querySelectorAll('.level-btn'), levelDesc: $('levelDesc'), gfxBtn: $('gfxBtn'), gfxNote: $('gfxNote'),
+    hudScore: $('hudScore'), hudCoins: $('hudCoins'), hudHearts: $('hudHearts'),
+    hudProgress: $('hudProgress'), hudRemain: $('hudRemain'), hudStreak: $('hudStreak'), hudBest: $('hudBest'),
+    qLabel: $('qLabel'), equation: $('equation'), timerNum: $('timerNum'), timerBar: $('timerBar'), timerWrap: $('timerWrap'),
+    choices: [$('choice0'), $('choice1')], feedback: $('feedback'), avatar: $('avatar'),
+    banner: $('banner'), stage: $('stage'), canvas: $('scene'), canvas3d: $('scene3d'),
+    overStats: $('overStats'), overMsg: $('overMsg'), overRetry: $('overRetry'), overHome: $('overHome'),
+    winStats: $('winStats'), winMsg: $('winMsg'), winStars: $('winStars'), winRetry: $('winRetry'), winHome: $('winHome'),
+    confetti: $('confetti')
+  };
+
+  var reducedMotion = false;
+  try {
+    var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    reducedMotion = mq.matches;
+    var onMq = function (e) { reducedMotion = e.matches; };
+    if (mq.addEventListener) mq.addEventListener('change', onMq); else if (mq.addListener) mq.addListener(onMq);
+  } catch (e) { /* เบราว์เซอร์เก่า: ใช้ค่าเริ่มต้น */ }
+
+  function restartAnim(node, cls) {
+    node.classList.remove(cls);
+    void node.offsetWidth; // บังคับ reflow เพื่อเริ่มแอนิเมชันใหม่
+    node.classList.add(cls);
+  }
+
+  /* =====================================================================
+   * 5) เสียง (สังเคราะห์ด้วย Web Audio ไม่ต้องโหลดไฟล์ – ปิดได้ และเกมเล่นได้แม้ไม่มีเสียง)
+   * ===================================================================== */
+  var audio = {
+    ctx: null, on: true,
+    unlock: function () {
+      try {
+        if (!this.ctx) {
+          var AC = window.AudioContext || window.webkitAudioContext;
+          if (AC) this.ctx = new AC();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+      } catch (e) { this.ctx = null; }
+    },
+    tone: function (freq, dur, type, vol, delay) {
+      if (!this.on || !this.ctx) return;
+      try {
+        var t = this.ctx.currentTime + (delay || 0);
+        var o = this.ctx.createOscillator(), g = this.ctx.createGain();
+        o.type = type || 'sine';
+        o.frequency.setValueAtTime(freq, t);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(vol || 0.12, t + 0.015);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        o.connect(g); g.connect(this.ctx.destination);
+        o.start(t); o.stop(t + dur + 0.03);
+      } catch (e) { /* เงียบไว้ ไม่ให้เกมหยุด */ }
+    },
+    coin: function () { this.tone(988, 0.08, 'square', 0.05); this.tone(1319, 0.14, 'square', 0.05, 0.07); },
+    correct: function () { this.tone(660, 0.1, 'triangle', 0.12); this.tone(880, 0.16, 'triangle', 0.12, 0.09); },
+    wrong: function () { this.tone(240, 0.22, 'sawtooth', 0.07); this.tone(170, 0.3, 'sawtooth', 0.07, 0.13); },
+    tick: function () { this.tone(1200, 0.05, 'sine', 0.06); },
+    combo: function () { var n = [784, 988, 1175, 1568]; for (var i = 0; i < n.length; i++) this.tone(n[i], 0.12, 'triangle', 0.1, i * 0.07); },
+    win: function () { var n = [523, 659, 784, 1047, 784, 1047]; for (var i = 0; i < n.length; i++) this.tone(n[i], 0.18, 'triangle', 0.12, i * 0.12); },
+    lose: function () { var n = [392, 330, 262, 196]; for (var i = 0; i < n.length; i++) this.tone(n[i], 0.22, 'triangle', 0.1, i * 0.16); }
+  };
+
+  /* ---------- บันทึกค่าในเครื่อง (ถ้าเบราว์เซอร์ไม่อนุญาต เกมยังเล่นได้ตามปกติ) ---------- */
+  var store = {
+    load: function () { try { return JSON.parse(window.localStorage.getItem(CFG.STORAGE_KEY)) || {}; } catch (e) { return {}; } },
+    save: function (obj) { try { window.localStorage.setItem(CFG.STORAGE_KEY, JSON.stringify(obj)); } catch (e) { /* ไม่เป็นไร */ } }
+  };
+  var saved = store.load();
+  if (saved.sound === false) audio.on = false;
+  if (!saved.best || typeof saved.best !== 'object') saved.best = {};
+  if (saved.level && CFG.LEVELS[saved.level]) game.level = saved.level;
+  var prefer3D = saved.gfx !== '2d';
+
+  function renderSoundButtons() {
+    for (var i = 0; i < el.soundBtns.length; i++) {
+      var b = el.soundBtns[i];
+      b.setAttribute('aria-pressed', audio.on ? 'true' : 'false');
+      if (b.getAttribute('data-style') === 'full') {
+        b.textContent = audio.on ? '🔊 เสียง: เปิด' : '🔇 เสียง: ปิด';
+      } else {
+        b.textContent = audio.on ? '🔊' : '🔇';
+        b.setAttribute('aria-label', audio.on ? 'ปิดเสียง' : 'เปิดเสียง');
+      }
+    }
+  }
+  function toggleSound() {
+    audio.on = !audio.on;
+    if (audio.on) { audio.unlock(); audio.coin(); }
+    saved.sound = audio.on; store.save(saved);
+    renderSoundButtons();
+  }
+  function bestOf(level) { return typeof saved.best[level] === 'number' ? saved.best[level] : 0; }
+  function renderBest() {
+    var b = bestOf(game.level);
+    el.bestScore.textContent = b > 0 ? '🏆 คะแนนสูงสุดระดับ' + CFG.LEVELS[game.level].name + ' ' + b : '';
+  }
+  function renderLevelButtons() {
+    for (var i = 0; i < el.levelBtns.length; i++) {
+      var btn = el.levelBtns[i];
+      btn.setAttribute('aria-pressed', btn.getAttribute('data-level') === game.level ? 'true' : 'false');
+    }
+    var L = CFG.LEVELS[game.level];
+    el.levelDesc.textContent = L.detail + ' · ตอบภายใน ' + (L.time / 1000) + ' วินาที';
+    renderBest();
+  }
+  function selectLevel(level) {
+    if (game.state !== STATE.READY || !CFG.LEVELS[level]) return;
+    game.level = level;
+    game.timeLimit = CFG.LEVELS[level].time;
+    saved.level = level; store.save(saved);
+    renderLevelButtons();
+    lastSec = null; updateTimerUI(game.timeLimit);
+  }
+
+  /* =====================================================================
+   * 6) หน้าแมว (SVG วาดเอง ไม่ต้องโหลดรูป) – ใช้ทั้งหน้าเริ่ม แผงโจทย์ และหน้าสรุป
+   * ===================================================================== */
+  function catFaceSVG() {
+    return '' +
+      '<svg viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M16 44 L20 4 L50 28 Z" fill="#ff8a3d" stroke="#7a3a10" stroke-width="3" stroke-linejoin="round"/>' +
+      '<path d="M104 44 L100 4 L70 28 Z" fill="#ff8a3d" stroke="#7a3a10" stroke-width="3" stroke-linejoin="round"/>' +
+      '<path d="M23 36 L25 14 L41 27 Z" fill="#ffb3c1"/><path d="M97 36 L95 14 L79 27 Z" fill="#ffb3c1"/>' +
+      '<ellipse cx="60" cy="63" rx="49" ry="41" fill="#ff8a3d" stroke="#7a3a10" stroke-width="3"/>' +
+      '<path d="M60 24 v11 M47 26 l3 10 M73 26 l-3 10" stroke="#d9641a" stroke-width="4" stroke-linecap="round"/>' +
+      '<path d="M12 62 h10 M13 70 l9 -2 M108 62 h-10 M107 70 l-9 -2" stroke="#d9641a" stroke-width="3.5" stroke-linecap="round"/>' +
+      '<ellipse cx="60" cy="80" rx="23" ry="16" fill="#fff4e6"/>' +
+      '<circle cx="29" cy="76" r="7" fill="#ff9aa8" opacity=".75"/><circle cx="91" cy="76" r="7" fill="#ff9aa8" opacity=".75"/>' +
+      '<g class="eyes-normal"><ellipse cx="42" cy="59" rx="7.5" ry="9.5" fill="#23395b"/><circle cx="44.6" cy="55.4" r="2.8" fill="#fff"/>' +
+      '<ellipse cx="78" cy="59" rx="7.5" ry="9.5" fill="#23395b"/><circle cx="80.6" cy="55.4" r="2.8" fill="#fff"/></g>' +
+      '<g class="eyes-happy" fill="none" stroke="#23395b" stroke-width="4.5" stroke-linecap="round">' +
+      '<path d="M34 61 Q42 49 50 61"/><path d="M70 61 Q78 49 86 61"/></g>' +
+      '<g class="eyes-sad"><circle cx="42" cy="59" r="8" fill="#fff" stroke="#23395b" stroke-width="3"/><circle cx="42" cy="61" r="3.4" fill="#23395b"/>' +
+      '<circle cx="78" cy="59" r="8" fill="#fff" stroke="#23395b" stroke-width="3"/><circle cx="78" cy="61" r="3.4" fill="#23395b"/>' +
+      '<path d="M99 30 q6 9 0 14 q-6 -5 0 -14z" fill="#7fd3ff" stroke="#1f8fc4" stroke-width="1.5"/></g>' +
+      '<path d="M54.5 71 h11 l-5.5 6 z" fill="#ff6b81" stroke="#7a3a10" stroke-width="1.5" stroke-linejoin="round"/>' +
+      '<path class="mouth-normal" d="M50 80 q5 6 10 0 q5 6 10 0" stroke="#7a3a10" stroke-width="2.6" fill="none" stroke-linecap="round"/>' +
+      '<path class="mouth-happy" d="M47 79 q13 18 26 0 z" fill="#d6336c" stroke="#7a3a10" stroke-width="2.6" stroke-linejoin="round"/>' +
+      '<ellipse class="mouth-sad" cx="60" cy="85" rx="5" ry="6.5" fill="#7a3a10"/>' +
+      '<g stroke="#7a3a10" stroke-width="1.6" stroke-linecap="round" opacity=".7">' +
+      '<path d="M36 80 l-18 -3 M36 85 l-17 3 M84 80 l18 -3 M84 85 l17 3"/></g>' +
+      '</svg>';
+  }
+  function setMood(mood) {
+    el.avatar.classList.remove('mood-normal', 'mood-happy', 'mood-sad');
+    void el.avatar.offsetWidth;
+    el.avatar.classList.add('mood-' + mood);
+  }
+
+  /* =====================================================================
+   * 7) เอฟเฟกต์ที่ใช้ร่วมกัน (อนุภาค ตัวเลขลอย แสงแฟลช) วาดบน canvas 2 มิติ
+   * ===================================================================== */
+  function hash(n) { var x = Math.sin(n * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); }
+  function frac(x) { return x - Math.floor(x); }
+
+  var FX = {
+    burst: function (x, y, n, colors, star) {
+      if (reducedMotion) n = Math.ceil(n / 3);
+      for (var i = 0; i < n; i++) {
+        var a = Math.random() * Math.PI * 2, sp = 60 + Math.random() * 160;
+        this.particles.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 80, life: 0.7 + Math.random() * 0.5, max: 1.2,
+          size: 3 + Math.random() * 4, color: colors[i % colors.length], star: star && i % 2 === 0 });
+      }
+    },
+    updateFx: function (dt) {
+      for (var j = this.particles.length - 1; j >= 0; j--) {
+        var p = this.particles[j];
+        p.life -= dt; p.vy += 320 * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+        if (p.life <= 0) this.particles.splice(j, 1);
+      }
+      for (var k = this.floaters.length - 1; k >= 0; k--) {
+        var f = this.floaters[k]; f.life -= dt; f.y -= 40 * dt;
+        if (f.life <= 0) this.floaters.splice(k, 1);
+      }
+      if (this.flashA > 0) this.flashA = Math.max(0, this.flashA - dt * 0.9);
+    },
+    star: function (ctx, x, y, r, color) {
+      if (r < 0.5) return;
+      ctx.fillStyle = color; ctx.beginPath();
+      for (var i = 0; i < 10; i++) {
+        var rad = i % 2 === 0 ? r : r * 0.45, a = -Math.PI / 2 + i * Math.PI / 5;
+        ctx.lineTo(x + Math.cos(a) * rad, y + Math.sin(a) * rad);
+      }
+      ctx.closePath(); ctx.fill();
+    },
+    drawFx: function (ctx) {
+      for (var i = 0; i < this.particles.length; i++) {
+        var p = this.particles[i]; ctx.globalAlpha = Math.max(0, Math.min(1, p.life / 0.6));
+        if (p.star) this.star(ctx, p.x, p.y, p.size * 1.4, p.color);
+        else { ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); }
+      }
+      ctx.globalAlpha = 1;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      for (var k = 0; k < this.floaters.length; k++) {
+        var f = this.floaters[k];
+        ctx.globalAlpha = Math.max(0, f.life / f.max);
+        ctx.font = '600 ' + Math.round(Math.max(14, this.gh * 0.1)) + 'px Mitr, Tahoma, sans-serif';
+        ctx.lineWidth = 4; ctx.strokeStyle = '#fff'; ctx.strokeText(f.text, f.x, f.y);
+        ctx.fillStyle = f.color; ctx.fillText(f.text, f.x, f.y);
+      }
+      ctx.globalAlpha = 1;
+      if (this.flashA > 0) { ctx.fillStyle = 'rgba(' + this.flashRGB + ',' + this.flashA.toFixed(3) + ')'; ctx.fillRect(0, 0, this.w, this.h); }
+    }
+  };
+  function mixin(target, src) { for (var k in src) if (Object.prototype.hasOwnProperty.call(src, k)) target[k] = src[k]; return target; }
+
+  /* =====================================================================
+   * 8) ฉากสำรองแบบ 2 มิติ (ใช้เมื่ออุปกรณ์ไม่รองรับ WebGL หรือผู้ใช้เลือกปิดภาพ 3 มิติ)
+   * ===================================================================== */
+  var scene2D = mixin({
+    mode: '2d', ctx: null, w: 1, h: 1, dpr: 1, hz: 1, gh: 1, roadW: 1,
+    LANE: 0.55, CAT_REL: 0.45, JUMP_TIME: 0.55, STUMBLE_TIME: 0.7,
+    camZ: 0, speed: 0, targetSpeed: 0, time: 0, runPhase: 0,
+    catLane: 0, catLaneTarget: 0, swerveT: 0, jumpT: 0, stumbleT: 0, celebrateT: 0,
+    coins: [], particles: [], floaters: [], flashA: 0, flashRGB: '230,57,70',
+    displayCoins: 0, clouds: [], skyGlyphs: [],
+
+    init: function () {
+      try { this.ctx = el.canvas.getContext('2d'); } catch (e) { this.ctx = null; }
+      this.clouds = [];
+      for (var i = 0; i < 5; i++) this.clouds.push({ x: Math.random(), y: 0.05 + Math.random() * 0.2, s: 0.6 + Math.random() * 0.7 });
+      var glyphs = ['1', '2', '3', '+', '−', '=', '5', '7', '9', '0'];
+      this.skyGlyphs = [];
+      for (var k = 0; k < glyphs.length; k++) {
+        this.skyGlyphs.push({ ch: glyphs[k], x: (k + 0.5) / glyphs.length + (hash(k) - 0.5) * 0.05, y: 0.08 + hash(k + 20) * 0.18, s: 0.7 + hash(k + 40) * 0.6, p: hash(k + 60) * 6 });
+      }
+      this.resize();
+    },
+    resize: function () {
+      var r = el.stage.getBoundingClientRect();
+      this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+      this.w = Math.max(1, r.width); this.h = Math.max(1, r.height);
+      el.canvas.width = Math.round(this.w * this.dpr);
+      el.canvas.height = Math.round(this.h * this.dpr);
+      if (this.ctx) this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+      this.hz = this.h * 0.36;
+      this.gh = this.h - this.hz;
+      this.roadW = Math.min(this.w * 0.42, this.gh * 1.6);
+    },
+    reset: function () {
+      this.camZ = 0; this.speed = 0; this.targetSpeed = 0; this.runPhase = 0;
+      this.catLane = 0; this.catLaneTarget = 0; this.swerveT = 0; this.jumpT = 0; this.stumbleT = 0; this.celebrateT = 0;
+      this.coins = []; this.particles = []; this.floaters = []; this.flashA = 0; this.displayCoins = 0;
+    },
+    scaleAt: function (rel) { return 1 / (1 + Math.max(0, rel)); },
+    yAt: function (s) { return this.hz + this.gh * s; },
+    laneX: function (lane, s) { return this.w / 2 + lane * this.LANE * this.roadW * s; },
+    catPos: function () {
+      var s = this.scaleAt(this.CAT_REL);
+      return { x: this.laneX(this.catLane, s), y: this.yAt(s), u: this.gh * 0.15 };
+    },
+    celebrate: function (choiceIdx, coinCount, streak) {
+      this.catLaneTarget = choiceIdx === 0 ? -1 : 1; this.swerveT = 0.32;
+      this.jumpT = this.JUMP_TIME; this.celebrateT = 1.0;
+      for (var i = 0; i < coinCount; i++) {
+        this.coins.push({ z: this.camZ + this.CAT_REL + 1.7 + i * 0.85, lane: this.catLaneTarget, ph: Math.random() * 6 });
+      }
+      this.targetSpeed = CFG.BASE_SPEED + Math.min(streak, 6) * 0.35;
+      var p = this.catPos();
+      this.burst(p.x, p.y - p.u * 1.6, streak >= CFG.COMBO_STREAK ? 26 : 14, ['#ffd23f', '#ffffff', '#4cc9f0', '#ff8a3d'], true);
+    },
+    stumble: function (choiceIdx) {
+      if (choiceIdx === 0 || choiceIdx === 1) { this.catLaneTarget = choiceIdx === 0 ? -1 : 1; this.swerveT = 0.3; }
+      this.stumbleT = this.STUMBLE_TIME; this.flashA = 0.35; this.flashRGB = '230,57,70';
+      this.targetSpeed = CFG.BASE_SPEED;
+      var p = this.catPos();
+      this.burst(p.x, p.y - p.u * 0.3, 10, ['#9aa5b1', '#c8b29a', '#e0e0e0'], false);
+      this.floaters.push({ text: '−❤️', x: p.x, y: p.y - p.u * 2.6, life: 1.1, max: 1.1, color: '#e63946' });
+    },
+    perfect: function () {
+      this.flashA = 0.5; this.flashRGB = '255,210,63';
+      var c = ['#ffd23f', '#ff8a3d', '#4cc9f0', '#6bd16b', '#ff4fd8', '#ffffff'];
+      for (var i = 0; i < 4; i++) this.burst(this.w * (0.2 + i * 0.2), this.h * 0.35, 18, c, true);
+    },
+    collect: function () {
+      if (this.displayCoins < game.coins) this.displayCoins++;
+      el.hudCoins.textContent = this.displayCoins;
+      var p = this.catPos();
+      this.burst(p.x, p.y - p.u * 1.4, 8, ['#ffd23f', '#fff3b0', '#ffb703'], true);
+      this.floaters.push({ text: '+1 🪙', x: p.x + (Math.random() - 0.5) * p.u, y: p.y - p.u * 2.4, life: 0.9, max: 0.9, color: '#b8860b' });
+      audio.coin();
+    },
+    flushCoins: function () {
+      this.coins = [];
+      this.displayCoins = game.coins;
+      el.hudCoins.textContent = this.displayCoins;
+    },
+    onEnd: function (win) { if (!win) this.targetSpeed = 0; },
+    finish: function () {
+      this.flushCoins();
+      this.targetSpeed = 0; this.speed = 0;
+      this.particles = []; this.floaters = []; this.flashA = 0; this.stumbleT = 0; this.jumpT = 0; this.celebrateT = 0;
+    },
+    update: function (dt) {
+      this.time += dt;
+      var goal = this.stumbleT > 0 ? this.targetSpeed * 0.3 : this.targetSpeed;
+      this.speed += (goal - this.speed) * Math.min(1, dt * 3);
+      if (this.speed < 0.01) this.speed = 0;
+      this.camZ += this.speed * dt;
+      this.runPhase += dt * (3 + this.speed * 1.5) * (this.speed > 0.2 ? 1 : 0);
+      if (this.swerveT > 0) { this.swerveT -= dt; if (this.swerveT <= 0) this.catLaneTarget = 0; }
+      this.catLane += (this.catLaneTarget - this.catLane) * Math.min(1, dt * 11);
+      if (this.jumpT > 0) this.jumpT = Math.max(0, this.jumpT - dt);
+      if (this.stumbleT > 0) this.stumbleT = Math.max(0, this.stumbleT - dt);
+      if (this.celebrateT > 0) this.celebrateT = Math.max(0, this.celebrateT - dt);
+      for (var i = this.coins.length - 1; i >= 0; i--) {
+        var c = this.coins[i];
+        c.lane += (this.catLane - c.lane) * Math.min(1, dt * 7);
+        if (c.z - this.camZ <= this.CAT_REL) { this.coins.splice(i, 1); this.collect(); }
+      }
+      this.updateFx(dt);
+      for (var m = 0; m < this.clouds.length; m++) {
+        var cl = this.clouds[m]; cl.x -= dt * 0.012 * cl.s;
+        if (cl.x < -0.2) cl.x = 1.2;
+      }
+    },
+    draw: function () {
+      var ctx = this.ctx; if (!ctx) return;
+      ctx.clearRect(0, 0, this.w, this.h);
+      this.drawSky(ctx);
+      this.drawGround(ctx);
+      this.drawProps(ctx);
+      this.drawCoins(ctx);
+      var p = this.catPos();
+      this.drawCat(ctx, p.x, p.y, p.u);
+      this.drawFx(ctx);
+    },
+    drawSky: function (ctx) {
+      var w = this.w, hz = this.hz;
+      var g = ctx.createLinearGradient(0, 0, 0, hz);
+      g.addColorStop(0, '#4fc0ee'); g.addColorStop(1, '#c9f3ff');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, hz + 1);
+      var sx = w * 0.84, sy = hz * 0.32, sr = Math.max(14, hz * 0.16);
+      ctx.fillStyle = 'rgba(255,224,102,.35)'; ctx.beginPath(); ctx.arc(sx, sy, sr * 1.6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffe066'; ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2); ctx.fill();
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      for (var i = 0; i < this.skyGlyphs.length; i++) {
+        var sg = this.skyGlyphs[i];
+        var bob = reducedMotion ? 0 : Math.sin(this.time * 1.2 + sg.p) * 4;
+        ctx.font = '600 ' + Math.round(hz * 0.16 * sg.s) + 'px Mitr, Tahoma, sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,.45)';
+        ctx.fillText(sg.ch, sg.x * w, sg.y * hz * 2.2 + bob);
+      }
+      ctx.fillStyle = 'rgba(255,255,255,.95)';
+      for (var c = 0; c < this.clouds.length; c++) {
+        var cl = this.clouds[c], cx = cl.x * w, cy = cl.y * hz * 2, r = hz * 0.09 * cl.s;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.arc(cx + r, cy - r * 0.4, r * 1.2, 0, Math.PI * 2); ctx.arc(cx + r * 2.1, cy, r * 0.9, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      this.hill(ctx, '#8fd3a8', hz * 0.30, 0.008, this.camZ * 0.004);
+      this.hill(ctx, '#62bf78', hz * 0.17, 0.014, this.camZ * 0.01 + 2);
+    },
+    hill: function (ctx, color, amp, freq, off) {
+      var w = this.w, hz = this.hz, step = w / 30;
+      ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, hz + 1);
+      for (var x = 0; x <= w + step; x += step) {
+        ctx.lineTo(x, hz - amp * (0.55 + 0.45 * Math.sin(x * freq + off) * Math.cos(x * freq * 0.6 + off * 0.7)));
+      }
+      ctx.lineTo(w, hz + 1); ctx.closePath(); ctx.fill();
+    },
+    quad: function (ctx, x1, y1, x2, y2, x3, y3, x4, y4, color) {
+      ctx.fillStyle = color; ctx.beginPath();
+      ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.lineTo(x3, y3); ctx.lineTo(x4, y4); ctx.closePath(); ctx.fill();
+    },
+    drawGround: function (ctx) {
+      var w = this.w, cx = w / 2, N = 40, z0 = Math.floor(this.camZ);
+      ctx.fillStyle = '#5ec24c'; ctx.fillRect(0, this.hz, w, this.gh);
+      for (var k = N; k >= 0; k--) {
+        var zn = z0 + k, zf = zn + 1;
+        var sn = this.scaleAt(zn - this.camZ), sf = this.scaleAt(zf - this.camZ);
+        var yn = this.yAt(sn), yf = this.yAt(sf);
+        if (yn - yf < 0.25) continue;
+        var even = (zn % 2) === 0;
+        ctx.fillStyle = even ? '#72d35c' : '#5ec24c';
+        ctx.fillRect(0, yf, w, yn - yf + 1);
+        var hn = this.roadW * sn, hf = this.roadW * sf;
+        this.quad(ctx, cx - hf, yf, cx + hf, yf, cx + hn, yn + 1, cx - hn, yn + 1, even ? '#f2cf94' : '#e6bf80');
+        var bn = hn * 0.09, bf = hf * 0.09, edge = even ? '#ffffff' : '#ff8a3d';
+        this.quad(ctx, cx - hf - bf, yf, cx - hf, yf, cx - hn, yn + 1, cx - hn - bn, yn + 1, edge);
+        this.quad(ctx, cx + hf, yf, cx + hf + bf, yf, cx + hn + bn, yn + 1, cx + hn, yn + 1, edge);
+        if (even) {
+          var d = 0.275, ln = hn * 0.025, lf = hf * 0.025;
+          this.quad(ctx, cx - d * hf * 2 - lf, yf, cx - d * hf * 2 + lf, yf, cx - d * hn * 2 + ln, yn, cx - d * hn * 2 - ln, yn, 'rgba(255,255,255,.75)');
+          this.quad(ctx, cx + d * hf * 2 - lf, yf, cx + d * hf * 2 + lf, yf, cx + d * hn * 2 + ln, yn, cx + d * hn * 2 - ln, yn, 'rgba(255,255,255,.75)');
+        }
+      }
+    },
+    drawProps: function (ctx) {
+      var start = Math.floor(this.camZ + 30);
+      for (var z = start; z > this.camZ + 0.05; z--) {
+        if (z % 2 !== 0) continue;
+        var s = this.scaleAt(z - this.camZ), y = this.yAt(s), size = this.gh * 0.85 * s;
+        if (size < 2) continue;
+        for (var side = -1; side <= 1; side += 2) {
+          var hv = hash(z * 2 + (side > 0 ? 1 : 0));
+          var x = this.w / 2 + side * this.roadW * s * (1.3 + hv * 0.55);
+          if (hv < 0.62) this.drawTree(ctx, x, y, size, hv);
+          else this.drawSign(ctx, x, y, size * 0.75, hv);
+        }
+      }
+    },
+    drawTree: function (ctx, x, y, S, hv) {
+      ctx.fillStyle = 'rgba(0,0,0,.15)'; ctx.beginPath(); ctx.ellipse(x, y, S * 0.3, S * 0.07, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#8d5a2b'; ctx.fillRect(x - S * 0.06, y - S * 0.45, S * 0.12, S * 0.45);
+      ctx.fillStyle = hv < 0.3 ? '#2f9e44' : '#37b24d';
+      ctx.beginPath(); ctx.arc(x, y - S * 0.62, S * 0.3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(x - S * 0.2, y - S * 0.5, S * 0.22, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(x + S * 0.2, y - S * 0.5, S * 0.22, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.beginPath(); ctx.arc(x - S * 0.08, y - S * 0.72, S * 0.11, 0, Math.PI * 2); ctx.fill();
+    },
+    drawSign: function (ctx, x, y, S, hv) {
+      var symbols = ['+', '−', '=', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+      var ch = symbols[Math.floor(hash(hv * 1000) * symbols.length)];
+      ctx.fillStyle = '#8d5a2b'; ctx.fillRect(x - S * 0.04, y - S * 0.7, S * 0.08, S * 0.7);
+      ctx.fillStyle = hv > 0.8 ? '#4cc9f0' : '#ffd23f';
+      ctx.strokeStyle = '#7a3a10'; ctx.lineWidth = Math.max(1, S * 0.03);
+      ctx.beginPath(); ctx.arc(x, y - S * 0.85, S * 0.24, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#23395b'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = '600 ' + Math.max(6, Math.round(S * 0.3)) + 'px Mitr, Tahoma, sans-serif';
+      ctx.fillText(ch, x, y - S * 0.84);
+    },
+    drawCoins: function (ctx) {
+      var list = this.coins.slice().sort(function (a, b) { return b.z - a.z; });
+      for (var i = 0; i < list.length; i++) {
+        var c = list[i], rel = c.z - this.camZ;
+        if (rel < this.CAT_REL) continue;
+        var s = this.scaleAt(rel), x = this.laneX(c.lane, s), r = Math.max(2, this.gh * 0.11 * s);
+        var y = this.yAt(s) - r * 1.9 + (reducedMotion ? 0 : Math.sin(this.time * 6 + c.ph) * r * 0.15);
+        var spin = reducedMotion ? 1 : Math.abs(Math.cos(this.time * 5 + c.ph));
+        ctx.fillStyle = '#e09f00'; ctx.beginPath(); ctx.ellipse(x, y, Math.max(1, r * spin), r, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.ellipse(x, y, Math.max(0.5, r * 0.78 * spin), r * 0.78, 0, 0, Math.PI * 2); ctx.fill();
+      }
+    },
+    ell: function (ctx, x, y, rx, ry, fill, stroke, lw) {
+      ctx.beginPath(); ctx.ellipse(x, y, Math.max(0.5, rx), Math.max(0.5, ry), 0, 0, Math.PI * 2);
+      ctx.fillStyle = fill; ctx.fill();
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); }
+    },
+    drawCat: function (ctx, x, y, u) {
+      var running = this.speed > 0.2, ph = this.runPhase, lw = Math.max(1, u * 0.06), OUT = '#7a3a10';
+      var jumpP = this.jumpT > 0 ? 1 - this.jumpT / this.JUMP_TIME : 0;
+      var jh = this.jumpT > 0 ? Math.sin(Math.PI * jumpP) * u * 1.3 : 0;
+      var bob = running ? Math.abs(Math.sin(ph)) * u * 0.12 : 0;
+      var rot = (this.catLaneTarget - this.catLane) * 0.3;
+      if (this.stumbleT > 0) rot += Math.sin(this.stumbleT * 38) * (reducedMotion ? 0.05 : 0.2);
+      var sh = 1 - Math.min(0.5, jh / (u * 3));
+      this.ell(ctx, x, y, u * 0.8 * sh, u * 0.22 * sh, 'rgba(0,0,0,.25)');
+      ctx.save(); ctx.translate(x, y - jh - bob); ctx.rotate(rot);
+      var legA = running ? Math.sin(ph) : 0, legs = [[-0.32, legA], [0.32, -legA]];
+      for (var i = 0; i < 2; i++) {
+        var lift = Math.max(0, legs[i][1]), ly = -u * 0.12 - lift * u * 0.3;
+        this.ell(ctx, legs[i][0] * u, ly, u * 0.2, u * 0.26, '#f08a24', OUT, lw);
+        if (lift > 0.25) this.ell(ctx, legs[i][0] * u, ly + u * 0.1, u * 0.1, u * 0.08, '#ffb3c1');
+      }
+      var hy = -u * 1.62;
+      ctx.lineJoin = 'round';
+      for (var s = -1; s <= 1; s += 2) {
+        ctx.beginPath();
+        ctx.moveTo(s * u * 0.5, hy - u * 0.12); ctx.lineTo(s * u * 0.36, hy - u * 0.78); ctx.lineTo(s * u * 0.06, hy - u * 0.4); ctx.closePath();
+        ctx.fillStyle = '#ff8a3d'; ctx.fill(); ctx.strokeStyle = OUT; ctx.lineWidth = lw; ctx.stroke();
+      }
+      this.ell(ctx, 0, hy, u * 0.54, u * 0.5, '#ff8a3d', OUT, lw);
+      var g = ctx.createRadialGradient(-u * 0.2, -u * 0.95, u * 0.1, 0, -u * 0.72, u * 0.75);
+      g.addColorStop(0, '#ffb067'); g.addColorStop(1, '#f07b22');
+      this.ell(ctx, 0, -u * 0.72, u * 0.62, u * 0.62, g, OUT, lw);
+      ctx.strokeStyle = '#d9641a'; ctx.lineWidth = u * 0.09;
+      for (var t = 0; t < 3; t++) { ctx.beginPath(); ctx.arc(0, -u * (1.25 - t * 0.22), u * (0.42 + t * 0.06), Math.PI * 0.25, Math.PI * 0.75); ctx.stroke(); }
+      this.ell(ctx, 0, -u * 1.2, u * 0.44, u * 0.13, '#4cc9f0', '#136c96', lw);
+      var sway = running ? Math.sin(ph * 0.5) * 0.55 : Math.sin(this.time * 2) * 0.3;
+      ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(0, -u * 0.35);
+      ctx.bezierCurveTo(sway * u * 0.4, -u * 0.6, sway * u * 1.1, -u * 0.95, sway * u * 0.85, -u * 1.45);
+      ctx.strokeStyle = OUT; ctx.lineWidth = u * 0.26; ctx.stroke();
+      ctx.strokeStyle = '#ff8a3d'; ctx.lineWidth = u * 0.16; ctx.stroke();
+      ctx.restore();
+      if (this.celebrateT > 0) {
+        for (var k = 0; k < 5; k++) {
+          var a = this.time * 3 + k * (Math.PI * 2 / 5);
+          this.star(ctx, x + Math.cos(a) * u * 1.5, y - jh - u * 1.1 + Math.sin(a) * u * 0.9, u * 0.22 * this.celebrateT, '#ffd23f');
+        }
+      }
+      if (this.stumbleT > 0) {
+        ctx.font = '600 ' + Math.round(u * 0.9) + 'px Mitr, Tahoma, sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.lineWidth = 4; ctx.strokeStyle = '#fff'; ctx.fillStyle = '#e63946';
+        ctx.strokeText('?!', x + u * 0.9, y - u * 2.5); ctx.fillText('?!', x + u * 0.9, y - u * 2.5);
+      }
+    }
+  }, FX);
+
+  /* =====================================================================
+   * 9) เอนจิน 3 มิติขนาดเล็ก (WebGL ล้วน ไม่ต้องโหลดไลบรารีภายนอก)
+   *    – มุมมองเพอร์สเปกทีฟ, แสงอาทิตย์+แสงท้องฟ้า, เงาสัมผัส, หมอกระยะไกล, พื้นผิวลวดลาย
+   * ===================================================================== */
+  var M4 = {
+    create: function () { return new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]); },
+    tmp: new Float32Array(16),
+    mul: function (out, a, b) { // out = a × b (column-major)
+      var t = M4.tmp;
+      for (var c = 0; c < 4; c++) {
+        var b0 = b[c * 4], b1 = b[c * 4 + 1], b2 = b[c * 4 + 2], b3 = b[c * 4 + 3];
+        t[c * 4] = a[0] * b0 + a[4] * b1 + a[8] * b2 + a[12] * b3;
+        t[c * 4 + 1] = a[1] * b0 + a[5] * b1 + a[9] * b2 + a[13] * b3;
+        t[c * 4 + 2] = a[2] * b0 + a[6] * b1 + a[10] * b2 + a[14] * b3;
+        t[c * 4 + 3] = a[3] * b0 + a[7] * b1 + a[11] * b2 + a[15] * b3;
+      }
+      out.set(t);
+      return out;
+    },
+    perspective: function (out, fovy, aspect, near, far) {
+      var f = 1 / Math.tan(fovy / 2), nf = 1 / (near - far);
+      out.fill(0);
+      out[0] = f / aspect; out[5] = f; out[10] = (far + near) * nf; out[11] = -1; out[14] = 2 * far * near * nf;
+      return out;
+    },
+    lookAt: function (out, e, t, up) {
+      var zx = e[0] - t[0], zy = e[1] - t[1], zz = e[2] - t[2], l = Math.hypot(zx, zy, zz) || 1;
+      zx /= l; zy /= l; zz /= l;
+      var xx = up[1] * zz - up[2] * zy, xy = up[2] * zx - up[0] * zz, xz = up[0] * zy - up[1] * zx;
+      l = Math.hypot(xx, xy, xz) || 1; xx /= l; xy /= l; xz /= l;
+      var yx = zy * xz - zz * xy, yy = zz * xx - zx * xz, yz = zx * xy - zy * xx;
+      out[0] = xx; out[1] = yx; out[2] = zx; out[3] = 0;
+      out[4] = xy; out[5] = yy; out[6] = zy; out[7] = 0;
+      out[8] = xz; out[9] = yz; out[10] = zz; out[11] = 0;
+      out[12] = -(xx * e[0] + xy * e[1] + xz * e[2]);
+      out[13] = -(yx * e[0] + yy * e[1] + yz * e[2]);
+      out[14] = -(zx * e[0] + zy * e[1] + zz * e[2]);
+      out[15] = 1;
+      return out;
+    },
+    /** ตำแหน่ง × การหมุน (ลำดับ Y→X→Z) × สเกล */
+    compose: function (out, p, r, s) {
+      var cx = Math.cos(r[0]), sx = Math.sin(r[0]), cy = Math.cos(r[1]), sy = Math.sin(r[1]), cz = Math.cos(r[2]), sz = Math.sin(r[2]);
+      var a00 = cy, a01 = sy * sx, a02 = sy * cx, a11 = cx, a12 = -sx, a20 = -sy, a21 = cy * sx, a22 = cy * cx;
+      var r00 = a00 * cz + a01 * sz, r01 = -a00 * sz + a01 * cz, r02 = a02;
+      var r10 = a11 * sz, r11 = a11 * cz, r12 = a12;
+      var r20 = a20 * cz + a21 * sz, r21 = -a20 * sz + a21 * cz, r22 = a22;
+      out[0] = r00 * s[0]; out[1] = r10 * s[0]; out[2] = r20 * s[0]; out[3] = 0;
+      out[4] = r01 * s[1]; out[5] = r11 * s[1]; out[6] = r21 * s[1]; out[7] = 0;
+      out[8] = r02 * s[2]; out[9] = r12 * s[2]; out[10] = r22 * s[2]; out[11] = 0;
+      out[12] = p[0]; out[13] = p[1]; out[14] = p[2]; out[15] = 1;
+      return out;
+    },
+    /** เมทริกซ์สำหรับเวกเตอร์ตั้งฉาก = inverse-transpose ของส่วน 3×3 (คำนวณด้วย cofactor) */
+    normal: function (out, m) {
+      var a00 = m[0], a01 = m[4], a02 = m[8], a10 = m[1], a11 = m[5], a12 = m[9], a20 = m[2], a21 = m[6], a22 = m[10];
+      var c00 = a11 * a22 - a12 * a21, c01 = -(a10 * a22 - a12 * a20), c02 = a10 * a21 - a11 * a20;
+      var c10 = -(a01 * a22 - a02 * a21), c11 = a00 * a22 - a02 * a20, c12 = -(a00 * a21 - a01 * a20);
+      var c20 = a01 * a12 - a02 * a11, c21 = -(a00 * a12 - a02 * a10), c22 = a00 * a11 - a01 * a10;
+      var det = a00 * c00 + a01 * c01 + a02 * c02, inv = det !== 0 ? 1 / det : 1;
+      out[0] = c00 * inv; out[1] = c10 * inv; out[2] = c20 * inv;
+      out[3] = c01 * inv; out[4] = c11 * inv; out[5] = c21 * inv;
+      out[6] = c02 * inv; out[7] = c12 * inv; out[8] = c22 * inv;
+      return out;
+    }
+  };
+
+  /* ---------- สร้างรูปทรง (ตำแหน่ง, เวกเตอร์ตั้งฉาก, พิกัดพื้นผิว) ---------- */
+  var Geo = {
+    sphere: function (r, ws, hs) {
+      var p = [], n = [], u = [], idx = [], ix, iy;
+      for (iy = 0; iy <= hs; iy++) {
+        var v = iy / hs, phi = v * Math.PI;
+        for (ix = 0; ix <= ws; ix++) {
+          var uu = ix / ws, th = uu * Math.PI * 2;
+          var x = -Math.cos(th) * Math.sin(phi), y = Math.cos(phi), z = Math.sin(th) * Math.sin(phi);
+          p.push(x * r, y * r, z * r); n.push(x, y, z); u.push(uu, 1 - v);
+        }
+      }
+      for (iy = 0; iy < hs; iy++) for (ix = 0; ix < ws; ix++) {
+        var a = iy * (ws + 1) + ix, b = a + ws + 1;
+        idx.push(a, b, a + 1, b, b + 1, a + 1);
+      }
+      return { p: p, n: n, u: u, i: idx };
+    },
+    cylinder: function (rt, rb, h, seg, caps) {
+      var p = [], n = [], u = [], idx = [], slope = (rb - rt) / h, ix, iy;
+      for (iy = 0; iy <= 1; iy++) {
+        var y = h / 2 - iy * h, r = iy ? rb : rt;
+        for (ix = 0; ix <= seg; ix++) {
+          var th = ix / seg * Math.PI * 2, s = Math.sin(th), c = Math.cos(th), l = Math.hypot(s, slope, c);
+          p.push(r * s, y, r * c); n.push(s / l, slope / l, c / l); u.push(ix / seg, 1 - iy);
+        }
+      }
+      for (ix = 0; ix < seg; ix++) { var a = ix, b = ix + seg + 1; idx.push(a, b, a + 1, b, b + 1, a + 1); }
+      if (caps) {
+        for (var cap = 0; cap < 2; cap++) {
+          var cy = cap ? -h / 2 : h / 2, cr = cap ? rb : rt, ny = cap ? -1 : 1;
+          if (cr <= 0) continue;
+          var center = p.length / 3;
+          p.push(0, cy, 0); n.push(0, ny, 0); u.push(0.5, 0.5);
+          for (ix = 0; ix <= seg; ix++) {
+            var t2 = ix / seg * Math.PI * 2;
+            p.push(cr * Math.sin(t2), cy, cr * Math.cos(t2)); n.push(0, ny, 0); u.push(0.5 + Math.sin(t2) * 0.5, 0.5 + Math.cos(t2) * 0.5);
+          }
+          for (ix = 0; ix < seg; ix++) idx.push(center, center + 1 + ix, center + 2 + ix);
+        }
+      }
+      return { p: p, n: n, u: u, i: idx };
+    },
+    torus: function (R, r, rs, ts) {
+      var p = [], n = [], u = [], idx = [], i, j;
+      for (j = 0; j <= rs; j++) {
+        for (i = 0; i <= ts; i++) {
+          var a = i / ts * Math.PI * 2, b = j / rs * Math.PI * 2;
+          var cx = Math.cos(a) * R, cz = Math.sin(a) * R;
+          var nx = Math.cos(a) * Math.cos(b), ny = Math.sin(b), nz = Math.sin(a) * Math.cos(b);
+          p.push(cx + nx * r, ny * r, cz + nz * r); n.push(nx, ny, nz); u.push(i / ts, j / rs);
+        }
+      }
+      for (j = 0; j < rs; j++) for (i = 0; i < ts; i++) {
+        var q = j * (ts + 1) + i, w = q + ts + 1;
+        idx.push(q, w, q + 1, w, w + 1, q + 1);
+      }
+      return { p: p, n: n, u: u, i: idx };
+    },
+    /** กล่อง: worldUv = true ให้พิกัดพื้นผิวเป็นหน่วยโลก (ลายต่อเนื่องและเลื่อนได้) */
+    box: function (w, h, d, worldUv) {
+      var g = { p: [], n: [], u: [], i: [] }, hw = w / 2, hh = h / 2, hd = d / 2;
+      function face(v, nrm, uv) {
+        var base = g.p.length / 3;
+        for (var k = 0; k < 4; k++) { g.p.push(v[k][0], v[k][1], v[k][2]); g.n.push(nrm[0], nrm[1], nrm[2]); g.u.push(uv[k][0], uv[k][1]); }
+        g.i.push(base, base + 1, base + 2, base, base + 2, base + 3);
+      }
+      function uvs(u0, u1, v0, v1) { return worldUv ? [[u0, v0], [u1, v0], [u1, v1], [u0, v1]] : [[0, 0], [1, 0], [1, 1], [0, 1]]; }
+      face([[hw, -hh, hd], [hw, -hh, -hd], [hw, hh, -hd], [hw, hh, hd]], [1, 0, 0], uvs(hd, -hd, -hh, hh));
+      face([[-hw, -hh, -hd], [-hw, -hh, hd], [-hw, hh, hd], [-hw, hh, -hd]], [-1, 0, 0], uvs(-hd, hd, -hh, hh));
+      face([[-hw, hh, hd], [hw, hh, hd], [hw, hh, -hd], [-hw, hh, -hd]], [0, 1, 0], uvs(hd, -hd, -hw, hw).map(function (x, k) { return worldUv ? [[hd, -hw], [hd, hw], [-hd, hw], [-hd, -hw]][k] : x; }));
+      face([[-hw, -hh, -hd], [hw, -hh, -hd], [hw, -hh, hd], [-hw, -hh, hd]], [0, -1, 0], uvs(0, 1, 0, 1));
+      face([[-hw, -hh, hd], [hw, -hh, hd], [hw, hh, hd], [-hw, hh, hd]], [0, 0, 1], uvs(-hw, hw, -hh, hh));
+      face([[hw, -hh, -hd], [-hw, -hh, -hd], [-hw, hh, -hd], [hw, hh, -hd]], [0, 0, -1], uvs(hw, -hw, -hh, hh));
+      return g;
+    },
+    /** พื้นราบแนวนอน (พิกัดพื้นผิว = x, z หน่วยโลก) */
+    plane: function (w, d) {
+      var hw = w / 2, hd = d / 2;
+      return { p: [-hw, 0, -hd, hw, 0, -hd, hw, 0, hd, -hw, 0, hd], n: [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+        u: [-hw, -hd, hw, -hd, hw, hd, -hw, hd], i: [0, 1, 2, 0, 2, 3] };
+    },
+    /** แผ่นสี่เหลี่ยมหันหน้าเข้าหากล้อง (+z) */
+    quad: function (w, h) {
+      var hw = w / 2, hh = h / 2;
+      return { p: [-hw, -hh, 0, hw, -hh, 0, hw, hh, 0, -hw, hh, 0], n: [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
+        u: [0, 0, 1, 0, 1, 1, 0, 1], i: [0, 1, 2, 0, 2, 3] };
+    },
+    /** แผ่นวางราบบนพื้น (ใช้กับเงาสัมผัส) */
+    flatQuad: function (w, d) {
+      var hw = w / 2, hd = d / 2;
+      return { p: [-hw, 0, -hd, hw, 0, -hd, hw, 0, hd, -hw, 0, hd], n: [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+        u: [0, 1, 1, 1, 1, 0, 0, 0], i: [0, 1, 2, 0, 2, 3] };
+    },
+    /** ทำรูปทรงให้ขรุขระแบบโลว์โพลี (หิน ภูเขา พุ่มไม้) ด้วยเวกเตอร์ตั้งฉากรายหน้า */
+    lowPoly: function (g, jitter, seed) {
+      var p = g.p.slice(), i, k;
+      for (i = 0; i < p.length; i += 3) {
+        var key = Math.round(p[i] * 100) * 7.13 + Math.round(p[i + 1] * 100) * 3.71 + Math.round(p[i + 2] * 100) * 1.37 + seed;
+        var f = 1 + (hash(key) - 0.5) * 2 * jitter;
+        p[i] *= f; p[i + 1] *= f; p[i + 2] *= f;
+      }
+      var out = { p: [], n: [], u: [], i: null };
+      for (k = 0; k < g.i.length; k += 3) {
+        var ia = g.i[k] * 3, ib = g.i[k + 1] * 3, ic = g.i[k + 2] * 3;
+        var ax = p[ia], ay = p[ia + 1], az = p[ia + 2], bx = p[ib], by = p[ib + 1], bz = p[ib + 2], cx = p[ic], cy = p[ic + 1], cz = p[ic + 2];
+        var ux = bx - ax, uy = by - ay, uz = bz - az, vx = cx - ax, vy = cy - ay, vz = cz - az;
+        var nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx, l = Math.hypot(nx, ny, nz);
+        if (l < 1e-9) continue;
+        nx /= l; ny /= l; nz /= l;
+        var mx = (ax + bx + cx), my = (ay + by + cy), mz = (az + bz + cz);
+        if (nx * mx + ny * my + nz * mz < 0) { nx = -nx; ny = -ny; nz = -nz; } // หันออกด้านนอกเสมอ
+        out.p.push(ax, ay, az, bx, by, bz, cx, cy, cz);
+        out.n.push(nx, ny, nz, nx, ny, nz, nx, ny, nz);
+        out.u.push(0, 0, 1, 0, 0, 1);
+      }
+      return out;
+    }
+  };
+
+  function Node(mesh, mat) {
+    this.mesh = mesh || null; this.mat = mat || null;
+    this.p = [0, 0, 0]; this.r = [0, 0, 0]; this.s = [1, 1, 1];
+    this.kids = []; this.visible = true;
+    this.local = M4.create(); this.world = M4.create();
+  }
+  Node.prototype.add = function (n) { this.kids.push(n); return n; };
+
+  /* ---------- ภาพพื้นผิว (วาดด้วย canvas ขนาดยกกำลังสอง เพื่อให้ทำซ้ำลายได้) ---------- */
+  var Tex = {
+    canvas: function (w, h, draw) { var c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); return c; },
+    rnd: function (seed) { var s = seed; return function () { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; },
+    grass: function () {
+      return Tex.canvas(256, 256, function (g, w, h) {
+        var R = Tex.rnd(11);
+        g.fillStyle = '#5aa83a'; g.fillRect(0, 0, w, h);
+        for (var i = 0; i < 40; i++) {
+          var gr = g.createRadialGradient(R() * w, R() * h, 0, R() * w, R() * h, 30 + R() * 40);
+          gr.addColorStop(0, R() < 0.5 ? 'rgba(40,110,30,.35)' : 'rgba(140,200,80,.3)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+          g.fillStyle = gr; g.fillRect(0, 0, w, h);
+        }
+        for (var k = 0; k < 5000; k++) {
+          var x = R() * w, y = R() * h, l = 2 + R() * 4, s = R();
+          g.strokeStyle = s < 0.33 ? 'rgba(36,96,24,.55)' : s < 0.66 ? 'rgba(120,190,70,.55)' : 'rgba(80,150,45,.6)';
+          g.lineWidth = 1; g.beginPath(); g.moveTo(x, y); g.lineTo(x + (R() - 0.5) * 2, y - l); g.stroke();
+        }
+        for (var f = 0; f < 22; f++) { g.fillStyle = R() < 0.5 ? '#fff6b0' : '#ffffff'; g.beginPath(); g.arc(R() * w, R() * h, 1.6, 0, Math.PI * 2); g.fill(); }
+      });
+    },
+    path: function () {
+      return Tex.canvas(512, 512, function (g, w, h) {
+        var R = Tex.rnd(7), rows = 8, rh = h / rows;
+        g.fillStyle = '#6b5b47'; g.fillRect(0, 0, w, h);
+        for (var r = 0; r < rows; r++) {
+          var y = r * rh, x = -(r % 2) * 46;
+          while (x < w) {
+            var bw = 70 + R() * 70, light = 62 + R() * 12, hue = 32 + R() * 8, sat = 22 + R() * 18;
+            g.fillStyle = 'hsl(' + hue + ',' + sat + '%,' + light + '%)';
+            g.fillRect(x + 4, y + 4, bw - 8, rh - 8);
+            for (var s = 0; s < 70; s++) {
+              g.fillStyle = R() < 0.5 ? 'rgba(0,0,0,.07)' : 'rgba(255,255,255,.08)';
+              g.fillRect(x + 4 + R() * (bw - 10), y + 4 + R() * (rh - 10), 2 + R() * 4, 2 + R() * 3);
+            }
+            g.fillStyle = 'rgba(255,255,255,.28)'; g.fillRect(x + 4, y + 4, bw - 8, 3); g.fillRect(x + 4, y + 4, 3, rh - 8);
+            g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(x + 4, y + rh - 7, bw - 8, 3); g.fillRect(x + bw - 7, y + 4, 3, rh - 8);
+            if (R() < 0.18) { g.strokeStyle = 'rgba(60,45,30,.5)'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(x + 10 + R() * 20, y + 8); g.lineTo(x + bw / 2, y + rh / 2); g.lineTo(x + bw - 14, y + rh - 10); g.stroke(); }
+            x += bw;
+          }
+        }
+        var edge = g.createLinearGradient(0, 0, w, 0);
+        edge.addColorStop(0, 'rgba(60,100,30,.55)'); edge.addColorStop(0.08, 'rgba(60,100,30,0)');
+        edge.addColorStop(0.92, 'rgba(60,100,30,0)'); edge.addColorStop(1, 'rgba(60,100,30,.55)');
+        g.fillStyle = edge; g.fillRect(0, 0, w, h);
+      });
+    },
+    brick: function () {
+      return Tex.canvas(256, 256, function (g, w, h) {
+        var R = Tex.rnd(3), rows = 4, rh = h / rows;
+        g.fillStyle = '#5d5448'; g.fillRect(0, 0, w, h);
+        for (var r = 0; r < rows; r++) {
+          for (var c = -1; c < 3; c++) {
+            var x = c * 128 + (r % 2) * 64, y = r * rh, l = 52 + R() * 14;
+            g.fillStyle = 'hsl(' + (30 + R() * 10) + ',12%,' + l + '%)';
+            g.fillRect(x + 4, y + 4, 120, rh - 8);
+            g.fillStyle = 'rgba(255,255,255,.22)'; g.fillRect(x + 4, y + 4, 120, 3);
+            g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(x + 4, y + rh - 7, 120, 3);
+            for (var s = 0; s < 40; s++) { g.fillStyle = 'rgba(0,0,0,.08)'; g.fillRect(x + 6 + R() * 112, y + 6 + R() * (rh - 14), 3, 2); }
+            if (R() < 0.3) { g.fillStyle = 'rgba(70,120,40,.45)'; g.beginPath(); g.arc(x + R() * 120, y + rh - 8, 6 + R() * 8, 0, Math.PI * 2); g.fill(); }
+          }
+        }
+      });
+    },
+    /** ขนแมวลายส้ม: ครึ่งซ้ายของภาพ = ใต้ท้อง (สีอ่อน), ครึ่งขวา = หลัง (มีลายพาดขวาง) */
+    furStripe: function () {
+      return Tex.canvas(256, 256, function (g, w, h) {
+        var R = Tex.rnd(5);
+        var gr = g.createLinearGradient(0, 0, w, 0);
+        gr.addColorStop(0, '#f6b46a'); gr.addColorStop(0.25, '#fbd3a0'); gr.addColorStop(0.5, '#f29a45'); gr.addColorStop(0.75, '#e47a22'); gr.addColorStop(1, '#f29a45');
+        g.fillStyle = gr; g.fillRect(0, 0, w, h);
+        for (var s = 0; s < 9; s++) {
+          var y0 = 16 + s * 27 + R() * 6, thick = 6 + R() * 5;
+          g.strokeStyle = 'rgba(165,70,14,.78)'; g.lineWidth = thick; g.lineCap = 'round';
+          g.beginPath();
+          for (var x = 0; x <= w; x += 8) {
+            var back = Math.max(0, Math.sin((x / w - 0.25) * Math.PI * 2)); // เข้มเฉพาะด้านหลัง
+            var yy = y0 + Math.sin(x / w * Math.PI * 4 + s) * 4;
+            g.globalAlpha = 0.25 + back * 0.75;
+            if (x === 0) g.moveTo(x, yy); else g.lineTo(x, yy);
+          }
+          g.stroke(); g.globalAlpha = 1;
+        }
+        for (var k = 0; k < 6000; k++) {
+          var px = R() * w, py = R() * h;
+          g.strokeStyle = R() < 0.5 ? 'rgba(255,230,190,.18)' : 'rgba(120,50,10,.16)';
+          g.lineWidth = 1; g.beginPath(); g.moveTo(px, py); g.lineTo(px + (R() - 0.5) * 2, py + 3 + R() * 3); g.stroke();
+        }
+      });
+    },
+    furGrain: function () {
+      return Tex.canvas(128, 128, function (g, w, h) {
+        var R = Tex.rnd(9);
+        g.fillStyle = '#f0903a'; g.fillRect(0, 0, w, h);
+        for (var k = 0; k < 2500; k++) {
+          var px = R() * w, py = R() * h;
+          g.strokeStyle = R() < 0.5 ? 'rgba(255,225,180,.2)' : 'rgba(130,55,10,.18)';
+          g.lineWidth = 1; g.beginPath(); g.moveTo(px, py); g.lineTo(px + (R() - 0.5) * 2, py + 2 + R() * 3); g.stroke();
+        }
+        g.strokeStyle = 'rgba(170,75,15,.55)'; g.lineWidth = 5;
+        for (var s = 0; s < 3; s++) { g.beginPath(); g.moveTo(w * (0.4 + s * 0.1), 0); g.lineTo(w * (0.42 + s * 0.08), h * 0.22); g.stroke(); }
+      });
+    },
+    shadow: function () {
+      return Tex.canvas(128, 128, function (g, w, h) {
+        var gr = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
+        gr.addColorStop(0, 'rgba(255,255,255,.75)'); gr.addColorStop(0.55, 'rgba(255,255,255,.35)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+        g.fillStyle = gr; g.fillRect(0, 0, w, h);
+      });
+    },
+    cloud: function () {
+      return Tex.canvas(256, 128, function (g, w, h) {
+        var blobs = [[0.3, 0.6, 0.22], [0.5, 0.45, 0.3], [0.7, 0.6, 0.22], [0.42, 0.65, 0.2], [0.6, 0.66, 0.2]];
+        for (var i = 0; i < blobs.length; i++) {
+          var b = blobs[i], gr = g.createRadialGradient(b[0] * w, b[1] * h, 0, b[0] * w, b[1] * h, b[2] * w);
+          gr.addColorStop(0, 'rgba(255,255,255,.95)'); gr.addColorStop(0.7, 'rgba(255,255,255,.8)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+          g.fillStyle = gr; g.fillRect(0, 0, w, h);
+        }
+      });
+    },
+    sign: function (ch) {
+      return Tex.canvas(128, 128, function (g, w, h) {
+        var gr = g.createRadialGradient(w * 0.4, h * 0.35, 4, w / 2, h / 2, w * 0.48);
+        gr.addColorStop(0, '#fff3b0'); gr.addColorStop(1, '#f4b400');
+        g.fillStyle = gr; g.beginPath(); g.arc(w / 2, h / 2, w * 0.46, 0, Math.PI * 2); g.fill();
+        g.lineWidth = 7; g.strokeStyle = '#a0522d'; g.stroke();
+        g.fillStyle = '#23395b'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.font = '700 70px Mitr, Tahoma, sans-serif'; g.fillText(ch, w / 2, h / 2 + 4);
+      });
+    }
+  };
+
+  var VS = [
+    'attribute vec3 aPos; attribute vec3 aNrm; attribute vec2 aUv;',
+    'uniform mat4 uModel; uniform mat4 uVP; uniform mat3 uNrmM; uniform vec4 uUvX;',
+    'varying vec3 vN; varying vec3 vW; varying vec2 vUv;',
+    'void main(){ vec4 w = uModel * vec4(aPos,1.0); vW = w.xyz; vN = uNrmM * aNrm; vUv = aUv * uUvX.xy + uUvX.zw; gl_Position = uVP * w; }'
+  ].join('\n');
+  var FS = [
+    'precision mediump float;',
+    'varying vec3 vN; varying vec3 vW; varying vec2 vUv;',
+    'uniform vec3 uColor; uniform sampler2D uTex; uniform float uUseTex;',
+    'uniform vec3 uSunDir; uniform vec3 uSunCol; uniform vec3 uSky; uniform vec3 uGround; uniform vec3 uFogCol; uniform vec3 uCam;',
+    'uniform vec2 uFog; uniform float uFogOn; uniform float uSpec; uniform float uShin; uniform float uMetal; uniform float uUnlit;',
+    'uniform vec3 uEmis; uniform float uAlpha; uniform float uCut;',
+    'void main(){',
+    '  vec4 tex = vec4(1.0);',
+    '  if (uUseTex > 0.5) tex = texture2D(uTex, vUv);',
+    '  if (tex.a * uAlpha < uCut) discard;',
+    '  vec3 base = uColor * tex.rgb;',
+    '  vec3 col = base;',
+    '  if (uUnlit < 0.5) {',
+    '    vec3 N = normalize(vN); if (!gl_FrontFacing) N = -N;',
+    '    vec3 V = normalize(uCam - vW);',
+    '    vec3 amb = mix(uGround, uSky, N.y * 0.5 + 0.5);',
+    '    float d = max(dot(N, uSunDir), 0.0);',
+    '    vec3 H = normalize(uSunDir + V);',
+    '    float s = pow(max(dot(N, H), 0.0), uShin) * uSpec;',
+    '    vec3 R = reflect(-V, N);',
+    '    vec3 env = mix(uGround * 1.4, uSky * 1.6, clamp(R.y * 0.5 + 0.5, 0.0, 1.0));',
+    '    float rim = pow(1.0 - max(dot(N, V), 0.0), 3.0) * 0.22;',
+    '    col = base * (amb + uSunCol * d) * (1.0 - uMetal) + base * env * uMetal + uSunCol * s + uSky * rim;',
+    '  }',
+    '  col += uEmis;',
+    '  if (uFogOn > 0.5) { float f = clamp((length(uCam - vW) - uFog.x) / (uFog.y - uFog.x), 0.0, 1.0); col = mix(col, uFogCol, f); }',
+    '  gl_FragColor = vec4(col, tex.a * uAlpha);',
+    '}'
+  ].join('\n');
+  var SKY_VS = 'attribute vec2 aP; varying vec2 vP; void main(){ vP = aP; gl_Position = vec4(aP, 0.9999, 1.0); }';
+  var SKY_FS = [
+    'precision mediump float; varying vec2 vP;',
+    'uniform vec3 uTop; uniform vec3 uHor; uniform vec3 uSunCol; uniform vec2 uSun; uniform float uHz; uniform float uAsp;',
+    'void main(){',
+    '  float t = clamp((vP.y - uHz) / max(1.0 - uHz, 0.001), 0.0, 1.0);',
+    '  vec3 c = mix(uHor, uTop, pow(t, 0.6));',
+    '  vec2 d = vP - uSun; d.x *= uAsp; float L = length(d);',
+    '  c += uSunCol * (smoothstep(0.075, 0.06, L) * 0.9 + exp(-L * 4.0) * 0.35);',
+    '  gl_FragColor = vec4(min(c, vec3(1.0)), 1.0);',
+    '}'
+  ].join('\n');
+
+  var scene3D = mixin({
+    mode: '3d', ready: false, failed: false, gl: null,
+    w: 1, h: 1, gh: 1, dpr: 1, fx: null,
+    LANE_X: 1.55, JUMP_TIME: 0.55, STUMBLE_TIME: 0.7, ROAD_W: 5.4, PROP_GAP: 2.8, PROP_COUNT: 34,
+    dist: 0, speed: 0, targetSpeed: 0, time: 0, runPhase: 0,
+    catLane: 0, catLaneTarget: 0, catX: 0, swerveT: 0, jumpT: 0, stumbleT: 0, celebrateT: 0,
+    yaw: 0, targetYaw: 0, sad: false,
+    coins: [], particles: [], floaters: [], flashA: 0, flashRGB: '230,57,70', displayCoins: 0,
+    props: [], clouds: [], roots: [], trans: [],
+    cam: [0, 2.7, 5.6], target: [0, 1, -7], view: M4.create(), proj: M4.create(), vp: M4.create(), nm: new Float32Array(9),
+    sunDir: (function () { var v = [-0.45, 0.85, 0.32], l = Math.hypot(v[0], v[1], v[2]); return [v[0] / l, v[1] / l, v[2] / l]; })(),
+    SKY_TOP: [0.29, 0.58, 0.92], FOG: [0.80, 0.91, 0.98],
+
+    /* ----- ติดตั้ง WebGL ----- */
+    init: function () {
+      var c = el.canvas3d, opts = { antialias: true, alpha: false, depth: true, premultipliedAlpha: false };
+      var gl = c.getContext('webgl', opts) || c.getContext('experimental-webgl', opts);
+      if (!gl) throw new Error('WebGL ไม่พร้อมใช้งาน');
+      this.gl = gl;
+      this.aniso = gl.getExtension('EXT_texture_filter_anisotropic') || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
+      this.prog = this.program(VS, FS);
+      this.U = {}; this.A = {};
+      var names = ['uModel', 'uVP', 'uNrmM', 'uUvX', 'uColor', 'uTex', 'uUseTex', 'uSunDir', 'uSunCol', 'uSky', 'uGround', 'uFogCol', 'uCam',
+        'uFog', 'uFogOn', 'uSpec', 'uShin', 'uMetal', 'uUnlit', 'uEmis', 'uAlpha', 'uCut'];
+      for (var i = 0; i < names.length; i++) this.U[names[i]] = gl.getUniformLocation(this.prog, names[i]);
+      this.A.pos = gl.getAttribLocation(this.prog, 'aPos');
+      this.A.nrm = gl.getAttribLocation(this.prog, 'aNrm');
+      this.A.uv = gl.getAttribLocation(this.prog, 'aUv');
+      this.skyProg = this.program(SKY_VS, SKY_FS);
+      this.SU = {};
+      var sn = ['uTop', 'uHor', 'uSunCol', 'uSun', 'uHz', 'uAsp'];
+      for (var j = 0; j < sn.length; j++) this.SU[sn[j]] = gl.getUniformLocation(this.skyProg, sn[j]);
+      this.skyA = gl.getAttribLocation(this.skyProg, 'aP');
+      this.skyBuf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.skyBuf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+      this.fx = el.canvas.getContext('2d');
+      this.buildWorld();
+      var self = this;
+      c.addEventListener('webglcontextlost', function (e) { e.preventDefault(); self.failed = true; onGraphicsLost(); }, false);
+      this.ready = true;
+      this.resize();
+    },
+    program: function (vs, fs) {
+      var gl = this.gl;
+      function sh(type, src) {
+        var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error('Shader: ' + gl.getShaderInfoLog(s));
+        return s;
+      }
+      var p = gl.createProgram();
+      gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p);
+      if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error('Program: ' + gl.getProgramInfoLog(p));
+      return p;
+    },
+    mesh: function (g) {
+      var gl = this.gl, m = { count: 0, ib: null };
+      function buf(arr) { var b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.STATIC_DRAW); return b; }
+      m.pb = buf(g.p); m.nb = buf(g.n); m.ub = buf(g.u);
+      if (g.i) {
+        m.ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, m.ib);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(g.i), gl.STATIC_DRAW); m.count = g.i.length;
+      } else m.count = g.p.length / 3;
+      return m;
+    },
+    texture: function (canvas) {
+      var gl = this.gl, t = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      if (this.aniso) {
+        var max = gl.getParameter(this.aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 1;
+        gl.texParameterf(gl.TEXTURE_2D, this.aniso.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, max));
+      }
+      return t;
+    },
+    mat: function (o) {
+      return { color: o.color || [1, 1, 1], tex: o.tex || null, uvx: o.uvx || [1, 1, 0, 0], spec: o.spec || 0, shin: o.shin || 16,
+        metal: o.metal || 0, unlit: o.unlit ? 1 : 0, emis: o.emis || [0, 0, 0], alpha: o.alpha == null ? 1 : o.alpha,
+        fog: o.fog === false ? 0 : 1, fogN: o.fogN || 26, fogF: o.fogF || 92, cut: o.cut == null ? 0.0 : o.cut, transparent: !!o.transparent };
+    },
+
+    /* ----- สร้างโลก: พื้นหญ้า ทางหิน กำแพง ต้นไม้ หิน เสาตัวเลข ภูเขา เมฆ ----- */
+    buildWorld: function () {
+      var self = this, T = {};
+      T.grass = this.texture(Tex.grass()); T.path = this.texture(Tex.path()); T.brick = this.texture(Tex.brick());
+      T.furS = this.texture(Tex.furStripe()); T.furG = this.texture(Tex.furGrain()); T.shadow = this.texture(Tex.shadow());
+      T.cloud = this.texture(Tex.cloud());
+      T.signs = {};
+      var symbols = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '−', '='];
+      for (var si = 0; si < symbols.length; si++) T.signs[symbols[si]] = this.texture(Tex.sign(symbols[si]));
+      this.T = T;
+
+      var G = {
+        sphere: this.mesh(Geo.sphere(1, 28, 20)), sphereLo: this.mesh(Geo.sphere(1, 14, 10)),
+        cyl: this.mesh(Geo.cylinder(1, 1, 1, 18, true)), cone: this.mesh(Geo.cylinder(0, 1, 1, 18, true)),
+        coneLo: this.mesh(Geo.cylinder(0, 1, 1, 9, true)), box: this.mesh(Geo.box(1, 1, 1, false)),
+        coin: this.mesh(Geo.cylinder(0.36, 0.36, 0.09, 26, true)), coinRim: this.mesh(Geo.torus(0.33, 0.035, 8, 26)),
+        torus: this.mesh(Geo.torus(0.3, 0.075, 10, 28)), quad: this.mesh(Geo.quad(1, 1)), flat: this.mesh(Geo.flatQuad(1, 1)),
+        ground: this.mesh(Geo.plane(220, 240)), road: this.mesh(Geo.plane(this.ROAD_W, 240)),
+        wall: this.mesh(Geo.box(0.6, 0.5, 240, true)),
+        rock: this.mesh(Geo.lowPoly(Geo.sphere(1, 8, 6), 0.28, 1)), rock2: this.mesh(Geo.lowPoly(Geo.sphere(1, 7, 5), 0.32, 7)),
+        leaf: this.mesh(Geo.lowPoly(Geo.sphere(1, 9, 7), 0.18, 3)), mountain: this.mesh(Geo.lowPoly(Geo.cylinder(0, 1, 1, 9, false), 0.12, 5))
+      };
+      this.G = G;
+      var M = {
+        grass: this.mat({ tex: T.grass, uvx: [1 / 3, 1 / 3, 0, 0], color: [1.05, 1.12, 0.95] }),
+        road: this.mat({ tex: T.path, uvx: [1 / this.ROAD_W, 1 / this.ROAD_W, 0.5, 0], color: [1.1, 1.05, 0.97], spec: 0.08, shin: 20 }),
+        wall: this.mat({ tex: T.brick, uvx: [1 / 1.2, 1 / 1.0, 0, 0], color: [0.95, 0.93, 0.9] }),
+        stone: this.mat({ tex: T.brick, uvx: [1, 1, 0, 0], color: [0.92, 0.9, 0.86] }),
+        bark: this.mat({ color: [0.45, 0.29, 0.16] }),
+        leafA: this.mat({ color: [0.20, 0.55, 0.22], spec: 0.05 }), leafB: this.mat({ color: [0.30, 0.66, 0.26], spec: 0.05 }),
+        pine: this.mat({ color: [0.13, 0.42, 0.24], spec: 0.04 }), rock: this.mat({ color: [0.58, 0.57, 0.55], spec: 0.1, shin: 10 }),
+        gold: this.mat({ color: [1.0, 0.75, 0.2], metal: 0.85, spec: 1.1, shin: 60, emis: [0.10, 0.06, 0.0] }),
+        mountain: this.mat({ color: [0.42, 0.55, 0.62], fogN: 70, fogF: 260 }), snow: this.mat({ color: [0.96, 0.97, 1.0], fogN: 70, fogF: 260 }),
+        shadow: this.mat({ color: [0, 0, 0], tex: T.shadow, unlit: true, alpha: 0.55, transparent: true, cut: 0.01 }),
+        cloud: this.mat({ tex: T.cloud, unlit: true, fog: false, transparent: true, cut: 0.01, alpha: 0.95 }),
+        furS: this.mat({ tex: T.furS, spec: 0.12, shin: 10 }), furG: this.mat({ tex: T.furG, spec: 0.12, shin: 10 }),
+        furDark: this.mat({ color: [0.55, 0.24, 0.07], spec: 0.1 }), white: this.mat({ color: [1.0, 0.96, 0.9], spec: 0.1 }),
+        pink: this.mat({ color: [1.0, 0.6, 0.66], spec: 0.25, shin: 20 }), eye: this.mat({ color: [0.06, 0.07, 0.1], spec: 1.3, shin: 80 }),
+        eyeHi: this.mat({ color: [1, 1, 1], unlit: true }), scarf: this.mat({ color: [0.10, 0.55, 0.84], spec: 0.35, shin: 30 }),
+        whisker: this.mat({ color: [0.95, 0.95, 0.95], unlit: true })
+      };
+      this.M = M;
+
+      var world = new Node();
+      var ground = world.add(new Node(G.ground, M.grass)); ground.p = [0, -0.03, -90];
+      var road = world.add(new Node(G.road, M.road)); road.p = [0, 0, -90];
+      for (var side = -1; side <= 1; side += 2) {
+        var wall = world.add(new Node(G.wall, M.wall)); wall.p = [side * (this.ROAD_W / 2 + 0.3), 0.25, -90];
+      }
+      this.groundNode = ground; this.roadNode = road;
+
+      // ภูเขาไกล (อยู่นิ่ง ให้ความรู้สึกระยะทาง)
+      var far = new Node();
+      for (var mi = 0; mi < 9; mi++) {
+        var hgt = 22 + hash(mi + 3) * 30, wid = 28 + hash(mi + 9) * 26;
+        var mnt = far.add(new Node(G.mountain, M.mountain));
+        mnt.p = [-150 + mi * 37 + (hash(mi) - 0.5) * 20, hgt / 2 - 2, -165 - hash(mi + 1) * 25];
+        mnt.s = [wid, hgt, wid * 0.8]; mnt.r = [0, hash(mi + 5) * 3, 0];
+        if (hgt > 38) { var snow = far.add(new Node(G.coneLo, M.snow)); snow.p = [mnt.p[0], hgt - 2 - hgt * 0.12, mnt.p[2] + 0.5]; snow.s = [wid * 0.26, hgt * 0.26, wid * 0.22]; snow.r = mnt.r.slice(); }
+      }
+      // เมฆ
+      for (var ci = 0; ci < 7; ci++) {
+        var cl = new Node(G.quad, M.cloud);
+        var cw = 34 + hash(ci + 30) * 30;
+        cl.p = [-120 + ci * 40 + hash(ci + 40) * 15, 32 + hash(ci + 50) * 26, -175 - hash(ci + 60) * 20]; cl.s = [cw, cw * 0.5, 1];
+        far.add(cl); this.clouds.push(cl);
+      }
+      this.farNode = far;
+
+      // ของประดับข้างทาง (หมุนเวียนใช้ซ้ำ)
+      var types = ['round', 'pine', 'rock', 'round', 'sign', 'pine', 'bush', 'round', 'rock', 'pine', 'sign', 'bush'];
+      var props = new Node();
+      for (var k = 0; k < this.PROP_COUNT; k++) {
+        var it = this.makeProp(types[k % types.length], k);
+        it.node.p[2] = 4 - k * this.PROP_GAP;
+        this.placeProp(it, k % 2 === 0 ? -1 : 1);
+        props.add(it.node); this.props.push(it);
+      }
+      // เหรียญ (สร้างเตรียมไว้ 8 เหรียญ)
+      var coinRoot = new Node();
+      for (var q = 0; q < 8; q++) {
+        var holder = coinRoot.add(new Node());
+        var spin = holder.add(new Node());
+        var disc = spin.add(new Node(G.coin, M.gold)); disc.r = [Math.PI / 2, 0, 0];
+        var rim = spin.add(new Node(G.coinRim, M.gold)); rim.r = [Math.PI / 2, 0, 0]; rim.p = [0, 0, 0.05];
+        var rim2 = spin.add(new Node(G.coinRim, M.gold)); rim2.r = [Math.PI / 2, 0, 0]; rim2.p = [0, 0, -0.05];
+        var csh = coinRoot.add(new Node(G.flat, M.shadow)); csh.s = [0.7, 1, 0.45];
+        holder.visible = false; csh.visible = false;
+        this.coins.push({ holder: holder, spin: spin, shadow: csh, active: false, z: 0, x: 0, ph: 0 });
+      }
+      this.cat = this.buildCat();
+      this.roots = [world, far, props, coinRoot, this.cat.root, this.cat.shadow];
+      self.coinsActive = 0;
+    },
+
+    makeProp: function (type, k) {
+      var G = this.G, M = this.M, n = new Node(), it = { node: n, type: type, bb: null, k: k };
+      var sh = n.add(new Node(G.flat, M.shadow)); sh.p = [0, 0.04, 0];
+      if (type === 'round') {
+        var tr = n.add(new Node(G.cyl, M.bark)); tr.p = [0, 0.8, 0]; tr.s = [0.18, 1.6, 0.18];
+        var l1 = n.add(new Node(G.leaf, M.leafA)); l1.p = [0, 2.3, 0]; l1.s = [1.25, 1.1, 1.25];
+        var l2 = n.add(new Node(G.leaf, M.leafB)); l2.p = [0.65, 1.95, 0.25]; l2.s = [0.8, 0.75, 0.8];
+        var l3 = n.add(new Node(G.leaf, M.leafB)); l3.p = [-0.6, 2.0, -0.2]; l3.s = [0.85, 0.75, 0.85];
+        sh.s = [3.2, 1, 3.2];
+      } else if (type === 'pine') {
+        var t2 = n.add(new Node(G.cyl, M.bark)); t2.p = [0, 0.6, 0]; t2.s = [0.15, 1.2, 0.15];
+        var c1 = n.add(new Node(G.cone, M.pine)); c1.p = [0, 1.7, 0]; c1.s = [1.15, 1.7, 1.15];
+        var c2 = n.add(new Node(G.cone, M.pine)); c2.p = [0, 2.5, 0]; c2.s = [0.9, 1.4, 0.9];
+        var c3 = n.add(new Node(G.cone, M.pine)); c3.p = [0, 3.2, 0]; c3.s = [0.6, 1.1, 0.6];
+        sh.s = [2.6, 1, 2.6];
+      } else if (type === 'rock') {
+        var r1 = n.add(new Node(G.rock, M.rock)); r1.p = [0, 0.35, 0]; r1.s = [0.9, 0.6, 0.75];
+        var r2 = n.add(new Node(G.rock2, M.rock)); r2.p = [0.75, 0.2, 0.3]; r2.s = [0.45, 0.35, 0.4];
+        sh.s = [2.4, 1, 1.8];
+      } else if (type === 'bush') {
+        var b1 = n.add(new Node(G.leaf, M.leafB)); b1.p = [0, 0.45, 0]; b1.s = [0.75, 0.55, 0.7];
+        var b2 = n.add(new Node(G.leaf, M.leafA)); b2.p = [0.6, 0.35, 0.15]; b2.s = [0.5, 0.4, 0.5];
+        sh.s = [2.0, 1, 1.5];
+      } else { // sign: เสาหินมีตัวเลขสีทองลอยอยู่ (โลกแห่งคณิตศาสตร์)
+        var col = n.add(new Node(G.box, M.stone)); col.p = [0, 1.0, 0]; col.s = [0.7, 2.0, 0.7];
+        var cap = n.add(new Node(G.box, M.gold)); cap.p = [0, 2.08, 0]; cap.s = [0.86, 0.16, 0.86];
+        var bb = n.add(new Node(G.quad, this.mat({ tex: this.T.signs['1'], unlit: true, cut: 0.5 }))); bb.p = [0, 2.95, 0]; bb.s = [1.1, 1.1, 1];
+        it.bb = bb;
+        sh.s = [1.6, 1, 1.6];
+      }
+      return it;
+    },
+    placeProp: function (it, side) {
+      var k = it.k + Math.floor(this.dist), rnd = hash(k * 3.1 + it.node.p[2]);
+      var near = it.type === 'sign' || it.type === 'bush' || it.type === 'rock';
+      it.node.p[0] = side * (this.ROAD_W / 2 + (near ? 1.3 : 2.2) + rnd * (near ? 1.5 : 4.5));
+      var sc = 0.8 + hash(k + 11.7) * 0.5;
+      it.node.s = [sc, sc, sc];
+      it.node.r[1] = hash(k + 5.3) * Math.PI * 2;
+      if (it.bb) {
+        var list = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '−', '='];
+        it.bb.mat.tex = this.T.signs[list[Math.floor(hash(k + 2.2) * list.length) % list.length]];
+      }
+    },
+
+    /** แมว 3 มิติ: ลำตัวลายส้ม หัวมีแก้ม หู ปากกระบอก ตา ผ้าพันคอปลิว ขา 4 ข้างวิ่งแบบควบ หางแกว่ง */
+    buildCat: function () {
+      var G = this.G, M = this.M, c = {};
+      c.root = new Node();
+      c.body = c.root.add(new Node());
+      var torso = c.body.add(new Node(G.sphere, M.furS)); torso.p = [0, 0.78, 0.02]; torso.r = [Math.PI / 2, 0, 0]; torso.s = [0.46, 0.68, 0.43];
+      var chest = c.body.add(new Node(G.sphere, M.white)); chest.p = [0, 0.74, -0.42]; chest.s = [0.3, 0.32, 0.22];
+      var hipL = c.body.add(new Node(G.sphere, M.furS)); hipL.p = [-0.2, 0.74, 0.38]; hipL.s = [0.22, 0.28, 0.3];
+      var hipR = c.body.add(new Node(G.sphere, M.furS)); hipR.p = [0.2, 0.74, 0.38]; hipR.s = [0.22, 0.28, 0.3];
+
+      // หัว
+      c.head = c.body.add(new Node()); c.head.p = [0, 1.18, -0.62];
+      var skull = c.head.add(new Node(G.sphere, M.furG)); skull.s = [0.4, 0.36, 0.37];
+      var cheekL = c.head.add(new Node(G.sphere, M.furG)); cheekL.p = [-0.2, -0.1, -0.08]; cheekL.s = [0.21, 0.17, 0.2];
+      var cheekR = c.head.add(new Node(G.sphere, M.furG)); cheekR.p = [0.2, -0.1, -0.08]; cheekR.s = [0.21, 0.17, 0.2];
+      c.ears = [];
+      for (var e = -1; e <= 1; e += 2) {
+        var ear = c.head.add(new Node()); ear.p = [e * 0.22, 0.27, 0.02]; ear.r = [0, 0, -e * 0.32];
+        var outer = ear.add(new Node(G.cone, M.furG)); outer.p = [0, 0.12, 0]; outer.s = [0.15, 0.3, 0.1];
+        var inner = ear.add(new Node(G.cone, M.pink)); inner.p = [0, 0.1, -0.045]; inner.s = [0.09, 0.2, 0.05];
+        c.ears.push(ear);
+      }
+      var muzL = c.head.add(new Node(G.sphere, M.white)); muzL.p = [-0.075, -0.13, -0.31]; muzL.s = [0.12, 0.095, 0.1];
+      var muzR = c.head.add(new Node(G.sphere, M.white)); muzR.p = [0.075, -0.13, -0.31]; muzR.s = [0.12, 0.095, 0.1];
+      var chin = c.head.add(new Node(G.sphere, M.white)); chin.p = [0, -0.2, -0.27]; chin.s = [0.09, 0.06, 0.08];
+      var nose = c.head.add(new Node(G.sphere, M.pink)); nose.p = [0, -0.06, -0.38]; nose.s = [0.055, 0.04, 0.04];
+      for (var ey = -1; ey <= 1; ey += 2) {
+        var eye = c.head.add(new Node(G.sphere, M.eye)); eye.p = [ey * 0.15, 0.03, -0.31]; eye.s = [0.075, 0.085, 0.05];
+        var hi = c.head.add(new Node(G.sphereLo, M.eyeHi)); hi.p = [ey * 0.15 + 0.025, 0.065, -0.355]; hi.s = [0.022, 0.022, 0.012];
+        for (var wk = 0; wk < 2; wk++) {
+          var wh = c.head.add(new Node(G.box, M.whisker)); wh.p = [ey * 0.27, -0.13 - wk * 0.04, -0.3]; wh.s = [0.3, 0.008, 0.008]; wh.r = [0, ey * 0.25, ey * (wk ? -0.12 : 0.1)];
+        }
+      }
+      // ผ้าพันคอ
+      var scarf = c.body.add(new Node(G.torus, M.scarf)); scarf.p = [0, 1.0, -0.47]; scarf.r = [1.1, 0, 0]; scarf.s = [1.05, 1.05, 1.05];
+      c.scarfTails = [];
+      for (var st = 0; st < 2; st++) {
+        var piv = c.body.add(new Node()); piv.p = [0.12 + st * 0.06, 1.08, -0.3];
+        var tail = piv.add(new Node(G.box, M.scarf)); tail.p = [0, 0, 0.24]; tail.s = [0.12, 0.03, 0.48];
+        c.scarfTails.push(piv);
+      }
+      // ขา 4 ข้าง (จุดหมุนที่สะโพก/ไหล่)
+      c.legs = [];
+      var hips = [[-0.2, 0.62, -0.38], [0.2, 0.62, -0.38], [-0.22, 0.64, 0.4], [0.22, 0.64, 0.4]];
+      for (var l = 0; l < 4; l++) {
+        var leg = c.body.add(new Node()); leg.p = hips[l];
+        var up = leg.add(new Node(G.cyl, M.furG)); up.p = [0, -0.26, 0]; up.s = [0.095, 0.5, 0.095];
+        var paw = leg.add(new Node(G.sphere, M.white)); paw.p = [0, -0.53, -0.03]; paw.s = [0.11, 0.075, 0.14];
+        var pad = leg.add(new Node(G.sphereLo, M.pink)); pad.p = [0, -0.55, 0.08]; pad.s = [0.06, 0.04, 0.04];
+        c.legs.push(leg);
+      }
+      // หาง (ต่อกันเป็นข้อ ๆ แกว่งเป็นคลื่น)
+      c.tail = [];
+      var parent = c.body.add(new Node()); parent.p = [0, 0.92, 0.66];
+      for (var t = 0; t < 8; t++) {
+        var seg = parent.add(new Node());
+        if (t > 0) seg.p = [0, 0.13, 0];
+        var tm = t === 7 ? M.furDark : M.furG;
+        var cyl = seg.add(new Node(G.cyl, tm)); cyl.p = [0, 0.065, 0]; cyl.s = [0.085 - t * 0.004, 0.15, 0.085 - t * 0.004];
+        var joint = seg.add(new Node(G.sphereLo, tm)); joint.s = [0.087 - t * 0.004, 0.087 - t * 0.004, 0.087 - t * 0.004];
+        c.tail.push(seg); parent = seg;
+      }
+      c.shadow = new Node(G.flat, this.M.shadow); c.shadow.p = [0, 0.05, 0.02]; c.shadow.s = [1.3, 1, 1.9];
+      return c;
+    },
+
+    /* ----- ขนาดจอ ----- */
+    resize: function () {
+      if (!this.ready) return;
+      var r = el.stage.getBoundingClientRect();
+      this.w = Math.max(1, r.width); this.h = Math.max(1, r.height); this.gh = this.h * 0.62;
+      this.dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      el.canvas3d.width = Math.round(this.w * this.dpr); el.canvas3d.height = Math.round(this.h * this.dpr);
+      var d2 = Math.min(window.devicePixelRatio || 1, 2);
+      el.canvas.width = Math.round(this.w * d2); el.canvas.height = Math.round(this.h * d2);
+      if (this.fx) this.fx.setTransform(d2, 0, 0, d2, 0, 0);
+      this.gl.viewport(0, 0, el.canvas3d.width, el.canvas3d.height);
+    },
+    reset: function () {
+      this.speed = 0; this.targetSpeed = 0; this.runPhase = 0;
+      this.catLane = 0; this.catLaneTarget = 0; this.catX = 0; this.swerveT = 0; this.jumpT = 0; this.stumbleT = 0; this.celebrateT = 0;
+      this.yaw = 0; this.targetYaw = 0; this.sad = false;
+      for (var i = 0; i < this.coins.length; i++) this.deactivateCoin(this.coins[i]);
+      this.particles = []; this.floaters = []; this.flashA = 0; this.displayCoins = 0;
+      this.animateCat(0);
+    },
+
+    /* ----- ฉายตำแหน่ง 3 มิติ → ตำแหน่งบนจอ (ใช้วาดเอฟเฟกต์ 2 มิติทับ) ----- */
+    project: function (x, y, z) {
+      var m = this.vp, cw = m[3] * x + m[7] * y + m[11] * z + m[15];
+      if (cw <= 0.0001) return { x: -999, y: -999 };
+      var cx = (m[0] * x + m[4] * y + m[8] * z + m[12]) / cw, cy = (m[1] * x + m[5] * y + m[9] * z + m[13]) / cw;
+      return { x: (cx * 0.5 + 0.5) * this.w, y: (1 - (cy * 0.5 + 0.5)) * this.h };
+    },
+    catPos: function () {
+      var p = this.project(this.catX, 1.25 + this.cat.root.p[1], 0);
+      p.u = this.h * 0.085;
+      return p;
+    },
+
+    /* ----- เหตุการณ์จากเกม ----- */
+    activateCoin: function (z, x) {
+      for (var i = 0; i < this.coins.length; i++) {
+        var c = this.coins[i];
+        if (!c.active) { c.active = true; c.z = z; c.x = x; c.ph = Math.random() * 6; c.holder.visible = true; c.shadow.visible = true; return; }
+      }
+    },
+    deactivateCoin: function (c) { c.active = false; c.holder.visible = false; c.shadow.visible = false; },
+    celebrate: function (choiceIdx, coinCount, streak) {
+      this.catLaneTarget = choiceIdx === 0 ? -1 : 1; this.swerveT = 0.32;
+      this.jumpT = this.JUMP_TIME; this.celebrateT = 1.0;
+      for (var i = 0; i < coinCount; i++) this.activateCoin(-5.2 - i * 1.25, this.catLaneTarget * this.LANE_X);
+      this.targetSpeed = (CFG.BASE_SPEED + Math.min(streak, 6) * 0.35) * 1.15;
+      var p = this.catPos();
+      this.burst(p.x, p.y - p.u * 0.6, streak >= CFG.COMBO_STREAK ? 26 : 14, ['#ffd23f', '#ffffff', '#4cc9f0', '#ff8a3d'], true);
+    },
+    stumble: function (choiceIdx) {
+      if (choiceIdx === 0 || choiceIdx === 1) { this.catLaneTarget = choiceIdx === 0 ? -1 : 1; this.swerveT = 0.3; }
+      this.stumbleT = this.STUMBLE_TIME; this.flashA = 0.3; this.flashRGB = '230,57,70';
+      this.targetSpeed = CFG.BASE_SPEED * 1.15;
+      var p = this.catPos(), f = this.project(this.catX, 0.05, 0);
+      this.burst(f.x, f.y, 12, ['#b9a68c', '#d8c8b0', '#9a8b75'], false);
+      this.floaters.push({ text: '−❤️', x: p.x, y: p.y - p.u * 1.2, life: 1.1, max: 1.1, color: '#e63946' });
+    },
+    perfect: function () {
+      this.flashA = 0.45; this.flashRGB = '255,210,63';
+      var c = ['#ffd23f', '#ff8a3d', '#4cc9f0', '#6bd16b', '#ff4fd8', '#ffffff'];
+      for (var i = 0; i < 4; i++) this.burst(this.w * (0.2 + i * 0.2), this.h * 0.35, 18, c, true);
+    },
+    collect: function (coin) {
+      var p = this.project(coin.x, 0.95, coin.z);
+      this.deactivateCoin(coin);
+      if (this.displayCoins < game.coins) this.displayCoins++;
+      el.hudCoins.textContent = this.displayCoins;
+      this.burst(p.x, p.y, 8, ['#ffd23f', '#fff3b0', '#ffb703'], true);
+      this.floaters.push({ text: '+1 🪙', x: p.x, y: p.y - 20, life: 0.9, max: 0.9, color: '#b8860b' });
+      audio.coin();
+    },
+    flushCoins: function () {
+      for (var i = 0; i < this.coins.length; i++) this.deactivateCoin(this.coins[i]);
+      this.displayCoins = game.coins;
+      el.hudCoins.textContent = this.displayCoins;
+    },
+    onEnd: function (win) {
+      for (var i = 0; i < this.coins.length; i++) if (this.coins[i].active) this.collect(this.coins[i]);
+      this.targetSpeed = 0;
+      if (win) { this.targetYaw = Math.PI; this.celebrateT = 1.2; this.jumpT = this.JUMP_TIME; this.catLaneTarget = 0; this.swerveT = 0; }
+      else this.sad = true;
+    },
+    finish: function () {
+      this.flushCoins();
+      this.speed = 0; this.targetSpeed = 0; this.yaw = this.targetYaw;
+      this.particles = []; this.floaters = []; this.flashA = 0; this.stumbleT = 0; this.jumpT = 0; this.celebrateT = 0;
+      this.catLane = this.catLaneTarget = 0;
+      this.animateCat(0);
+    },
+
+    /* ----- อัปเดตการเคลื่อนไหว ----- */
+    update: function (dt) {
+      this.time += dt;
+      var goal = this.stumbleT > 0 ? this.targetSpeed * 0.3 : this.targetSpeed;
+      this.speed += (goal - this.speed) * Math.min(1, dt * 3);
+      if (this.speed < 0.01) this.speed = 0;
+      var dz = this.speed * dt;
+      this.dist += dz;
+      this.runPhase += dt * this.speed * 1.45;
+      if (this.swerveT > 0) { this.swerveT -= dt; if (this.swerveT <= 0) this.catLaneTarget = 0; }
+      this.catLane += (this.catLaneTarget - this.catLane) * Math.min(1, dt * 10);
+      this.catX = this.catLane * this.LANE_X;
+      if (this.jumpT > 0) this.jumpT = Math.max(0, this.jumpT - dt);
+      if (this.stumbleT > 0) this.stumbleT = Math.max(0, this.stumbleT - dt);
+      if (this.celebrateT > 0) this.celebrateT = Math.max(0, this.celebrateT - dt);
+      this.yaw += (this.targetYaw - this.yaw) * Math.min(1, dt * 5);
+
+      // เลื่อนลายพื้น/ทาง/กำแพงให้ดูเหมือนวิ่งไปข้างหน้า
+      this.M.grass.uvx[3] = -frac(this.dist / 3);
+      this.M.road.uvx[3] = -frac(this.dist / this.ROAD_W);
+      this.M.wall.uvx[2] = -frac(this.dist / 1.2);
+
+      var span = this.PROP_COUNT * this.PROP_GAP;
+      for (var i = 0; i < this.props.length; i++) {
+        var it = this.props[i];
+        it.node.p[2] += dz;
+        if (it.node.p[2] > 7) { it.node.p[2] -= span; this.placeProp(it, it.node.p[0] < 0 ? -1 : 1); }
+        if (it.bb) {
+          it.bb.p[1] = 2.95 + (reducedMotion ? 0 : Math.sin(this.time * 2 + i) * 0.12);
+          it.bb.r[1] = Math.atan2(this.cam[0] - it.node.p[0], this.cam[2] - it.node.p[2]) - it.node.r[1];
+        }
+      }
+      for (var k = 0; k < this.coins.length; k++) {
+        var c = this.coins[k];
+        if (!c.active) continue;
+        c.z += dz;
+        c.x += (this.catX - c.x) * Math.min(1, dt * 6);
+        c.holder.p = [c.x, 0.95 + (reducedMotion ? 0 : Math.sin(this.time * 5 + c.ph) * 0.07), c.z];
+        c.spin.r[1] = reducedMotion ? 0 : this.time * 4 + c.ph;
+        c.shadow.p = [c.x, 0.05, c.z];
+        if (c.z >= -0.35) this.collect(c);
+      }
+      for (var m = 0; m < this.clouds.length; m++) {
+        var cl = this.clouds[m]; cl.p[0] += dt * 0.8;
+        if (cl.p[0] > 170) cl.p[0] = -170;
+      }
+      this.animateCat(dt);
+      this.updateFx(dt);
+    },
+    animateCat: function (dt) {
+      var c = this.cat; if (!c) return;
+      var run = this.speed > 0.3, ph = this.runPhase, amp = run ? Math.min(1, this.speed / 6) * 0.85 : 0;
+      var jumpP = this.jumpT > 0 ? 1 - this.jumpT / this.JUMP_TIME : 0;
+      var jh = this.jumpT > 0 ? Math.sin(Math.PI * jumpP) * 1.0 : 0;
+      c.root.p = [this.catX, jh + (run ? Math.abs(Math.sin(ph)) * 0.07 : 0), 0];
+      c.root.r[1] = this.yaw;
+      var roll = (this.catLaneTarget - this.catLane) * 0.28;
+      if (this.stumbleT > 0) roll += Math.sin(this.stumbleT * 36) * (reducedMotion ? 0.04 : 0.16);
+      c.body.r = [run ? Math.sin(ph * 2) * 0.05 : 0, 0, roll];
+      c.legs[0].r[0] = Math.sin(ph) * amp; c.legs[1].r[0] = Math.sin(ph + 0.6) * amp;
+      c.legs[2].r[0] = Math.sin(ph + Math.PI) * amp; c.legs[3].r[0] = Math.sin(ph + Math.PI + 0.6) * amp;
+      var happy = this.celebrateT > 0;
+      c.head.r = [this.sad ? 0.38 : happy ? -0.18 : (run ? Math.sin(ph * 2) * 0.04 : 0), 0, 0];
+      for (var e = 0; e < 2; e++) c.ears[e].r[2] = (e === 0 ? 1 : -1) * (0.32 + (this.sad ? 0.55 : 0));
+      var tailSpeed = run ? 7 : 2.5, tailAmp = run ? 0.2 : 0.12;
+      for (var t = 0; t < c.tail.length; t++) {
+        var seg = c.tail[t];
+        seg.r[0] = t === 0 ? (this.sad ? 1.6 : happy ? 0.35 : 0.75) : (this.sad ? 0.05 : -0.12);
+        seg.r[2] = reducedMotion ? 0 : Math.sin(this.time * tailSpeed - t * 0.55) * tailAmp;
+      }
+      for (var s = 0; s < c.scarfTails.length; s++) {
+        c.scarfTails[s].r[0] = -0.2 - Math.min(1, this.speed / 7) * 0.25 + (reducedMotion ? 0 : Math.sin(this.time * 14 + s * 1.7) * 0.18 * Math.min(1, this.speed / 5));
+        c.scarfTails[s].r[1] = (s ? 0.25 : 0.1);
+      }
+      var sc = 1 - jh * 0.35;
+      c.shadow.p = [this.catX, 0.05, 0.02]; c.shadow.s = [1.3 * sc, 1, 1.9 * sc];
+    },
+
+    /* ----- วาดภาพ ----- */
+    draw: function () {
+      if (!this.ready || this.failed) return;
+      var gl = this.gl;
+      var aspect = this.w / this.h, fov = (aspect < 0.9 ? 64 : aspect < 1.4 ? 56 : 50) * Math.PI / 180;
+      var shake = (this.stumbleT > 0 && !reducedMotion) ? Math.sin(this.time * 70) * 0.06 * (this.stumbleT / this.STUMBLE_TIME) : 0;
+      var bob = (this.speed > 0.3 && !reducedMotion) ? Math.sin(this.runPhase * 2) * 0.03 : 0;
+      this.cam = [this.catX * 0.35 + shake, 2.75 + bob, 5.6];
+      this.target = [this.catX * 0.5, 1.0, -7];
+      M4.perspective(this.proj, fov, aspect, 0.1, 320);
+      M4.lookAt(this.view, this.cam, this.target, [0, 1, 0]);
+      M4.mul(this.vp, this.proj, this.view);
+
+      // ท้องฟ้า
+      gl.disable(gl.DEPTH_TEST); gl.depthMask(false); gl.disable(gl.BLEND);
+      gl.useProgram(this.skyProg);
+      var hz = this.ndcY(this.cam[0], this.cam[1], this.cam[2] - 1000);
+      var sun = this.ndc(this.cam[0] + 330, this.cam[1] + 260, this.cam[2] - 900);
+      gl.uniform3fv(this.SU.uTop, this.SKY_TOP); gl.uniform3fv(this.SU.uHor, this.FOG);
+      gl.uniform3f(this.SU.uSunCol, 1.0, 0.92, 0.7); gl.uniform2f(this.SU.uSun, sun[0], sun[1]);
+      gl.uniform1f(this.SU.uHz, hz); gl.uniform1f(this.SU.uAsp, aspect);
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.skyBuf);
+      gl.enableVertexAttribArray(this.skyA); gl.vertexAttribPointer(this.skyA, 2, gl.FLOAT, false, 0, 0);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      gl.disableVertexAttribArray(this.skyA);
+
+      // วัตถุ 3 มิติ
+      gl.useProgram(this.prog);
+      gl.enable(gl.DEPTH_TEST); gl.depthMask(true); gl.depthFunc(gl.LEQUAL);
+      gl.clear(gl.DEPTH_BUFFER_BIT);
+      var U = this.U;
+      gl.uniformMatrix4fv(U.uVP, false, this.vp);
+      gl.uniform3fv(U.uSunDir, this.sunDir); gl.uniform3f(U.uSunCol, 1.02, 0.94, 0.80);
+      gl.uniform3f(U.uSky, 0.56, 0.65, 0.78); gl.uniform3f(U.uGround, 0.36, 0.34, 0.25);
+      gl.uniform3fv(U.uFogCol, this.FOG); gl.uniform3fv(U.uCam, this.cam); gl.uniform1i(U.uTex, 0);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.enableVertexAttribArray(this.A.pos); gl.enableVertexAttribArray(this.A.nrm); gl.enableVertexAttribArray(this.A.uv);
+      this.trans = [];
+      var I = M4.create();
+      for (var i = 0; i < this.roots.length; i++) this.renderNode(this.roots[i], I);
+      // วัตถุโปร่งแสง (เงา เมฆ) วาดทีหลัง เรียงจากไกลไปใกล้
+      this.trans.sort(function (a, b) { return a.world[14] - b.world[14]; });
+      gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
+      for (var t = 0; t < this.trans.length; t++) this.drawMesh(this.trans[t].mesh, this.trans[t].mat, this.trans[t].world);
+      gl.depthMask(true); gl.disable(gl.BLEND);
+
+      // เอฟเฟกต์ 2 มิติวาดทับ
+      var ctx = this.fx;
+      if (ctx) { ctx.clearRect(0, 0, this.w, this.h); this.drawFx(ctx); this.drawCatFx(ctx); }
+    },
+    ndc: function (x, y, z) {
+      var m = this.vp, w = m[3] * x + m[7] * y + m[11] * z + m[15];
+      if (w <= 0) return [5, 5];
+      return [(m[0] * x + m[4] * y + m[8] * z + m[12]) / w, (m[1] * x + m[5] * y + m[9] * z + m[13]) / w];
+    },
+    ndcY: function (x, y, z) { return this.ndc(x, y, z)[1]; },
+    renderNode: function (node, parent) {
+      if (!node.visible) return;
+      M4.compose(node.local, node.p, node.r, node.s);
+      M4.mul(node.world, parent, node.local);
+      if (node.mesh) {
+        if (node.mat.transparent) this.trans.push(node);
+        else this.drawMesh(node.mesh, node.mat, node.world);
+      }
+      for (var i = 0; i < node.kids.length; i++) this.renderNode(node.kids[i], node.world);
+    },
+    drawMesh: function (mesh, m, world) {
+      var gl = this.gl, U = this.U, A = this.A;
+      gl.uniformMatrix4fv(U.uModel, false, world);
+      gl.uniformMatrix3fv(U.uNrmM, false, M4.normal(this.nm, world));
+      gl.uniform3fv(U.uColor, m.color); gl.uniform4fv(U.uUvX, m.uvx);
+      if (m.tex) { gl.bindTexture(gl.TEXTURE_2D, m.tex); gl.uniform1f(U.uUseTex, 1); } else gl.uniform1f(U.uUseTex, 0);
+      gl.uniform1f(U.uSpec, m.spec); gl.uniform1f(U.uShin, m.shin); gl.uniform1f(U.uMetal, m.metal);
+      gl.uniform1f(U.uUnlit, m.unlit); gl.uniform3fv(U.uEmis, m.emis); gl.uniform1f(U.uAlpha, m.alpha);
+      gl.uniform1f(U.uFogOn, m.fog); gl.uniform2f(U.uFog, m.fogN, m.fogF); gl.uniform1f(U.uCut, m.cut);
+      gl.bindBuffer(gl.ARRAY_BUFFER, mesh.pb); gl.vertexAttribPointer(A.pos, 3, gl.FLOAT, false, 0, 0);
+      gl.bindBuffer(gl.ARRAY_BUFFER, mesh.nb); gl.vertexAttribPointer(A.nrm, 3, gl.FLOAT, false, 0, 0);
+      gl.bindBuffer(gl.ARRAY_BUFFER, mesh.ub); gl.vertexAttribPointer(A.uv, 2, gl.FLOAT, false, 0, 0);
+      if (mesh.ib) { gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.ib); gl.drawElements(gl.TRIANGLES, mesh.count, gl.UNSIGNED_SHORT, 0); }
+      else gl.drawArrays(gl.TRIANGLES, 0, mesh.count);
+    },
+    /** ประกายดาวรอบตัวแมวตอนดีใจ และเครื่องหมาย ?! ตอนพลาด */
+    drawCatFx: function (ctx) {
+      var p = this.catPos(), u = p.u;
+      if (this.celebrateT > 0) {
+        for (var k = 0; k < 5; k++) {
+          var a = this.time * 3 + k * (Math.PI * 2 / 5);
+          this.star(ctx, p.x + Math.cos(a) * u * 1.6, p.y + Math.sin(a) * u * 0.8, u * 0.2 * this.celebrateT, '#ffd23f');
+        }
+      }
+      if (this.stumbleT > 0) {
+        ctx.font = '600 ' + Math.round(u * 0.8) + 'px Mitr, Tahoma, sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.lineWidth = 4; ctx.strokeStyle = '#fff'; ctx.fillStyle = '#e63946';
+        ctx.strokeText('?!', p.x + u * 1.0, p.y - u * 0.9); ctx.fillText('?!', p.x + u * 1.0, p.y - u * 0.9);
+      }
+    }
+  }, FX);
+
+  /* ---------- เลือกโหมดภาพ: 3 มิติ (ถ้ารองรับ) หรือ 2 มิติ (สำรอง) ---------- */
+  var scene = scene2D;
+  function setGraphics(want3D) {
+    var use3D = false;
+    if (want3D && !scene3D.failed) {
+      if (!scene3D.ready) {
+        try { scene3D.init(); } catch (e) { scene3D.failed = true; if (window.console) console.warn('[CAT MATH RUN] ใช้ภาพ 2 มิติแทน:', e && e.message); }
+      }
+      use3D = scene3D.ready && !scene3D.failed;
+    }
+    scene = use3D ? scene3D : scene2D;
+    el.canvas3d.hidden = !use3D;
+    scene.resize(); scene.reset();
+    if (!rafId) scene.draw();
+    renderGfxButton();
+  }
+  function onGraphicsLost() {
+    var coins = scene3D.displayCoins, wasRunning = !!rafId;
+    scene = scene2D; el.canvas3d.hidden = true;
+    scene2D.resize(); scene2D.reset();
+    scene2D.displayCoins = coins;
+    if (game.state === STATE.PLAYING || game.state === STATE.ANSWERED) scene2D.targetSpeed = CFG.BASE_SPEED;
+    if (!wasRunning) scene2D.draw();
+    renderGfxButton();
+  }
+  function renderGfxButton() {
+    var supported = !scene3D.failed;
+    el.gfxBtn.hidden = !supported; el.gfxNote.hidden = supported;
+    var on = scene === scene3D;
+    el.gfxBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    el.gfxBtn.textContent = on ? '🧊 ภาพ 3 มิติ: เปิด' : '🖼️ ภาพ 3 มิติ: ปิด (ประหยัดแบต)';
+  }
+
+  /* =====================================================================
+   * 10) ลูปแอนิเมชัน + ตัวจับเวลา (คำนวณจากเวลาจริงด้วย performance.now())
+   * ===================================================================== */
+  var rafId = 0, lastFrame = 0, lastSec = null;
+
+  function startLoop() {
+    if (rafId) return;
+    lastFrame = performance.now();
+    rafId = requestAnimationFrame(frame);
+  }
+  function stopLoop() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+  function frame(now) {
+    rafId = requestAnimationFrame(frame);
+    var dt = (now - lastFrame) / 1000; lastFrame = now;
+    if (!(dt > 0)) dt = 0; if (dt > 0.1) dt = 0.1;
+    checkTimer();
+    scene.update(dt);
+    scene.draw();
+  }
+  function checkTimer() {
+    if (game.state !== STATE.PLAYING || game.paused) return;
+    var rem = game.deadline - performance.now();
+    updateTimerUI(rem);
+    if (rem <= 0) handleTimeout();
+  }
+  function updateTimerUI(rem) {
+    var limit = game.timeLimit;
+    var r = Math.max(0, Math.min(limit, rem));
+    var sec = Math.ceil(r / 1000);
+    if (sec !== lastSec) {
+      el.timerNum.textContent = sec;
+      el.timerNum.setAttribute('aria-label', 'เวลาที่เหลือ ' + sec + ' วินาที');
+      if (lastSec !== null && sec > 0 && sec <= 3 && game.state === STATE.PLAYING) audio.tick();
+      lastSec = sec;
+    }
+    el.timerBar.style.transform = 'scaleX(' + (r / limit).toFixed(4) + ')';
+    var danger = r <= 2000;
+    el.timerWrap.classList.toggle('danger', danger);
+    el.timerNum.classList.toggle('danger-num', danger && game.state === STATE.PLAYING);
+  }
+
+  // ซ่อนแท็บ/สลับแอประหว่างเล่น → หยุดเวลาชั่วคราว ไม่ให้เสียหัวใจโดยไม่ตั้งใจ
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      if (game.state === STATE.PLAYING && !game.paused) {
+        game.paused = true;
+        game.pausedRemaining = Math.max(0, game.deadline - performance.now());
+      }
+    } else {
+      if (game.paused) {
+        game.deadline = performance.now() + game.pausedRemaining;
+        game.paused = false;
+      }
+      lastFrame = performance.now();
+    }
+  });
+
+  /* =====================================================================
+   * 11) การแสดงผล HUD / โจทย์ / ข้อความ
+   * ===================================================================== */
+  function renderHud() {
+    el.hudScore.textContent = game.score;
+    el.hudCoins.textContent = scene.displayCoins;
+    var hs = el.hudHearts.children;
+    for (var i = 0; i < hs.length; i++) {
+      var alive = i < game.hearts;
+      hs[i].textContent = alive ? '❤️' : '🤍';
+      hs[i].classList.toggle('lost', !alive);
+    }
+    el.hudHearts.setAttribute('aria-label', 'หัวใจเหลือ ' + game.hearts + ' จาก ' + CFG.MAX_HEARTS + ' ดวง');
+    el.hudProgress.textContent = game.answered + '/' + CFG.TOTAL_Q;
+    el.hudRemain.textContent = 'เหลือ ' + (CFG.TOTAL_Q - game.answered) + ' ข้อ';
+    el.hudStreak.textContent = game.streak;
+    el.hudBest.textContent = game.maxStreak;
+  }
+
+  function setChoicesDisabled(disabled) {
+    for (var i = 0; i < el.choices.length; i++) el.choices[i].disabled = disabled;
+  }
+
+  function resetQuestionPanel() {
+    el.qLabel.textContent = 'กด “เริ่มเกม” เพื่อออกวิ่ง!';
+    el.equation.textContent = '? + ? = ?';
+    el.equation.removeAttribute('aria-label');
+    el.feedback.textContent = ''; el.feedback.className = '';
+    for (var i = 0; i < el.choices.length; i++) {
+      var b = el.choices[i];
+      b.classList.remove('is-correct', 'is-wrong', 'faded');
+      b.querySelector('.num').textContent = '?';
+      b.querySelector('.mark').textContent = '';
+      b.setAttribute('aria-label', i === 0 ? 'ตัวเลือกซ้าย' : 'ตัวเลือกขวา');
+    }
+    setChoicesDisabled(true);
+    lastSec = null; updateTimerUI(game.timeLimit);
+    el.timerNum.classList.remove('danger-num');
+    setMood('normal');
+  }
+
+  /** แสดงจำนวน: จำนวนลบใช้เครื่องหมายลบ (−) แบบตัวพิมพ์ และใส่วงเล็บเมื่ออยู่ในโจทย์ เช่น (−5) */
+  function fmtNum(n) { return n < 0 ? '−' + (-n) : String(n); }
+  function fmtTerm(n) { return n < 0 ? '(−' + (-n) + ')' : String(n); }
+  function speakNum(n) { return n < 0 ? 'ลบ ' + (-n) : String(n); }
+  function eqText(q) { return fmtTerm(q.a) + (q.op === '+' ? ' + ' : ' − ') + fmtTerm(q.b); }
+  function fullEq(q) { return eqText(q) + ' = ' + fmtNum(q.answer); }
+  /** คำใบ้สั้น ๆ เมื่อตอบผิดเรื่องการลบด้วยจำนวนลบ: a − (−b) = a + b */
+  function hintFor(q) {
+    if (q.level !== 'integer' || q.op !== '-' || q.b >= 0) return '';
+    return ' (ลบด้วยจำนวนลบ = บวก: ' + fmtTerm(q.a) + ' + ' + (-q.b) + ')';
+  }
+
+  function renderQuestion(q) {
+    el.qLabel.textContent = 'ข้อที่ ' + game.qIndex + ' จาก ' + CFG.TOTAL_Q + ' · ระดับ' + CFG.LEVELS[game.level].name;
+    el.equation.textContent = eqText(q) + ' = ?';
+    el.equation.classList.toggle('long', el.equation.textContent.length > 11);
+    el.equation.setAttribute('aria-label', 'ข้อที่ ' + game.qIndex + ': ' + speakNum(q.a) + (q.op === '+' ? ' บวก ' : ' ลบ ') + speakNum(q.b) + ' เท่ากับเท่าไร');
+    for (var i = 0; i < el.choices.length; i++) {
+      var b = el.choices[i];
+      b.classList.remove('is-correct', 'is-wrong', 'faded');
+      b.querySelector('.num').textContent = fmtNum(q.choices[i]);
+      b.querySelector('.mark').textContent = '';
+      b.setAttribute('aria-label', (i === 0 ? 'ตัวเลือกซ้าย ' : 'ตัวเลือกขวา ') + speakNum(q.choices[i]));
+    }
+    el.feedback.textContent = ''; el.feedback.className = '';
+    setMood('normal');
+  }
+
+  /** แสดงผลถูก/ผิดบนปุ่ม ด้วยสี + สัญลักษณ์ + ข้อความ (ไม่พึ่งสีอย่างเดียว) */
+  function revealAnswer(q, pickedIdx) {
+    for (var i = 0; i < el.choices.length; i++) {
+      var b = el.choices[i], mark = b.querySelector('.mark');
+      if (i === q.correctIndex) { b.classList.add('is-correct'); mark.textContent = '✔ ถูก'; }
+      else if (i === pickedIdx) { b.classList.add('is-wrong'); mark.textContent = '✖ ผิด'; }
+      else b.classList.add('faded');
+    }
+  }
+
+  function showBanner(text, cls) {
+    el.banner.className = '';
+    el.banner.textContent = text;
+    void el.banner.offsetWidth;
+    el.banner.className = 'show' + (cls ? ' ' + cls : '');
+  }
+
+  /* =====================================================================
+   * 12) ลำดับการเล่น (State Machine)
+   * ===================================================================== */
+  function hideOverlays() {
+    el.startScreen.hidden = true; el.overScreen.hidden = true; el.winScreen.hidden = true;
+  }
+
+  function startGame() {
+    clearTimers();
+    game.round++;                     // โทเคนรอบใหม่: ตัวจับเวลาของรอบเก่าจะไม่มีผล
+    game.timeLimit = CFG.LEVELS[game.level].time;
+    resetGameData();
+    audio.unlock();
+    hideOverlays();
+    el.confetti.innerHTML = '';
+    scene.resize();
+    scene.reset();
+    scene.targetSpeed = CFG.BASE_SPEED * (scene === scene3D ? 1.15 : 1);
+    resetQuestionPanel();
+    renderHud();
+    game.state = STATE.ANSWERED;      // สถานะกลางก่อนข้อแรก
+    nextQuestion();
+    startLoop();
+  }
+
+  function nextQuestion() {
+    if (game.state !== STATE.ANSWERED) return;                  // รับเฉพาะช่วงรอข้อถัดไป
+    if (game.hearts <= 0 || game.qIndex >= CFG.TOTAL_Q) return; // ป้องกันเกิน 10 ข้อ
+    game.nextTimer = null;
+    game.question = MathCore.generateQuestion(game.level, game.ops[game.qIndex], game.usedKeys);
+    game.qIndex++;
+    renderQuestion(game.question);
+    game.paused = false;
+    game.deadline = performance.now() + game.timeLimit;          // รีเซ็ตเวลาใหม่ทุกข้อ
+    lastSec = null; updateTimerUI(game.timeLimit);
+    game.state = STATE.PLAYING;
+    // ตัวตรวจสำรอง: ให้หมดเวลาตรงเวลาแม้เครื่องช้า/เฟรมกระตุก (checkTimer ตรวจสถานะเองจึงไม่หักหัวใจซ้ำ)
+    if (game.backupTimer) clearTimeout(game.backupTimer);
+    game.backupTimer = setTimeout(checkTimer, game.timeLimit + 15);
+    setChoicesDisabled(false);
+  }
+
+  function answer(idx) {
+    if (game.state !== STATE.PLAYING || !game.question) return; // คลิกซ้ำ/คลิกหลังจบ จะไม่มีผล
+    game.state = STATE.ANSWERED;                                 // ล็อกทันที: 1 ข้อ ตอบได้ครั้งเดียว
+    setChoicesDisabled(true);
+    var q = game.question;
+    game.answered++;
+    if (q.choices[idx] === q.answer) onCorrect(q, idx);
+    else onMiss(q, idx, 'wrong');
+    resolveQuestion();
+  }
+
+  function handleTimeout() {
+    if (game.state !== STATE.PLAYING || !game.question) return; // หักหัวใจได้ครั้งเดียวต่อข้อ
+    game.state = STATE.ANSWERED;
+    setChoicesDisabled(true);
+    updateTimerUI(0);
+    game.answered++;
+    onMiss(game.question, -1, 'timeout');
+    resolveQuestion();
+  }
+
+  function onCorrect(q, idx) {
+    game.correct++;
+    game.streak++;
+    if (game.streak > game.maxStreak) game.maxStreak = game.streak;
+    var pts = Scoring.pointsFor(game.streak);
+    var coins = Scoring.coinsFor(game.streak);
+    game.score += pts;
+    game.coins += coins;
+
+    revealAnswer(q, idx);
+    el.feedback.className = 'ok';
+    el.feedback.textContent = '✔ ถูกต้อง! ' + fullEq(q) +
+      ' · +' + pts + ' คะแนน' + (pts > CFG.BASE_POINTS ? ' (โบนัส Streak)' : '');
+    setMood('happy');
+    scene.celebrate(idx, coins, game.streak);
+
+    if (game.streak >= CFG.TOTAL_Q) { showBanner('PERFECT RUN!', 'perfect'); scene.perfect(); audio.combo(); }
+    else if (game.streak >= CFG.COMBO_STREAK) { showBanner('COMBO x' + game.streak + '!', 'combo'); audio.combo(); }
+    else if (game.streak >= CFG.BONUS_FROM_STREAK) { showBanner('🔥 STREAK x' + game.streak + ' +' + CFG.BONUS_POINTS); audio.correct(); }
+    else { showBanner('+' + pts); audio.correct(); }
+  }
+
+  function onMiss(q, idx, kind) {
+    game.hearts = Math.max(0, game.hearts - 1);
+    game.streak = 0;
+    if (kind === 'timeout') game.timeouts++; else game.wrong++;
+
+    revealAnswer(q, idx);
+    el.feedback.className = 'bad';
+    el.feedback.textContent = (kind === 'timeout' ? '⏰ หมดเวลา! ' : '✖ ยังไม่ถูกนะ ') + 'คำตอบที่ถูกคือ ' + fullEq(q) + hintFor(q);
+    setMood('sad');
+    scene.stumble(idx);
+    showBanner(kind === 'timeout' ? '⏰ หมดเวลา!' : '✖ พลาด!', 'bad');
+    if (!reducedMotion) restartAnim(el.stage, 'shake');
+    var lostHeart = el.hudHearts.children[game.hearts];
+    if (lostHeart) restartAnim(lostHeart, 'pop');
+    audio.wrong();
+  }
+
+  function resolveQuestion() {
+    renderHud();
+    game.question = null;
+    if (game.hearts <= 0) { endGame(false); return; }           // หัวใจหมด → จบทันที
+    if (game.answered >= CFG.TOTAL_Q) { endGame(true); return; } // ครบ 10 ข้อและยังมีหัวใจ → ชนะ
+    var round = game.round, ok = game.streak > 0;
+    game.nextTimer = setTimeout(function () {
+      if (round === game.round) nextQuestion();
+    }, ok ? CFG.NEXT_DELAY_OK : CFG.NEXT_DELAY_BAD);
+  }
+
+  function endGame(win) {
+    if (game.state === STATE.GAME_OVER || game.state === STATE.VICTORY) return;
+    clearTimers();
+    game.state = win ? STATE.VICTORY : STATE.GAME_OVER; // ตั้งแต่บรรทัดนี้ ไม่สามารถตอบหรือเปลี่ยนคะแนนได้อีก
+    game.question = null;
+    setChoicesDisabled(true);
+    el.timerNum.classList.remove('danger-num');
+    scene.onEnd(win);
+    if (game.score > bestOf(game.level)) { saved.best[game.level] = game.score; store.save(saved); }
+    var round = game.round;
+    game.endTimer = setTimeout(function () {
+      if (round !== game.round) return;
+      showEndScreen(win);
+    }, CFG.END_DELAY);
+  }
+
+  function statHTML(label, value, wide) {
+    return '<div class="stat' + (wide ? ' wide' : '') + '"><span>' + label + '</span><b>' + value + '</b></div>';
+  }
+  function statsBlock() {
+    var miss = game.wrong + game.timeouts, unanswered = CFG.TOTAL_Q - game.answered;
+    var html = statHTML('⭐ คะแนนรวม', game.score) + statHTML('🪙 เหรียญ', game.coins) +
+      statHTML('✔ ตอบถูก', game.correct + ' / ' + CFG.TOTAL_Q) +
+      statHTML('✖ ตอบผิด', miss + ' ข้อ' + (game.timeouts ? '<small>(หมดเวลา ' + game.timeouts + ' ข้อ)</small>' : '')) +
+      statHTML('🔥 Streak สูงสุด', game.maxStreak) + statHTML('❤️ หัวใจที่เหลือ', game.hearts + ' / ' + CFG.MAX_HEARTS) +
+      statHTML('📗 ระดับ', CFG.LEVELS[game.level].name, unanswered === 0);
+    if (unanswered > 0) html += statHTML('📘 ยังไม่ได้ทำ', unanswered + ' ข้อ');
+    return html;
+  }
+
+  function showEndScreen(win) {
+    game.endTimer = null;
+    scene.finish();
+    stopLoop();                 // หยุดแอนิเมชันทั้งหมดที่ไม่จำเป็น
+    scene.draw();
+    renderHud();
+    if (win) {
+      var stars = game.correct >= 10 ? 3 : game.correct >= 8 ? 2 : 1;
+      el.winStars.textContent = '★★★'.slice(0, stars) + '☆☆☆'.slice(0, 3 - stars);
+      el.winStars.setAttribute('aria-label', 'ได้ ' + stars + ' ดาว จาก 3');
+      el.winStats.innerHTML = statsBlock();
+      el.winMsg.textContent = game.correct === CFG.TOTAL_Q ? 'สุดยอด! ตอบถูกครบทุกข้อ 🎉' :
+        'เก่งมาก! ผ่านครบ 10 ข้อแล้ว ลองทำให้ถูกครบทุกข้อดูนะ';
+      makeConfetti();
+      el.winScreen.hidden = false;
+      audio.win();
+      el.winRetry.focus();
+    } else {
+      el.overStats.innerHTML = statsBlock();
+      el.overMsg.textContent = game.correct >= 5 ? 'เกือบแล้ว! อีกนิดเดียวก็ผ่าน สู้ ๆ นะ 💪' : 'ไม่เป็นไร ค่อย ๆ คิด แล้วลองใหม่อีกครั้งนะ 😺';
+      el.overScreen.hidden = false;
+      audio.lose();
+      el.overRetry.focus();
+    }
+  }
+
+  function makeConfetti() {
+    el.confetti.innerHTML = '';
+    if (reducedMotion) return;
+    var colors = ['#ffd23f', '#ff8a3d', '#4cc9f0', '#6bd16b', '#ff4fd8', '#e63946'];
+    for (var i = 0; i < 36; i++) {
+      var piece = document.createElement('i');
+      piece.style.left = (Math.random() * 100).toFixed(1) + '%';
+      piece.style.background = colors[i % colors.length];
+      piece.style.animationDuration = (2.2 + Math.random() * 2).toFixed(2) + 's';
+      piece.style.animationDelay = (Math.random() * 2).toFixed(2) + 's';
+      el.confetti.appendChild(piece);
+    }
+  }
+
+  function goHome() {
+    clearTimers();
+    game.round++;
+    stopLoop();
+    game.state = STATE.READY;
+    resetGameData();
+    scene.reset();
+    resetQuestionPanel();
+    renderHud();
+    hideOverlays();
+    el.confetti.innerHTML = '';
+    renderLevelButtons();
+    el.startScreen.hidden = false;
+    scene.resize(); scene.draw();
+    el.startBtn.focus({ preventScroll: true });
+  }
+
+  /* =====================================================================
+   * 13) การควบคุม: เมาส์ / สัมผัส / คีย์บอร์ด
+   * ===================================================================== */
+  el.startBtn.addEventListener('click', function () { if (game.state === STATE.READY) startGame(); });
+  el.overRetry.addEventListener('click', function () { if (game.state === STATE.GAME_OVER) startGame(); });
+  el.winRetry.addEventListener('click', function () { if (game.state === STATE.VICTORY) startGame(); });
+  el.overHome.addEventListener('click', goHome);
+  el.winHome.addEventListener('click', goHome);
+  el.choices[0].addEventListener('click', function () { answer(0); });
+  el.choices[1].addEventListener('click', function () { answer(1); });
+  for (var sb = 0; sb < el.soundBtns.length; sb++) el.soundBtns[sb].addEventListener('click', toggleSound);
+  for (var lb = 0; lb < el.levelBtns.length; lb++) {
+    el.levelBtns[lb].addEventListener('click', function () { selectLevel(this.getAttribute('data-level')); });
+  }
+  el.gfxBtn.addEventListener('click', function () {
+    if (game.state !== STATE.READY) return;
+    prefer3D = scene !== scene3D;
+    saved.gfx = prefer3D ? '3d' : '2d'; store.save(saved);
+    setGraphics(prefer3D);
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.repeat || game.state !== STATE.PLAYING) return;
+    var k = e.key;
+    if (k === 'ArrowLeft' || k === '1' || k === 'a' || k === 'A') { e.preventDefault(); answer(0); }
+    else if (k === 'ArrowRight' || k === '2' || k === 'd' || k === 'D') { e.preventDefault(); answer(1); }
+  });
+
+  var resizeTimer = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () { scene.resize(); if (!rafId) scene.draw(); }, 80);
+  });
+
+  /* =====================================================================
+   * 14) ชุดทดสอบอัตโนมัติ – เปิด Console (F12) แล้วพิมพ์ CatMathRun.selfTest()
+   * ===================================================================== */
+  function selfTest(rounds) {
+    rounds = rounds || 1000;
+    var errors = [], levels = ['easy', 'medium', 'hard', 'integer'];
+    for (var li = 0; li < levels.length; li++) {
+      var lv = levels[li], min = CFG.LEVELS[lv].min, max = CFG.LEVELS[lv].max;
+      for (var r = 0; r < rounds; r++) {
+        var used = new Set(), ops = MathCore.buildOpSequence(CFG.TOTAL_Q), plus = 0;
+        for (var i = 0; i < CFG.TOTAL_Q; i++) {
+          var before = used.size, q = MathCore.generateQuestion(lv, ops[i], used), tag = lv + ' ' + q.key;
+          if (q.op === '+') plus++;
+          if (used.size !== before + 1) errors.push('โจทย์ซ้ำ ' + tag);
+          var real = q.op === '+' ? q.a + q.b : q.a - q.b;
+          if (real !== q.answer) errors.push('คำตอบผิด ' + tag);
+          if (q.answer < min || q.answer > max) errors.push('คำตอบเกินช่วง ' + tag);
+          if (lv === 'integer') {
+            var RR = CFG.LEVELS.integer.range;
+            if (q.a < -RR || q.a > RR || q.b < -RR || q.b > RR || q.a === 0 || q.b === 0) errors.push('ตัวเลขไม่อยู่ในช่วง ' + tag);
+            if (!(q.a < 0 || q.b < 0 || q.answer < 0)) errors.push('ไม่มีจำนวนลบ ' + tag);
+          } else if (lv === 'easy') {
+            if (q.a < 0 || q.a > 9 || q.b < 0 || q.b > 9) errors.push('ไม่ใช่เลข 1 หลัก ' + tag);
+          } else {
+            if (q.a < 10 || q.a > 99 || q.b < 1 || q.b > 99) errors.push('ตัวเลขไม่อยู่ในช่วง ' + tag);
+            var regroup = q.op === '+' ? MathCore.hasCarry(q.a, q.b) : MathCore.hasBorrow(q.a, q.b);
+            if (regroup !== (lv === 'hard')) errors.push('เงื่อนไขทด/ยืมไม่ตรงระดับ ' + tag);
+          }
+          if (q.choices.length !== 2 || q.choices[0] === q.choices[1]) errors.push('ตัวเลือกซ้ำ ' + tag);
+          if (q.choices[q.correctIndex] !== q.answer) errors.push('ตำแหน่งคำตอบถูกผิด ' + tag);
+          var wv = q.choices[1 - q.correctIndex];
+          if (wv < min || wv > max || wv === q.answer || wv !== Math.floor(wv)) errors.push('ตัวเลือกผิดไม่ถูกต้อง ' + tag + ' → ' + wv);
+        }
+        if (plus !== 5) errors.push('สัดส่วนบวก/ลบไม่เท่ากัน ' + lv + ': บวก ' + plus);
+        if (errors.length > 20) break;
+      }
+    }
+    var s = 0, c = 0;
+    for (var st = 1; st <= 10; st++) { s += Scoring.pointsFor(st); c += Scoring.coinsFor(st); }
+    if (s !== 140) errors.push('คะแนนเต็มควรเป็น 140 แต่ได้ ' + s);
+    if (c !== 18) errors.push('เหรียญเต็มควรเป็น 18 แต่ได้ ' + c);
+    var result = { passed: errors.length === 0, roundsPerLevel: rounds, errors: errors.slice(0, 20) };
+    if (window.console) console.log('[CAT MATH RUN] selfTest', result);
+    return result;
+  }
+  window.CatMathRun = {
+    selfTest: selfTest, MathCore: MathCore, Scoring: Scoring,
+    getState: function () { return game.state; },
+    getMode: function () { return scene.mode; },
+    getLevel: function () { return game.level; }
+  };
+
+  /* =====================================================================
+   * 15) เริ่มต้นหน้าเว็บ
+   * ===================================================================== */
+  var face = catFaceSVG();
+  $('startCat').innerHTML = face; el.avatar.innerHTML = face; $('overCat').innerHTML = face; $('winCat').innerHTML = face;
+  game.timeLimit = CFG.LEVELS[game.level].time;
+  renderSoundButtons();
+  renderLevelButtons();
+  resetGameData();
+  scene2D.init();
+  setGraphics(prefer3D);
+  renderHud();
+  resetQuestionPanel();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (!rafId) scene.draw(); });
+  el.startBtn.focus({ preventScroll: true });
+})();
+</script>
+</body>
+</html>
