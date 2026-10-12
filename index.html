@@ -190,6 +190,39 @@
   .confetti i{position:absolute; top:-12px; width:9px; height:14px; border-radius:2px; opacity:.9; animation:fall linear infinite}
   @keyframes fall{to{transform:translateY(720px) rotate(720deg)}}
 
+
+  /* ---------- ป้ายคู่ต่อสู้ / ร้านค้าสกิน ---------- */
+  .foe-tag{position:absolute; left:10px; top:10px; z-index:1; background:rgba(255,255,255,.92); border-radius:99px; padding:4px 12px;
+    font-weight:600; font-size:.9rem; box-shadow:0 3px 8px rgba(0,0,0,.15); pointer-events:none; max-width:calc(100% - 20px);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .foe-tag.weird{background:linear-gradient(90deg,#fff3c4,#ffe0f0)}
+  .foe-tag.myth{background:linear-gradient(90deg,#e9d5ff,#c7f0ff); color:#4a148c}
+  .start-row{display:grid; grid-template-columns:2fr 1fr; gap:10px; margin-top:10px}
+  .start-row .btn{margin-top:0}
+  .btn-shop{background:linear-gradient(#c792ff,#8e44ec); font-size:1.12rem; line-height:1.15; padding:10px 8px}
+  .btn-shop small{display:block; font-size:.85rem; font-weight:500; opacity:.95}
+  .shop-card{max-width:640px}
+  .shop-head{display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .shop-title{margin:0; font-size:1.55rem; color:#8e44ec}
+  .wallet-pill{background:#fff6d6; border:3px solid var(--yellow); border-radius:99px; padding:4px 14px; font-size:1.15rem; font-weight:600; white-space:nowrap}
+  .shop-sub{margin:6px 0 10px; font-size:.85rem; color:var(--sky-d); text-align:left}
+  .skins{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; max-height:min(60vh,560px); overflow-y:auto; padding:4px 2px; -webkit-overflow-scrolling:touch}
+  @media (min-width:560px){ .skins{grid-template-columns:repeat(4,1fr)} }
+  .skin-card{border:3px solid #e3ecf3; border-radius:16px; padding:6px 6px 8px; background:#fbfdff; display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0}
+  .skin-card.equipped{border-color:var(--green); background:#effbef}
+  .skin-thumb{width:100%; aspect-ratio:1/1; border-radius:12px; background:#e6f4ff; display:flex; align-items:center; justify-content:center; overflow:hidden}
+  .skin-thumb img,.skin-thumb svg{width:100%; height:100%; object-fit:contain; display:block}
+  .skin-name{font-weight:600; font-size:.88rem; line-height:1.2; min-height:2.4em; display:flex; align-items:center; justify-content:center; text-align:center}
+  .skin-btn{width:100%; border:none; border-radius:10px; padding:6px 4px; font-size:.86rem; font-weight:600; color:#fff; line-height:1.2;
+    background:linear-gradient(#ffc56b,#ff8a3d); box-shadow:0 3px 0 rgba(0,0,0,.18)}
+  .skin-btn small{display:block; font-size:.72rem; font-weight:500}
+  .skin-btn.equip{background:linear-gradient(#5fd3ff,#1f9ad6)}
+  .skin-btn.confirm{background:linear-gradient(#ff8a8a,#d62828)}
+  .skin-btn:disabled{background:#d5dde5; color:#4f5d6b; box-shadow:none; cursor:default}
+  .skin-btn.using:disabled{background:#2e9e3e; color:#fff}
+  .stat{padding:6px 6px}
+  .end-card-actions .btn{margin-top:8px}
+
   /* ---------- รองรับจอเล็ก / แนวนอน ---------- */
   @media (max-width:480px){
     .hud-top .lbl{display:none}
@@ -285,6 +318,7 @@
       <canvas id="scene3d" hidden></canvas>
       <canvas id="scene"></canvas>
       <div id="banner"></div>
+      <div id="foeTag" class="foe-tag" hidden></div>
     </section>
 
     <section id="panel" aria-label="โจทย์คณิตศาสตร์">
@@ -316,7 +350,7 @@
       <h1 class="title" id="startTitle">CAT MATH RUN</h1>
       <p class="subtitle">วิ่งเก็บเหรียญ พิชิตโจทย์คณิต</p>
       <div class="hero-cat" id="startCat" aria-hidden="true"></div>
-      <p class="tagline">ตอบให้ไว เก็บเหรียญให้ครบ 10 ข้อ!</p>
+      <p class="tagline">ตอบให้ไว ถีบให้ครบ 10 ตัว!</p>
       <p class="pick-label" id="levelLabel">เลือกระดับความยาก</p>
       <div class="levels" role="group" aria-labelledby="levelLabel">
         <button class="level-btn" type="button" data-level="easy" aria-pressed="true">ง่าย<small>เลข 1 หลัก</small></button>
@@ -327,11 +361,14 @@
       <div class="level-desc" id="levelDesc"></div>
       <ul class="rules">
         <li>🧮 โจทย์บวก–ลบ รอบละ 10 ข้อ เลือกคำตอบ 1 ใน 2</li>
-        <li>❤️ มีหัวใจ 3 ดวง ตอบผิดหรือหมดเวลาเสีย 1 ดวง</li>
-        <li>⭐ ถูก 1 ข้อ = 10 คะแนน + 1 เหรียญ</li>
-        <li>🔥 ถูกติดกันตั้งแต่ข้อที่ 3 ได้โบนัส +5 คะแนน +1 เหรียญ</li>
+        <li>🦶 ตอบถูก แมวกระโดดถีบสัตว์ ยิ่งถูกติดกันยิ่งเจอสัตว์ในเทพนิยาย</li>
+        <li>🧊 ตอบผิด/หมดเวลา โดนแช่แข็ง เสียหัวใจ 1 ดวง (มี 3 ดวง)</li>
+        <li>⭐ ถูก 1 ข้อ = 10 คะแนน + 1 🪙 · ถูกติดกันตั้งแต่ข้อที่ 3 ได้ +5 คะแนน +1 🪙</li>
       </ul>
-      <button id="startBtn" class="btn btn-primary" type="button">▶ เริ่มเกม</button>
+      <div class="start-row">
+        <button id="startBtn" class="btn btn-primary" type="button">▶ เริ่มเกม</button>
+        <button id="shopBtn" class="btn btn-shop shop-open" type="button">🛒 ร้านค้า<small>🪙 <span class="wallet-num">0</span></small></button>
+      </div>
       <div class="start-foot">
         <button class="sound-btn pill-btn" type="button" data-style="full" aria-pressed="true">🔊 เสียง: เปิด</button>
         <button id="gfxBtn" class="pill-btn" type="button" aria-pressed="true" hidden>🧊 ภาพ 3 มิติ: เปิด</button>
@@ -349,6 +386,7 @@
       <div class="stats" id="overStats"></div>
       <p class="end-msg" id="overMsg"></p>
       <button id="overRetry" class="btn btn-primary" type="button">🔄 เล่นอีกครั้ง</button>
+      <button class="btn btn-shop shop-open" type="button">🛒 ร้านค้าสกิน · 🪙 <span class="wallet-num">0</span></button>
       <button id="overHome" class="btn btn-secondary" type="button">🏠 กลับหน้าหลัก</button>
     </div>
   </section>
@@ -363,7 +401,21 @@
       <div class="stats" id="winStats"></div>
       <p class="end-msg" id="winMsg"></p>
       <button id="winRetry" class="btn btn-primary" type="button">🔄 เล่นอีกครั้ง</button>
+      <button class="btn btn-shop shop-open" type="button">🛒 ร้านค้าสกิน · 🪙 <span class="wallet-num">0</span></button>
       <button id="winHome" class="btn btn-secondary" type="button">🏠 กลับหน้าหลัก</button>
+    </div>
+  </section>
+
+  <!-- ===================== ร้านค้าสกิน ===================== -->
+  <section id="shopScreen" class="screen" hidden aria-labelledby="shopTitle">
+    <div class="card shop-card">
+      <div class="shop-head">
+        <h2 id="shopTitle" class="shop-title">🛒 ร้านค้าสกิน</h2>
+        <div class="wallet-pill" aria-live="polite" aria-label="เหรียญสะสม">🪙 <b class="wallet-num">0</b></div>
+      </div>
+      <p class="shop-sub">ตอบถูกเพื่อเก็บเหรียญ แล้วนำมาซื้อสกินแมว · แตะปุ่มซื้อ 2 ครั้งเพื่อยืนยัน</p>
+      <div class="skins" id="skinGrid"></div>
+      <button id="shopClose" class="btn btn-secondary" type="button">↩ กลับ</button>
     </div>
   </section>
 </div>
@@ -396,6 +448,61 @@
       integer: { name: 'จำนวนเต็ม', detail: 'บวก–ลบจำนวนเต็มบวกและลบ (−10 ถึง 10) เช่น (−5) + 3, 4 − (−6)', time: 8000, min: -20, max: 20, range: 10 }
     }
   };
+
+  /* ---------- สิ่งมีชีวิตที่แมวกระโดดถีบ: ยิ่ง Streak สูงยิ่งเจอตัวแปลก (ลำดับที่ 0 = Streak 0) ---------- */
+  CFG.FREEZE_TIME = 1.25;   // วินาทีที่แมวโดนแช่แข็งเมื่อตอบผิด/หมดเวลา (ต้องน้อยกว่า NEXT_DELAY_BAD)
+  CFG.CREATURES = [
+    { id: 'frog',    name: 'กบ',        emoji: '🐸', group: 'สัตว์ธรรมดา' },
+    { id: 'rabbit',  name: 'กระต่าย',   emoji: '🐰', group: 'สัตว์ธรรมดา' },
+    { id: 'penguin', name: 'เพนกวิน',   emoji: '🐧', group: 'สัตว์ธรรมดา' },
+    { id: 'crab',    name: 'ปูยักษ์',    emoji: '🦀', group: 'สัตว์แปลก' },
+    { id: 'slime',   name: 'วุ้นสไลม์',  emoji: '🟢', group: 'สัตว์แปลก' },
+    { id: 'ghost',   name: 'ผีน้อย',     emoji: '👻', group: 'สัตว์แปลก' },
+    { id: 'unicorn', name: 'ยูนิคอร์น',  emoji: '🦄', group: 'สัตว์ในเทพนิยาย' },
+    { id: 'griffin', name: 'กริฟฟิน',    emoji: '🦅', group: 'สัตว์ในเทพนิยาย' },
+    { id: 'phoenix', name: 'นกฟีนิกซ์',  emoji: '🔥', group: 'สัตว์ในเทพนิยาย' },
+    { id: 'dragon',  name: 'มังกร',      emoji: '🐉', group: 'สัตว์ในเทพนิยาย' }
+  ];
+
+  /* ---------- สกินแมวในร้านค้า (แก้ชื่อ/ราคาได้ที่นี่ที่เดียว) ----------
+   * fur  = สีขนในฉาก 3 มิติ (pattern: stripe ลาย, spots จุด, calico สามสี, solid สีเดียว)
+   * face = สีหน้าแมวในรูปไอคอน/ร้านค้า (acc = อีโมจิประดับ)
+   * body = รูปร่าง (fat อ้วน, buff กล้ามโต) · scarf = สีผ้าพันคอ · trail = ควันที่ลอยตามหลัง */
+  var ORANGE_FUR = { base: '#f29a45', light: '#fbd3a0', dark: '#e47a22', mark: '#a5460e', pattern: 'stripe', belly: '#fff5e6', tip: '#8c3d0f', inner: '#ff9aa8' };
+  CFG.SKINS = [
+    { id: 'classic', name: 'แมวส้มคลาสสิก', price: 0, scarf: '#1a8cd6', fur: ORANGE_FUR,
+      face: { fill: '#ff8a3d', stripe: '#d9641a', muzzle: '#fff4e6', acc: '' } },
+    { id: 'fat', name: 'แมวส้มตัวอ้วน', price: 15, scarf: '#e63946', body: { fat: true }, fur: ORANGE_FUR,
+      face: { fill: '#ff8a3d', stripe: '#d9641a', muzzle: '#fff4e6', acc: '🍩', chubby: true } },
+    { id: 'muscle', name: 'แมวส้มกล้ามโต', price: 25, body: { buff: true },
+      fur: { base: '#ee8a30', light: '#f9c58a', dark: '#d9691a', mark: '#9a3f0c', pattern: 'stripe', belly: '#fff0dc', tip: '#7f330a', inner: '#ff9aa8' },
+      face: { fill: '#f28330', stripe: '#c4550f', muzzle: '#fff0dc', acc: '💪' } },
+    { id: 'poop', name: 'แมวส้มขี้แตก', price: 35, trail: 'stink',
+      fur: { base: '#eba556', light: '#f9d6a6', dark: '#d98a3a', mark: '#a86020', pattern: 'stripe', belly: '#fff5e6', tip: '#8c4a12', inner: '#ff9aa8' },
+      face: { fill: '#f2a34f', stripe: '#c97a2a', muzzle: '#fff4e6', acc: '💩' } },
+    { id: 'demonpig', name: 'แมวหมูปีศาจ', price: 50, eyeGlow: '#ff2a2a',
+      fur: { base: '#f7a1b5', light: '#ffd0dc', dark: '#e57a98', mark: '#d0607e', pattern: 'solid', belly: '#ffd9e3', tip: '#c2185b', inner: '#e8577a' },
+      face: { fill: '#f7a1b5', stripe: 'none', muzzle: '#ffd0dc', acc: '😈', eye: '#c40000' } },
+    { id: 'professor', name: 'แมวอาจารย์มหาลัย', price: 60,
+      fur: { base: '#a7a29a', light: '#d8d4cc', dark: '#8a857c', mark: '#5f5a52', pattern: 'stripe', belly: '#f1eee8', tip: '#4a463f', inner: '#e8a3ac' },
+      face: { fill: '#a7a29a', stripe: '#7d776e', muzzle: '#f1eee8', acc: '🎓' } },
+    { id: 'dino', name: 'แมวไดโนเสาร์', price: 75,
+      fur: { base: '#5dbb63', light: '#a8dd9c', dark: '#3f9447', mark: '#2e7d32', pattern: 'spots', belly: '#e8f5c8', tip: '#ff8a3d', inner: '#ffb38a' },
+      face: { fill: '#5dbb63', stripe: '#3f9447', muzzle: '#e8f5c8', acc: '🦖' } },
+    { id: 'yada', name: 'แมวญาดา', price: 90, scarf: '#ff7eb6', bigEyes: true,
+      fur: { base: '#fff3f7', light: '#ffffff', dark: '#f6dde6', mark: '#f6dde6', pattern: 'solid', belly: '#ffffff', tip: '#ffb3cf', inner: '#ff9cc2' },
+      face: { fill: '#fff3f7', stripe: 'none', muzzle: '#ffffff', acc: '🎀', outline: '#c2185b' } },
+    { id: 'perm', name: 'แมวอีเพิ่ม', price: 110,
+      fur: { base: '#2f2f38', light: '#55555f', dark: '#1d1d24', mark: '#1d1d24', pattern: 'solid', belly: '#4a4a55', tip: '#111116', inner: '#c77d8f' },
+      face: { fill: '#2f2f38', stripe: 'none', muzzle: '#55555f', acc: '😎', eye: '#ffd23f', outline: '#0d0d10', line: '#d9d9e0' } },
+    { id: 'alien', name: 'แมวเอเลี่ยน', price: 130, bigEyes: true,
+      fur: { base: '#5fe0c8', light: '#b8fff0', dark: '#2fb59d', mark: '#c6ff7a', pattern: 'spots', belly: '#d9fff7', tip: '#1d8f7a', inner: '#9cf7a8' },
+      face: { fill: '#5fe0c8', stripe: '#2fb59d', muzzle: '#d9fff7', acc: '👽', outline: '#145c50' } },
+    { id: 'juju', name: 'แมวจูจู', price: 160, scarf: '#b388ff',
+      fur: { base: '#fbf7f0', light: '#ffffff', dark: '#ece3d6', mark: '#f0902f', pattern: 'calico', belly: '#ffffff', tip: '#2b2b2b', inner: '#ffb3c1' },
+      face: { fill: '#fbf7f0', stripe: 'none', muzzle: '#ffffff', acc: '🌸', calico: true } }
+  ];
+  function skinById(id) { for (var i = 0; i < CFG.SKINS.length; i++) if (CFG.SKINS[i].id === id) return CFG.SKINS[i]; return null; }
 
   var STATE = { READY: 'READY', PLAYING: 'PLAYING', ANSWERED: 'ANSWERED', GAME_OVER: 'GAME_OVER', VICTORY: 'VICTORY' };
 
@@ -558,7 +665,7 @@
   function resetGameData() {
     game.qIndex = 0; game.answered = 0; game.score = 0; game.coins = 0;
     game.hearts = CFG.MAX_HEARTS; game.streak = 0; game.maxStreak = 0;
-    game.correct = 0; game.wrong = 0; game.timeouts = 0;
+    game.correct = 0; game.wrong = 0; game.timeouts = 0; game.kicks = 0; game.bestTier = -1; game.foeTier = 0;
     game.question = null; game.deadline = 0; game.paused = false; game.pausedRemaining = 0;
     game.usedKeys = new Set(); game.ops = MathCore.buildOpSequence(CFG.TOTAL_Q);
   }
@@ -584,7 +691,7 @@
     banner: $('banner'), stage: $('stage'), canvas: $('scene'), canvas3d: $('scene3d'),
     overStats: $('overStats'), overMsg: $('overMsg'), overRetry: $('overRetry'), overHome: $('overHome'),
     winStats: $('winStats'), winMsg: $('winMsg'), winStars: $('winStars'), winRetry: $('winRetry'), winHome: $('winHome'),
-    confetti: $('confetti')
+    confetti: $('confetti'), foeTag: $('foeTag'), shopScreen: $('shopScreen'), shopClose: $('shopClose'), skinGrid: $('skinGrid')
   };
 
   var reducedMotion = false;
@@ -635,7 +742,11 @@
     tick: function () { this.tone(1200, 0.05, 'sine', 0.06); },
     combo: function () { var n = [784, 988, 1175, 1568]; for (var i = 0; i < n.length; i++) this.tone(n[i], 0.12, 'triangle', 0.1, i * 0.07); },
     win: function () { var n = [523, 659, 784, 1047, 784, 1047]; for (var i = 0; i < n.length; i++) this.tone(n[i], 0.18, 'triangle', 0.12, i * 0.12); },
-    lose: function () { var n = [392, 330, 262, 196]; for (var i = 0; i < n.length; i++) this.tone(n[i], 0.22, 'triangle', 0.1, i * 0.16); }
+    lose: function () { var n = [392, 330, 262, 196]; for (var i = 0; i < n.length; i++) this.tone(n[i], 0.22, 'triangle', 0.1, i * 0.16); },
+    kick: function () { this.tone(220, 0.06, 'square', 0.1); this.tone(110, 0.18, 'triangle', 0.16, 0.02); this.tone(1400, 0.08, 'sine', 0.05, 0.05); },
+    freeze: function () { var n = [1760, 1320, 990, 740]; for (var i = 0; i < n.length; i++) this.tone(n[i], 0.18, 'sine', 0.07, i * 0.06); },
+    shatter: function () { var n = [2200, 1900, 2500, 1700]; for (var i = 0; i < n.length; i++) this.tone(n[i], 0.06, 'square', 0.04, i * 0.03); },
+    buy: function () { var n = [880, 1175, 1568, 2093]; for (var i = 0; i < n.length; i++) this.tone(n[i], 0.12, 'triangle', 0.1, i * 0.08); }
   };
 
   /* ---------- บันทึกค่าในเครื่อง (ถ้าเบราว์เซอร์ไม่อนุญาต เกมยังเล่นได้ตามปกติ) ---------- */
@@ -648,6 +759,13 @@
   if (!saved.best || typeof saved.best !== 'object') saved.best = {};
   if (saved.level && CFG.LEVELS[saved.level]) game.level = saved.level;
   var prefer3D = saved.gfx !== '2d';
+  // กระเป๋าเหรียญ + สกินที่มี (ข้อมูลเสียหาย/ไม่มี → เริ่มใหม่อย่างปลอดภัย)
+  if (typeof saved.wallet !== 'number' || !(saved.wallet >= 0) || !isFinite(saved.wallet)) saved.wallet = 0;
+  saved.wallet = Math.floor(saved.wallet);
+  if (!Array.isArray(saved.owned)) saved.owned = [];
+  saved.owned = saved.owned.filter(function (id) { return !!skinById(id); });
+  if (saved.owned.indexOf('classic') === -1) saved.owned.unshift('classic');
+  if (!skinById(saved.skin) || saved.owned.indexOf(saved.skin) === -1) saved.skin = 'classic';
 
   function renderSoundButtons() {
     for (var i = 0; i < el.soundBtns.length; i++) {
@@ -693,31 +811,44 @@
   /* =====================================================================
    * 6) หน้าแมว (SVG วาดเอง ไม่ต้องโหลดรูป) – ใช้ทั้งหน้าเริ่ม แผงโจทย์ และหน้าสรุป
    * ===================================================================== */
-  function catFaceSVG() {
+  function currentSkin() { return skinById(saved.skin) || CFG.SKINS[0]; }
+  function catFaceSVG(skin) {
+    var f = (skin || currentSkin()).face;
+    var fill = f.fill, out = f.outline || '#7a3a10', eye = f.eye || '#23395b', line = f.line || out;
+    var stripes = f.stripe && f.stripe !== 'none' ?
+      '<path d="M60 24 v11 M47 26 l3 10 M73 26 l-3 10" stroke="' + f.stripe + '" stroke-width="4" stroke-linecap="round"/>' +
+      '<path d="M12 62 h10 M13 70 l9 -2 M108 62 h-10 M107 70 l-9 -2" stroke="' + f.stripe + '" stroke-width="3.5" stroke-linecap="round"/>' : '';
+    var calico = f.calico ? '<path d="M14 56 q6 -26 34 -26 q-2 18 -30 34 z" fill="#f0902f"/><path d="M76 26 q24 2 30 28 q-18 2 -30 -10 z" fill="#2b2b2b"/>' : '';
+    var rx = f.chubby ? 55 : 49, ry = f.chubby ? 44 : 41;
+    var acc = f.acc ? '<text x="101" y="34" font-size="27" text-anchor="middle" dominant-baseline="middle">' + f.acc + '</text>' : '';
     return '' +
       '<svg viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg">' +
-      '<path d="M16 44 L20 4 L50 28 Z" fill="#ff8a3d" stroke="#7a3a10" stroke-width="3" stroke-linejoin="round"/>' +
-      '<path d="M104 44 L100 4 L70 28 Z" fill="#ff8a3d" stroke="#7a3a10" stroke-width="3" stroke-linejoin="round"/>' +
+      '<path d="M16 44 L20 4 L50 28 Z" fill="' + fill + '" stroke="' + out + '" stroke-width="3" stroke-linejoin="round"/>' +
+      '<path d="M104 44 L100 4 L70 28 Z" fill="' + fill + '" stroke="' + out + '" stroke-width="3" stroke-linejoin="round"/>' +
       '<path d="M23 36 L25 14 L41 27 Z" fill="#ffb3c1"/><path d="M97 36 L95 14 L79 27 Z" fill="#ffb3c1"/>' +
-      '<ellipse cx="60" cy="63" rx="49" ry="41" fill="#ff8a3d" stroke="#7a3a10" stroke-width="3"/>' +
-      '<path d="M60 24 v11 M47 26 l3 10 M73 26 l-3 10" stroke="#d9641a" stroke-width="4" stroke-linecap="round"/>' +
-      '<path d="M12 62 h10 M13 70 l9 -2 M108 62 h-10 M107 70 l-9 -2" stroke="#d9641a" stroke-width="3.5" stroke-linecap="round"/>' +
-      '<ellipse cx="60" cy="80" rx="23" ry="16" fill="#fff4e6"/>' +
+      '<ellipse cx="60" cy="63" rx="' + rx + '" ry="' + ry + '" fill="' + fill + '" stroke="' + out + '" stroke-width="3"/>' +
+      calico + stripes +
+      '<ellipse cx="60" cy="80" rx="23" ry="16" fill="' + f.muzzle + '"/>' +
       '<circle cx="29" cy="76" r="7" fill="#ff9aa8" opacity=".75"/><circle cx="91" cy="76" r="7" fill="#ff9aa8" opacity=".75"/>' +
-      '<g class="eyes-normal"><ellipse cx="42" cy="59" rx="7.5" ry="9.5" fill="#23395b"/><circle cx="44.6" cy="55.4" r="2.8" fill="#fff"/>' +
-      '<ellipse cx="78" cy="59" rx="7.5" ry="9.5" fill="#23395b"/><circle cx="80.6" cy="55.4" r="2.8" fill="#fff"/></g>' +
-      '<g class="eyes-happy" fill="none" stroke="#23395b" stroke-width="4.5" stroke-linecap="round">' +
+      '<g class="eyes-normal"><ellipse cx="42" cy="59" rx="7.5" ry="9.5" fill="' + eye + '"/><circle cx="44.6" cy="55.4" r="2.8" fill="#fff"/>' +
+      '<ellipse cx="78" cy="59" rx="7.5" ry="9.5" fill="' + eye + '"/><circle cx="80.6" cy="55.4" r="2.8" fill="#fff"/></g>' +
+      '<g class="eyes-happy" fill="none" stroke="' + eye + '" stroke-width="4.5" stroke-linecap="round">' +
       '<path d="M34 61 Q42 49 50 61"/><path d="M70 61 Q78 49 86 61"/></g>' +
-      '<g class="eyes-sad"><circle cx="42" cy="59" r="8" fill="#fff" stroke="#23395b" stroke-width="3"/><circle cx="42" cy="61" r="3.4" fill="#23395b"/>' +
-      '<circle cx="78" cy="59" r="8" fill="#fff" stroke="#23395b" stroke-width="3"/><circle cx="78" cy="61" r="3.4" fill="#23395b"/>' +
+      '<g class="eyes-sad"><circle cx="42" cy="59" r="8" fill="#fff" stroke="' + eye + '" stroke-width="3"/><circle cx="42" cy="61" r="3.4" fill="' + eye + '"/>' +
+      '<circle cx="78" cy="59" r="8" fill="#fff" stroke="' + eye + '" stroke-width="3"/><circle cx="78" cy="61" r="3.4" fill="' + eye + '"/>' +
       '<path d="M99 30 q6 9 0 14 q-6 -5 0 -14z" fill="#7fd3ff" stroke="#1f8fc4" stroke-width="1.5"/></g>' +
-      '<path d="M54.5 71 h11 l-5.5 6 z" fill="#ff6b81" stroke="#7a3a10" stroke-width="1.5" stroke-linejoin="round"/>' +
-      '<path class="mouth-normal" d="M50 80 q5 6 10 0 q5 6 10 0" stroke="#7a3a10" stroke-width="2.6" fill="none" stroke-linecap="round"/>' +
-      '<path class="mouth-happy" d="M47 79 q13 18 26 0 z" fill="#d6336c" stroke="#7a3a10" stroke-width="2.6" stroke-linejoin="round"/>' +
-      '<ellipse class="mouth-sad" cx="60" cy="85" rx="5" ry="6.5" fill="#7a3a10"/>' +
-      '<g stroke="#7a3a10" stroke-width="1.6" stroke-linecap="round" opacity=".7">' +
+      '<path d="M54.5 71 h11 l-5.5 6 z" fill="#ff6b81" stroke="' + out + '" stroke-width="1.5" stroke-linejoin="round"/>' +
+      '<path class="mouth-normal" d="M50 80 q5 6 10 0 q5 6 10 0" stroke="' + line + '" stroke-width="2.6" fill="none" stroke-linecap="round"/>' +
+      '<path class="mouth-happy" d="M47 79 q13 18 26 0 z" fill="#d6336c" stroke="' + line + '" stroke-width="2.6" stroke-linejoin="round"/>' +
+      '<ellipse class="mouth-sad" cx="60" cy="85" rx="5" ry="6.5" fill="' + line + '"/>' +
+      '<g stroke="' + line + '" stroke-width="1.6" stroke-linecap="round" opacity=".7">' +
       '<path d="M36 80 l-18 -3 M36 85 l-17 3 M84 80 l18 -3 M84 85 l17 3"/></g>' +
-      '</svg>';
+      acc + '</svg>';
+  }
+  /** อัปเดตหน้าแมวทุกจุด (หน้าเริ่ม แผงโจทย์ หน้าสรุป) ให้ตรงกับสกินที่ใส่อยู่ */
+  function refreshFaces() {
+    var face = catFaceSVG(currentSkin());
+    $('startCat').innerHTML = face; el.avatar.innerHTML = face; $('overCat').innerHTML = face; $('winCat').innerHTML = face;
   }
   function setMood(mood) {
     el.avatar.classList.remove('mood-normal', 'mood-happy', 'mood-sad');
@@ -730,20 +861,37 @@
    * ===================================================================== */
   function hash(n) { var x = Math.sin(n * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); }
   function frac(x) { return x - Math.floor(x); }
+  function hex3(h) { h = String(h).replace('#', ''); return [parseInt(h.substr(0, 2), 16) / 255, parseInt(h.substr(2, 2), 16) / 255, parseInt(h.substr(4, 2), 16) / 255]; }
+  /** ความคืบหน้าของเวลาในข้อปัจจุบัน 0→1 (สัตว์ค่อย ๆ วิ่งเข้าหาแมวตามเวลาที่เหลือ) หรือ null ถ้าไม่ได้อยู่ระหว่างตอบ */
+  function foeProgress() {
+    if (game.state !== STATE.PLAYING || !(game.timeLimit > 0)) return null;
+    var rem = game.paused ? game.pausedRemaining : game.deadline - performance.now();
+    return Math.max(0, Math.min(1, 1 - rem / game.timeLimit));
+  }
+  var EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Twemoji Mozilla",sans-serif';
 
   var FX = {
     burst: function (x, y, n, colors, star) {
       if (reducedMotion) n = Math.ceil(n / 3);
+      if (this.particles.length > 260) return;
       for (var i = 0; i < n; i++) {
         var a = Math.random() * Math.PI * 2, sp = 60 + Math.random() * 160;
         this.particles.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 80, life: 0.7 + Math.random() * 0.5, max: 1.2,
           size: 3 + Math.random() * 4, color: colors[i % colors.length], star: star && i % 2 === 0 });
       }
     },
+    /** ควัน/ไฟที่ลอยขึ้น (ใช้กับสกินขี้แตก และสัตว์ไฟ) */
+    puff: function (x, y, color, size) {
+      if (this.particles.length > 260 || reducedMotion) return;
+      this.particles.push({ x: x, y: y, vx: (Math.random() - 0.5) * 24, vy: -20 - Math.random() * 20, life: 1.0, max: 1.0,
+        size: size || (5 + Math.random() * 5), color: color, float: true });
+    },
     updateFx: function (dt) {
       for (var j = this.particles.length - 1; j >= 0; j--) {
         var p = this.particles[j];
-        p.life -= dt; p.vy += 320 * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+        p.life -= dt;
+        if (p.float) { p.vy -= 14 * dt; p.size += dt * 9; } else p.vy += 320 * dt;
+        p.x += p.vx * dt; p.y += p.vy * dt;
         if (p.life <= 0) this.particles.splice(j, 1);
       }
       for (var k = this.floaters.length - 1; k >= 0; k--) {
@@ -763,7 +911,13 @@
     },
     drawFx: function (ctx) {
       for (var i = 0; i < this.particles.length; i++) {
-        var p = this.particles[i]; ctx.globalAlpha = Math.max(0, Math.min(1, p.life / 0.6));
+        var p = this.particles[i];
+        if (p.float) {
+          ctx.globalAlpha = Math.max(0, p.life / p.max) * 0.9;
+          ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+          continue;
+        }
+        ctx.globalAlpha = Math.max(0, Math.min(1, p.life / 0.6));
         if (p.star) this.star(ctx, p.x, p.y, p.size * 1.4, p.color);
         else { ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); }
       }
@@ -772,12 +926,24 @@
       for (var k = 0; k < this.floaters.length; k++) {
         var f = this.floaters[k];
         ctx.globalAlpha = Math.max(0, f.life / f.max);
-        ctx.font = '600 ' + Math.round(Math.max(14, this.gh * 0.1)) + 'px Mitr, Tahoma, sans-serif';
+        ctx.font = '600 ' + Math.round(Math.max(14, this.gh * (f.big ? 0.16 : 0.1))) + 'px Mitr, Tahoma, sans-serif';
         ctx.lineWidth = 4; ctx.strokeStyle = '#fff'; ctx.strokeText(f.text, f.x, f.y);
         ctx.fillStyle = f.color; ctx.fillText(f.text, f.x, f.y);
       }
       ctx.globalAlpha = 1;
       if (this.flashA > 0) { ctx.fillStyle = 'rgba(' + this.flashRGB + ',' + this.flashA.toFixed(3) + ')'; ctx.fillRect(0, 0, this.w, this.h); }
+    },
+    /** เกล็ดหิมะหมุนรอบตัวแมวตอนโดนแช่แข็ง (ใช้ทั้ง 2D และ 3D) */
+    drawFrostFx: function (ctx, x, y, u) {
+      ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = Math.round(u * 0.5) + 'px sans-serif';
+      for (var k = 0; k < 5; k++) {
+        var a = this.time * 1.8 + k * (Math.PI * 2 / 5);
+        ctx.fillStyle = 'rgba(255,255,255,.95)'; ctx.strokeStyle = 'rgba(31,143,196,.8)'; ctx.lineWidth = 3;
+        ctx.strokeText('❄', x + Math.cos(a) * u * 1.5, y + Math.sin(a) * u * 0.9);
+        ctx.fillText('❄', x + Math.cos(a) * u * 1.5, y + Math.sin(a) * u * 0.9);
+      }
+      ctx.restore();
     }
   };
   function mixin(target, src) { for (var k in src) if (Object.prototype.hasOwnProperty.call(src, k)) target[k] = src[k]; return target; }
@@ -787,11 +953,11 @@
    * ===================================================================== */
   var scene2D = mixin({
     mode: '2d', ctx: null, w: 1, h: 1, dpr: 1, hz: 1, gh: 1, roadW: 1,
-    LANE: 0.55, CAT_REL: 0.45, JUMP_TIME: 0.55, STUMBLE_TIME: 0.7,
+    LANE: 0.55, CAT_REL: 0.45, JUMP_TIME: 0.55, KICK_DELAY: 0.2,
     camZ: 0, speed: 0, targetSpeed: 0, time: 0, runPhase: 0,
-    catLane: 0, catLaneTarget: 0, swerveT: 0, jumpT: 0, stumbleT: 0, celebrateT: 0,
-    coins: [], particles: [], floaters: [], flashA: 0, flashRGB: '230,57,70',
-    displayCoins: 0, clouds: [], skyGlyphs: [],
+    jumpT: 0, celebrateT: 0, frozenT: 0, iceT: 0, stinkT: 0, sad: false, catLane: 0, kickLane: 0,
+    foe: null, particles: [], floaters: [], flashA: 0, flashRGB: '230,57,70',
+    displayCoins: 0, pendingCoins: 0, clouds: [], skyGlyphs: [], skin: null,
 
     init: function () {
       try { this.ctx = el.canvas.getContext('2d'); } catch (e) { this.ctx = null; }
@@ -815,94 +981,9 @@
       this.gh = this.h - this.hz;
       this.roadW = Math.min(this.w * 0.42, this.gh * 1.6);
     },
-    reset: function () {
-      this.camZ = 0; this.speed = 0; this.targetSpeed = 0; this.runPhase = 0;
-      this.catLane = 0; this.catLaneTarget = 0; this.swerveT = 0; this.jumpT = 0; this.stumbleT = 0; this.celebrateT = 0;
-      this.coins = []; this.particles = []; this.floaters = []; this.flashA = 0; this.displayCoins = 0;
-    },
     scaleAt: function (rel) { return 1 / (1 + Math.max(0, rel)); },
     yAt: function (s) { return this.hz + this.gh * s; },
     laneX: function (lane, s) { return this.w / 2 + lane * this.LANE * this.roadW * s; },
-    catPos: function () {
-      var s = this.scaleAt(this.CAT_REL);
-      return { x: this.laneX(this.catLane, s), y: this.yAt(s), u: this.gh * 0.15 };
-    },
-    celebrate: function (choiceIdx, coinCount, streak) {
-      this.catLaneTarget = choiceIdx === 0 ? -1 : 1; this.swerveT = 0.32;
-      this.jumpT = this.JUMP_TIME; this.celebrateT = 1.0;
-      for (var i = 0; i < coinCount; i++) {
-        this.coins.push({ z: this.camZ + this.CAT_REL + 1.7 + i * 0.85, lane: this.catLaneTarget, ph: Math.random() * 6 });
-      }
-      this.targetSpeed = CFG.BASE_SPEED + Math.min(streak, 6) * 0.35;
-      var p = this.catPos();
-      this.burst(p.x, p.y - p.u * 1.6, streak >= CFG.COMBO_STREAK ? 26 : 14, ['#ffd23f', '#ffffff', '#4cc9f0', '#ff8a3d'], true);
-    },
-    stumble: function (choiceIdx) {
-      if (choiceIdx === 0 || choiceIdx === 1) { this.catLaneTarget = choiceIdx === 0 ? -1 : 1; this.swerveT = 0.3; }
-      this.stumbleT = this.STUMBLE_TIME; this.flashA = 0.35; this.flashRGB = '230,57,70';
-      this.targetSpeed = CFG.BASE_SPEED;
-      var p = this.catPos();
-      this.burst(p.x, p.y - p.u * 0.3, 10, ['#9aa5b1', '#c8b29a', '#e0e0e0'], false);
-      this.floaters.push({ text: '−❤️', x: p.x, y: p.y - p.u * 2.6, life: 1.1, max: 1.1, color: '#e63946' });
-    },
-    perfect: function () {
-      this.flashA = 0.5; this.flashRGB = '255,210,63';
-      var c = ['#ffd23f', '#ff8a3d', '#4cc9f0', '#6bd16b', '#ff4fd8', '#ffffff'];
-      for (var i = 0; i < 4; i++) this.burst(this.w * (0.2 + i * 0.2), this.h * 0.35, 18, c, true);
-    },
-    collect: function () {
-      if (this.displayCoins < game.coins) this.displayCoins++;
-      el.hudCoins.textContent = this.displayCoins;
-      var p = this.catPos();
-      this.burst(p.x, p.y - p.u * 1.4, 8, ['#ffd23f', '#fff3b0', '#ffb703'], true);
-      this.floaters.push({ text: '+1 🪙', x: p.x + (Math.random() - 0.5) * p.u, y: p.y - p.u * 2.4, life: 0.9, max: 0.9, color: '#b8860b' });
-      audio.coin();
-    },
-    flushCoins: function () {
-      this.coins = [];
-      this.displayCoins = game.coins;
-      el.hudCoins.textContent = this.displayCoins;
-    },
-    onEnd: function (win) { if (!win) this.targetSpeed = 0; },
-    finish: function () {
-      this.flushCoins();
-      this.targetSpeed = 0; this.speed = 0;
-      this.particles = []; this.floaters = []; this.flashA = 0; this.stumbleT = 0; this.jumpT = 0; this.celebrateT = 0;
-    },
-    update: function (dt) {
-      this.time += dt;
-      var goal = this.stumbleT > 0 ? this.targetSpeed * 0.3 : this.targetSpeed;
-      this.speed += (goal - this.speed) * Math.min(1, dt * 3);
-      if (this.speed < 0.01) this.speed = 0;
-      this.camZ += this.speed * dt;
-      this.runPhase += dt * (3 + this.speed * 1.5) * (this.speed > 0.2 ? 1 : 0);
-      if (this.swerveT > 0) { this.swerveT -= dt; if (this.swerveT <= 0) this.catLaneTarget = 0; }
-      this.catLane += (this.catLaneTarget - this.catLane) * Math.min(1, dt * 11);
-      if (this.jumpT > 0) this.jumpT = Math.max(0, this.jumpT - dt);
-      if (this.stumbleT > 0) this.stumbleT = Math.max(0, this.stumbleT - dt);
-      if (this.celebrateT > 0) this.celebrateT = Math.max(0, this.celebrateT - dt);
-      for (var i = this.coins.length - 1; i >= 0; i--) {
-        var c = this.coins[i];
-        c.lane += (this.catLane - c.lane) * Math.min(1, dt * 7);
-        if (c.z - this.camZ <= this.CAT_REL) { this.coins.splice(i, 1); this.collect(); }
-      }
-      this.updateFx(dt);
-      for (var m = 0; m < this.clouds.length; m++) {
-        var cl = this.clouds[m]; cl.x -= dt * 0.012 * cl.s;
-        if (cl.x < -0.2) cl.x = 1.2;
-      }
-    },
-    draw: function () {
-      var ctx = this.ctx; if (!ctx) return;
-      ctx.clearRect(0, 0, this.w, this.h);
-      this.drawSky(ctx);
-      this.drawGround(ctx);
-      this.drawProps(ctx);
-      this.drawCoins(ctx);
-      var p = this.catPos();
-      this.drawCat(ctx, p.x, p.y, p.u);
-      this.drawFx(ctx);
-    },
     drawSky: function (ctx) {
       var w = this.w, hz = this.hz;
       var g = ctx.createLinearGradient(0, 0, 0, hz);
@@ -998,70 +1079,221 @@
       ctx.font = '600 ' + Math.max(6, Math.round(S * 0.3)) + 'px Mitr, Tahoma, sans-serif';
       ctx.fillText(ch, x, y - S * 0.84);
     },
-    drawCoins: function (ctx) {
-      var list = this.coins.slice().sort(function (a, b) { return b.z - a.z; });
-      for (var i = 0; i < list.length; i++) {
-        var c = list[i], rel = c.z - this.camZ;
-        if (rel < this.CAT_REL) continue;
-        var s = this.scaleAt(rel), x = this.laneX(c.lane, s), r = Math.max(2, this.gh * 0.11 * s);
-        var y = this.yAt(s) - r * 1.9 + (reducedMotion ? 0 : Math.sin(this.time * 6 + c.ph) * r * 0.15);
-        var spin = reducedMotion ? 1 : Math.abs(Math.cos(this.time * 5 + c.ph));
-        ctx.fillStyle = '#e09f00'; ctx.beginPath(); ctx.ellipse(x, y, Math.max(1, r * spin), r, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.ellipse(x, y, Math.max(0.5, r * 0.78 * spin), r * 0.78, 0, 0, Math.PI * 2); ctx.fill();
+    reset: function () {
+      this.camZ = 0; this.speed = 0; this.targetSpeed = 0; this.runPhase = 0;
+      this.jumpT = 0; this.celebrateT = 0; this.frozenT = 0; this.iceT = 0; this.sad = false; this.catLane = 0; this.kickLane = 0;
+      this.foe = null; this.particles = []; this.floaters = []; this.flashA = 0; this.displayCoins = 0; this.pendingCoins = 0;
+    },
+    setSkin: function (skin) { this.skin = skin; },
+    catPos: function () {
+      var s = this.scaleAt(this.CAT_REL);
+      return { x: this.laneX(this.catLane, s), y: this.yAt(s), u: this.gh * 0.15 };
+    },
+
+    /* ----- สัตว์ที่วิ่งเข้ามา ----- */
+    spawnCreature: function (tier) {
+      this.foe = { tier: tier, def: CFG.CREATURES[tier], state: 'approach', t: 0, p: 0, rel: 14, startRel: 14, stopRel: 1.15, lane: Math.random() < 0.5 ? -0.9 : 0.9,
+        x: 0, y: 0, vx: 0, vy: 0, rot: 0, alpha: 1, grow: 0, r0: 14 };
+    },
+    foeScreen: function () {
+      var f = this.foe, s = this.scaleAt(f.rel);
+      var size = Math.max(10, this.gh * (0.62 + f.tier * 0.05) * s) * f.grow;
+      return { x: this.laneX(f.lane, s) + f.x, y: this.yAt(s) + f.y, ground: this.yAt(s), size: size };
+    },
+    kick: function (coins, streak) {
+      this.pendingCoins = coins; this.jumpT = this.JUMP_TIME; this.celebrateT = 1.0;
+      this.targetSpeed = CFG.BASE_SPEED + Math.min(streak, 6) * 0.35;
+      var f = this.foe;
+      this.kickLane = f ? f.lane * 0.75 : 0;
+      if (f && f.state === 'approach') { f.state = 'rush'; f.t = 0; f.r0 = f.rel; } else this.impact();
+    },
+    impact: function () {
+      var f = this.foe, q = f ? this.foeScreen() : null, c = this.catPos();
+      var x = q ? q.x : c.x, y = q ? q.y - q.size * 0.5 : c.y - c.u * 1.5;
+      this.burst(x, y, 22, ['#ffd23f', '#ffffff', '#ff4fd8', '#4cc9f0'], true);
+      this.floaters.push({ text: 'POW!', x: x, y: y - 10, life: 0.9, max: 0.9, color: '#d6336c', big: true });
+      if (this.pendingCoins) this.floaters.push({ text: '+' + this.pendingCoins + ' 🪙', x: x + 46, y: y + 22, life: 1.0, max: 1.0, color: '#b8860b' });
+      this.displayCoins = Math.min(game.coins, this.displayCoins + this.pendingCoins); this.pendingCoins = 0;
+      el.hudCoins.textContent = this.displayCoins;
+      audio.kick();
+      if (f) { f.state = 'kicked'; f.t = 0; f.vx = (Math.random() < 0.5 ? -1 : 1) * (160 + Math.random() * 120); f.vy = -640; }
+    },
+    freeze: function () {
+      this.frozenT = CFG.FREEZE_TIME; this.iceT = 0; this.speed = 0; this.targetSpeed = 0; this.jumpT = 0; this.celebrateT = 0;
+      this.flashA = 0.35; this.flashRGB = '120,200,255';
+      var p = this.catPos();
+      this.burst(p.x, p.y - p.u, 12, ['#ffffff', '#bfe9ff'], false);
+      if (this.foe && (this.foe.state === 'approach' || this.foe.state === 'rush')) { this.foe.state = 'laugh'; this.foe.t = 0; }
+      audio.freeze();
+    },
+    shatter: function () {
+      var p = this.catPos();
+      this.burst(p.x, p.y - p.u, 22, ['#bfe9ff', '#ffffff', '#7fd3ff'], false);
+      audio.shatter();
+      if (game.state === STATE.PLAYING || game.state === STATE.ANSWERED) this.targetSpeed = CFG.BASE_SPEED;
+    },
+    perfect: function () {
+      this.flashA = 0.5; this.flashRGB = '255,210,63';
+      var c = ['#ffd23f', '#ff8a3d', '#4cc9f0', '#6bd16b', '#ff4fd8', '#ffffff'];
+      for (var i = 0; i < 4; i++) this.burst(this.w * (0.2 + i * 0.2), this.h * 0.35, 18, c, true);
+    },
+    flushCoins: function () {
+      this.displayCoins = game.coins; this.pendingCoins = 0;
+      el.hudCoins.textContent = this.displayCoins;
+    },
+    onEnd: function (win) {
+      if (this.foe && this.foe.state === 'rush') this.impact();
+      this.targetSpeed = 0;
+      if (win) { this.celebrateT = 1.2; this.jumpT = this.JUMP_TIME; } else this.sad = true;
+    },
+    finish: function () {
+      this.flushCoins();
+      this.targetSpeed = 0; this.speed = 0; this.foe = null; this.frozenT = 0;
+      this.particles = []; this.floaters = []; this.flashA = 0; this.jumpT = 0; this.celebrateT = 0;
+    },
+
+    /* ----- อัปเดตการเคลื่อนไหว ----- */
+    update: function (dt) {
+      this.time += dt;
+      if (this.frozenT > 0) {
+        this.frozenT -= dt; this.iceT += dt; this.speed = 0;
+        if (this.frozenT <= 0) { this.frozenT = 0; this.shatter(); }
+      } else {
+        this.speed += (this.targetSpeed - this.speed) * Math.min(1, dt * 3);
+        if (this.speed < 0.01) this.speed = 0;
       }
+      this.camZ += this.speed * dt;
+      this.runPhase += dt * (3 + this.speed * 1.5) * (this.speed > 0.2 ? 1 : 0);
+      if (this.jumpT > 0) this.jumpT = Math.max(0, this.jumpT - dt);
+      if (this.celebrateT > 0) this.celebrateT = Math.max(0, this.celebrateT - dt);
+      this.catLane += ((this.jumpT > 0 ? this.kickLane : 0) - this.catLane) * Math.min(1, dt * 10);
+      var f = this.foe;
+      if (f) {
+        f.t += dt; f.grow = Math.min(1, f.grow + dt * 4);
+        if (f.state === 'approach') { var pr = foeProgress(); if (pr != null) f.p = pr; f.rel = f.startRel + (f.stopRel - f.startRel) * f.p; }
+        else if (f.state === 'rush') { f.rel = f.r0 + (0.62 - f.r0) * Math.min(1, f.t / this.KICK_DELAY); if (f.t >= this.KICK_DELAY) this.impact(); }
+        else if (f.state === 'kicked') { f.vy += 1100 * dt; f.x += f.vx * dt; f.y += f.vy * dt; f.rot += dt * 11; f.alpha = Math.max(0, 1 - f.t / 0.9); if (f.t > 0.9) this.foe = null; }
+        else if (f.state === 'laugh') { f.y = -Math.abs(Math.sin(f.t * 11)) * 14; f.alpha = f.t > 0.65 ? Math.max(0, 1 - (f.t - 0.65) / 0.45) : 1; if (f.t > 1.1) this.foe = null; }
+      }
+      if (this.skin && this.skin.trail === 'stink' && this.speed > 0.5) {
+        this.stinkT += dt;
+        if (this.stinkT > 0.1) {
+          this.stinkT = 0;
+          var cp = this.catPos();
+          this.puff(cp.x + (Math.random() - 0.5) * cp.u * 0.6, cp.y - cp.u * 0.45, Math.random() < 0.5 ? 'rgba(150,180,70,.55)' : 'rgba(120,100,50,.45)');
+        }
+      }
+      this.updateFx(dt);
+      for (var m = 0; m < this.clouds.length; m++) {
+        var cl = this.clouds[m]; cl.x -= dt * 0.012 * cl.s;
+        if (cl.x < -0.2) cl.x = 1.2;
+      }
+    },
+    draw: function () {
+      var ctx = this.ctx; if (!ctx) return;
+      ctx.clearRect(0, 0, this.w, this.h);
+      this.drawSky(ctx);
+      this.drawGround(ctx);
+      this.drawProps(ctx);
+      var f = this.foe, p = this.catPos();
+      if (f && f.state !== 'kicked') this.drawFoe(ctx);
+      this.drawCat(ctx, p.x, p.y, p.u);
+      if (this.frozenT > 0) this.drawIce(ctx, p);
+      if (f && f.state === 'kicked') this.drawFoe(ctx);
+      this.drawFx(ctx);
+    },
+    drawFoe: function (ctx) {
+      var f = this.foe, q = this.foeScreen();
+      ctx.save(); ctx.globalAlpha = f.alpha;
+      if (f.state !== 'kicked') {
+        ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.beginPath(); ctx.ellipse(q.x, q.ground, q.size * 0.35, q.size * 0.09, 0, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.translate(q.x, q.y - q.size * 0.45); ctx.rotate(f.rot);
+      if (f.def.id === 'slime') {
+        // ไม่มีอีโมจิวุ้นสไลม์ จึงวาดเอง
+        var r = q.size * 0.42;
+        ctx.fillStyle = 'rgba(94,232,122,.85)'; ctx.beginPath(); ctx.ellipse(0, r * 0.25, r, r * 0.78, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-r * 0.32, 0, r * 0.2, 0, 7); ctx.arc(r * 0.32, 0, r * 0.2, 0, 7); ctx.fill();
+        ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(-r * 0.3, r * 0.03, r * 0.1, 0, 7); ctx.arc(r * 0.34, r * 0.03, r * 0.1, 0, 7); ctx.fill();
+      } else {
+        ctx.font = Math.round(q.size) + 'px ' + EMOJI_FONT;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(f.def.emoji, 0, 0);
+      }
+      ctx.restore();
+    },
+    drawIce: function (ctx, p) {
+      var u = p.u, k = Math.min(1, this.iceT / 0.15), w = u * 2.3 * k, h = u * 3.0 * k, x = p.x - w / 2, y = p.y - h + u * 0.3, r = 12;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
+      ctx.fillStyle = 'rgba(170,225,255,.55)'; ctx.fill();
+      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x + w * 0.2, y + h * 0.15); ctx.lineTo(x + w * 0.38, y + h * 0.42); ctx.lineTo(x + w * 0.3, y + h * 0.6); ctx.stroke();
+      ctx.restore();
+      this.drawFrostFx(ctx, p.x, p.y - u * 1.2, u);
     },
     ell: function (ctx, x, y, rx, ry, fill, stroke, lw) {
       ctx.beginPath(); ctx.ellipse(x, y, Math.max(0.5, rx), Math.max(0.5, ry), 0, 0, Math.PI * 2);
       ctx.fillStyle = fill; ctx.fill();
       if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); }
     },
+    /** แมววิ่ง (มองจากด้านหลัง) สีตามสกิน: ขาหลังสลับ หางแกว่ง กระโดดถีบเมื่อตอบถูก */
     drawCat: function (ctx, x, y, u) {
-      var running = this.speed > 0.2, ph = this.runPhase, lw = Math.max(1, u * 0.06), OUT = '#7a3a10';
+      var sk = this.skin || CFG.SKINS[0], fur = sk.fur, frozen = this.frozenT > 0;
+      var running = this.speed > 0.2 && !frozen, ph = this.runPhase, lw = Math.max(1, u * 0.06), OUT = sk.face.outline || '#7a3a10';
+      var fat = sk.body && sk.body.fat ? 1.22 : 1, buff = sk.body && sk.body.buff;
       var jumpP = this.jumpT > 0 ? 1 - this.jumpT / this.JUMP_TIME : 0;
       var jh = this.jumpT > 0 ? Math.sin(Math.PI * jumpP) * u * 1.3 : 0;
       var bob = running ? Math.abs(Math.sin(ph)) * u * 0.12 : 0;
-      var rot = (this.catLaneTarget - this.catLane) * 0.3;
-      if (this.stumbleT > 0) rot += Math.sin(this.stumbleT * 38) * (reducedMotion ? 0.05 : 0.2);
       var sh = 1 - Math.min(0.5, jh / (u * 3));
-      this.ell(ctx, x, y, u * 0.8 * sh, u * 0.22 * sh, 'rgba(0,0,0,.25)');
-      ctx.save(); ctx.translate(x, y - jh - bob); ctx.rotate(rot);
+      this.ell(ctx, x, y, u * 0.8 * sh * fat, u * 0.22 * sh, 'rgba(0,0,0,.25)');
+      ctx.save(); ctx.translate(x, y - jh - bob);
       var legA = running ? Math.sin(ph) : 0, legs = [[-0.32, legA], [0.32, -legA]];
       for (var i = 0; i < 2; i++) {
-        var lift = Math.max(0, legs[i][1]), ly = -u * 0.12 - lift * u * 0.3;
-        this.ell(ctx, legs[i][0] * u, ly, u * 0.2, u * 0.26, '#f08a24', OUT, lw);
-        if (lift > 0.25) this.ell(ctx, legs[i][0] * u, ly + u * 0.1, u * 0.1, u * 0.08, '#ffb3c1');
+        var lift = this.jumpT > 0 ? 0.8 : Math.max(0, legs[i][1]), ly = -u * 0.12 - lift * u * 0.3;
+        this.ell(ctx, legs[i][0] * u * fat, ly, u * 0.2, u * 0.26, fur.base, OUT, lw);
+        if (lift > 0.25) this.ell(ctx, legs[i][0] * u * fat, ly + u * 0.1, u * 0.1, u * 0.08, fur.inner || '#ffb3c1');
       }
       var hy = -u * 1.62;
       ctx.lineJoin = 'round';
       for (var s = -1; s <= 1; s += 2) {
         ctx.beginPath();
         ctx.moveTo(s * u * 0.5, hy - u * 0.12); ctx.lineTo(s * u * 0.36, hy - u * 0.78); ctx.lineTo(s * u * 0.06, hy - u * 0.4); ctx.closePath();
-        ctx.fillStyle = '#ff8a3d'; ctx.fill(); ctx.strokeStyle = OUT; ctx.lineWidth = lw; ctx.stroke();
+        ctx.fillStyle = fur.base; ctx.fill(); ctx.strokeStyle = OUT; ctx.lineWidth = lw; ctx.stroke();
       }
-      this.ell(ctx, 0, hy, u * 0.54, u * 0.5, '#ff8a3d', OUT, lw);
-      var g = ctx.createRadialGradient(-u * 0.2, -u * 0.95, u * 0.1, 0, -u * 0.72, u * 0.75);
-      g.addColorStop(0, '#ffb067'); g.addColorStop(1, '#f07b22');
-      this.ell(ctx, 0, -u * 0.72, u * 0.62, u * 0.62, g, OUT, lw);
-      ctx.strokeStyle = '#d9641a'; ctx.lineWidth = u * 0.09;
-      for (var t = 0; t < 3; t++) { ctx.beginPath(); ctx.arc(0, -u * (1.25 - t * 0.22), u * (0.42 + t * 0.06), Math.PI * 0.25, Math.PI * 0.75); ctx.stroke(); }
-      this.ell(ctx, 0, -u * 1.2, u * 0.44, u * 0.13, '#4cc9f0', '#136c96', lw);
-      var sway = running ? Math.sin(ph * 0.5) * 0.55 : Math.sin(this.time * 2) * 0.3;
+      this.ell(ctx, 0, hy, u * 0.54, u * 0.5, fur.base, OUT, lw);
+      var g = ctx.createRadialGradient(-u * 0.2, -u * 0.95, u * 0.1, 0, -u * 0.72, u * 0.75 * fat);
+      g.addColorStop(0, fur.light); g.addColorStop(1, fur.dark);
+      this.ell(ctx, 0, -u * 0.72, u * 0.62 * fat, u * 0.62 * (fat > 1 ? 1.06 : 1), g, OUT, lw);
+      if (buff) { this.ell(ctx, -u * 0.62, -u * 1.0, u * 0.24, u * 0.24, fur.base, OUT, lw); this.ell(ctx, u * 0.62, -u * 1.0, u * 0.24, u * 0.24, fur.base, OUT, lw); }
+      if (fur.pattern === 'stripe') {
+        ctx.strokeStyle = fur.mark; ctx.lineWidth = u * 0.09;
+        for (var t = 0; t < 3; t++) { ctx.beginPath(); ctx.arc(0, -u * (1.25 - t * 0.22), u * (0.42 + t * 0.06) * fat, Math.PI * 0.25, Math.PI * 0.75); ctx.stroke(); }
+      } else if (fur.pattern === 'spots' || fur.pattern === 'calico') {
+        var cols = fur.pattern === 'calico' ? ['#f0902f', '#2b2b2b', '#f0902f'] : [fur.mark, fur.mark, fur.mark];
+        this.ell(ctx, -u * 0.25, -u * 0.95, u * 0.16, u * 0.12, cols[0]); this.ell(ctx, u * 0.22, -u * 0.6, u * 0.14, u * 0.11, cols[1]); this.ell(ctx, u * 0.05, -u * 1.15, u * 0.1, u * 0.08, cols[2]);
+      }
+      if (sk.scarf) this.ell(ctx, 0, -u * 1.2, u * 0.44 * fat, u * 0.13, sk.scarf, OUT, lw);
+      var sway = running ? Math.sin(ph * 0.5) * 0.55 : frozen ? 0.2 : Math.sin(this.time * 2) * 0.3;
       ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(0, -u * 0.35);
       ctx.bezierCurveTo(sway * u * 0.4, -u * 0.6, sway * u * 1.1, -u * 0.95, sway * u * 0.85, -u * 1.45);
       ctx.strokeStyle = OUT; ctx.lineWidth = u * 0.26; ctx.stroke();
-      ctx.strokeStyle = '#ff8a3d'; ctx.lineWidth = u * 0.16; ctx.stroke();
+      ctx.strokeStyle = fur.base; ctx.lineWidth = u * 0.16; ctx.stroke();
+      if (sk.face.acc) {
+        ctx.font = Math.round(u * 0.62) + 'px ' + EMOJI_FONT; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(sk.face.acc, u * 0.42, hy - u * 0.62);
+      }
       ctx.restore();
       if (this.celebrateT > 0) {
         for (var k = 0; k < 5; k++) {
           var a = this.time * 3 + k * (Math.PI * 2 / 5);
           this.star(ctx, x + Math.cos(a) * u * 1.5, y - jh - u * 1.1 + Math.sin(a) * u * 0.9, u * 0.22 * this.celebrateT, '#ffd23f');
         }
-      }
-      if (this.stumbleT > 0) {
-        ctx.font = '600 ' + Math.round(u * 0.9) + 'px Mitr, Tahoma, sans-serif';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.lineWidth = 4; ctx.strokeStyle = '#fff'; ctx.fillStyle = '#e63946';
-        ctx.strokeText('?!', x + u * 0.9, y - u * 2.5); ctx.fillText('?!', x + u * 0.9, y - u * 2.5);
       }
     }
   }, FX);
@@ -1393,6 +1625,84 @@
     }
   };
 
+  /** ขนแมวตามสกิน (ลำตัว): ไล่สีรอบตัว + ลาย/จุด/สามสี + เส้นขน */
+  Tex.furSkin = function (f) {
+    return Tex.canvas(256, 256, function (g, w, h) {
+      var R = Tex.rnd(5), x, y, k;
+      var gr = g.createLinearGradient(0, 0, w, 0);
+      gr.addColorStop(0, f.base); gr.addColorStop(0.25, f.light); gr.addColorStop(0.5, f.base); gr.addColorStop(0.75, f.dark); gr.addColorStop(1, f.base);
+      g.fillStyle = gr; g.fillRect(0, 0, w, h);
+      if (f.pattern === 'stripe') {
+        g.strokeStyle = f.mark; g.lineCap = 'round';
+        for (var s = 0; s < 9; s++) {
+          var y0 = 16 + s * 27 + R() * 6, lw = 6 + R() * 5;
+          for (x = 0; x < w; x += 8) {
+            var back = Math.max(0, Math.sin((x / w - 0.25) * Math.PI * 2));
+            g.globalAlpha = 0.22 + back * 0.7; g.lineWidth = lw;
+            g.beginPath(); g.moveTo(x, y0 + Math.sin(x / w * Math.PI * 4 + s) * 4); g.lineTo(x + 8, y0 + Math.sin((x + 8) / w * Math.PI * 4 + s) * 4); g.stroke();
+          }
+        }
+        g.globalAlpha = 1;
+      } else if (f.pattern === 'spots') {
+        g.fillStyle = f.mark;
+        for (k = 0; k < 34; k++) { g.globalAlpha = 0.55 + R() * 0.4; g.beginPath(); g.ellipse(R() * w, R() * h, 6 + R() * 12, 5 + R() * 9, R() * 3, 0, Math.PI * 2); g.fill(); }
+        g.globalAlpha = 1;
+      } else if (f.pattern === 'calico') {
+        var cols = ['#f0902f', '#2b2b2b', '#f0902f'];
+        for (k = 0; k < 10; k++) {
+          g.fillStyle = cols[k % 3]; g.beginPath();
+          var cx = R() * w, cy = R() * h, r = 20 + R() * 28;
+          for (var a = 0; a <= 12; a++) { var ang = a / 12 * Math.PI * 2, rr = r * (0.75 + R() * 0.5); g.lineTo(cx + Math.cos(ang) * rr, cy + Math.sin(ang) * rr); }
+          g.closePath(); g.fill();
+        }
+      }
+      for (k = 0; k < 6000; k++) {
+        x = R() * w; y = R() * h;
+        g.strokeStyle = R() < 0.5 ? 'rgba(255,240,220,.16)' : 'rgba(40,20,10,.14)';
+        g.lineWidth = 1; g.beginPath(); g.moveTo(x, y); g.lineTo(x + (R() - 0.5) * 2, y + 3 + R() * 3); g.stroke();
+      }
+    });
+  };
+  /** ขนแมวตามสกิน (หัว ขา หาง) */
+  Tex.furHeadSkin = function (f) {
+    return Tex.canvas(128, 128, function (g, w, h) {
+      var R = Tex.rnd(9), k;
+      g.fillStyle = f.base; g.fillRect(0, 0, w, h);
+      for (k = 0; k < 2500; k++) {
+        var px = R() * w, py = R() * h;
+        g.strokeStyle = R() < 0.5 ? 'rgba(255,235,210,.18)' : 'rgba(40,20,10,.16)';
+        g.lineWidth = 1; g.beginPath(); g.moveTo(px, py); g.lineTo(px + (R() - 0.5) * 2, py + 2 + R() * 3); g.stroke();
+      }
+      if (f.pattern === 'stripe') {
+        g.strokeStyle = f.mark; g.globalAlpha = 0.6; g.lineWidth = 5;
+        for (var s = 0; s < 3; s++) { g.beginPath(); g.moveTo(w * (0.4 + s * 0.1), 0); g.lineTo(w * (0.42 + s * 0.08), h * 0.22); g.stroke(); }
+        g.globalAlpha = 1;
+      } else if (f.pattern === 'spots') {
+        g.fillStyle = f.mark;
+        for (k = 0; k < 10; k++) { g.beginPath(); g.arc(R() * w, R() * h, 3 + R() * 5, 0, 7); g.fill(); }
+      } else if (f.pattern === 'calico') {
+        g.fillStyle = '#f0902f'; g.beginPath(); g.ellipse(w * 0.3, h * 0.25, 26, 20, 0.4, 0, 7); g.fill();
+        g.fillStyle = '#2b2b2b'; g.beginPath(); g.ellipse(w * 0.75, h * 0.3, 22, 18, -0.3, 0, 7); g.fill();
+      }
+    });
+  };
+  /** ผิวน้ำแข็ง: ฟ้าใส มีรอยร้าวและเกล็ดขาว */
+  Tex.ice = function () {
+    return Tex.canvas(128, 128, function (g, w, h) {
+      var R = Tex.rnd(21);
+      var gr = g.createLinearGradient(0, 0, w, h); gr.addColorStop(0, '#f4fdff'); gr.addColorStop(1, '#bfe9ff');
+      g.fillStyle = gr; g.fillRect(0, 0, w, h);
+      g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 1.5;
+      for (var k = 0; k < 9; k++) {
+        var x = R() * w, y = R() * h; g.beginPath(); g.moveTo(x, y);
+        for (var s = 0; s < 4; s++) { x += (R() - 0.5) * 40; y += (R() - 0.5) * 40; g.lineTo(x, y); }
+        g.stroke();
+      }
+      g.fillStyle = 'rgba(255,255,255,.7)';
+      for (var p = 0; p < 40; p++) { g.beginPath(); g.arc(R() * w, R() * h, 0.8 + R() * 1.6, 0, 7); g.fill(); }
+    });
+  };
+
   var VS = [
     'attribute vec3 aPos; attribute vec3 aNrm; attribute vec2 aUv;',
     'uniform mat4 uModel; uniform mat4 uVP; uniform mat3 uNrmM; uniform vec4 uUvX;',
@@ -1445,12 +1755,12 @@
   var scene3D = mixin({
     mode: '3d', ready: false, failed: false, gl: null,
     w: 1, h: 1, gh: 1, dpr: 1, fx: null,
-    LANE_X: 1.55, JUMP_TIME: 0.55, STUMBLE_TIME: 0.7, ROAD_W: 5.4, PROP_GAP: 2.8, PROP_COUNT: 34,
+    JUMP_TIME: 0.55, KICK_TIME: 0.5, KICK_DELAY: 0.2, ROAD_W: 5.4, PROP_GAP: 2.8, PROP_COUNT: 34,
     dist: 0, speed: 0, targetSpeed: 0, time: 0, runPhase: 0,
-    catLane: 0, catLaneTarget: 0, catX: 0, swerveT: 0, jumpT: 0, stumbleT: 0, celebrateT: 0,
+    catX: 0, kickX: 0, jumpT: 0, kickT: 0, celebrateT: 0, frozenT: 0, iceT: 0, stinkT: 0, emberT: 0,
     yaw: 0, targetYaw: 0, sad: false,
-    coins: [], particles: [], floaters: [], flashA: 0, flashRGB: '230,57,70', displayCoins: 0,
-    props: [], clouds: [], roots: [], trans: [],
+    particles: [], floaters: [], flashA: 0, flashRGB: '230,57,70', displayCoins: 0, pendingCoins: 0,
+    props: [], clouds: [], roots: [], trans: [], foes: [], foe: null, skin: null, skinCache: {},
     cam: [0, 2.7, 5.6], target: [0, 1, -7], view: M4.create(), proj: M4.create(), vp: M4.create(), nm: new Float32Array(9),
     sunDir: (function () { var v = [-0.45, 0.85, 0.32], l = Math.hypot(v[0], v[1], v[2]); return [v[0] / l, v[1] / l, v[2] / l]; })(),
     SKY_TOP: [0.29, 0.58, 0.92], FOG: [0.80, 0.91, 0.98],
@@ -1529,12 +1839,12 @@
         fog: o.fog === false ? 0 : 1, fogN: o.fogN || 26, fogF: o.fogF || 92, cut: o.cut == null ? 0.0 : o.cut, transparent: !!o.transparent };
     },
 
-    /* ----- สร้างโลก: พื้นหญ้า ทางหิน กำแพง ต้นไม้ หิน เสาตัวเลข ภูเขา เมฆ ----- */
+
+    /* ----- สร้างโลก: พื้นหญ้า ทางหิน กำแพง ต้นไม้ หิน เสาตัวเลข ภูเขา เมฆ สัตว์ 10 ชนิด และก้อนน้ำแข็ง ----- */
     buildWorld: function () {
-      var self = this, T = {};
+      var T = {};
       T.grass = this.texture(Tex.grass()); T.path = this.texture(Tex.path()); T.brick = this.texture(Tex.brick());
-      T.furS = this.texture(Tex.furStripe()); T.furG = this.texture(Tex.furGrain()); T.shadow = this.texture(Tex.shadow());
-      T.cloud = this.texture(Tex.cloud());
+      T.shadow = this.texture(Tex.shadow()); T.cloud = this.texture(Tex.cloud()); T.ice = this.texture(Tex.ice());
       T.signs = {};
       var symbols = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '−', '='];
       for (var si = 0; si < symbols.length; si++) T.signs[symbols[si]] = this.texture(Tex.sign(symbols[si]));
@@ -1544,7 +1854,6 @@
         sphere: this.mesh(Geo.sphere(1, 28, 20)), sphereLo: this.mesh(Geo.sphere(1, 14, 10)),
         cyl: this.mesh(Geo.cylinder(1, 1, 1, 18, true)), cone: this.mesh(Geo.cylinder(0, 1, 1, 18, true)),
         coneLo: this.mesh(Geo.cylinder(0, 1, 1, 9, true)), box: this.mesh(Geo.box(1, 1, 1, false)),
-        coin: this.mesh(Geo.cylinder(0.36, 0.36, 0.09, 26, true)), coinRim: this.mesh(Geo.torus(0.33, 0.035, 8, 26)),
         torus: this.mesh(Geo.torus(0.3, 0.075, 10, 28)), quad: this.mesh(Geo.quad(1, 1)), flat: this.mesh(Geo.flatQuad(1, 1)),
         ground: this.mesh(Geo.plane(220, 240)), road: this.mesh(Geo.plane(this.ROAD_W, 240)),
         wall: this.mesh(Geo.box(0.6, 0.5, 240, true)),
@@ -1564,11 +1873,8 @@
         mountain: this.mat({ color: [0.42, 0.55, 0.62], fogN: 70, fogF: 260 }), snow: this.mat({ color: [0.96, 0.97, 1.0], fogN: 70, fogF: 260 }),
         shadow: this.mat({ color: [0, 0, 0], tex: T.shadow, unlit: true, alpha: 0.55, transparent: true, cut: 0.01 }),
         cloud: this.mat({ tex: T.cloud, unlit: true, fog: false, transparent: true, cut: 0.01, alpha: 0.95 }),
-        furS: this.mat({ tex: T.furS, spec: 0.12, shin: 10 }), furG: this.mat({ tex: T.furG, spec: 0.12, shin: 10 }),
-        furDark: this.mat({ color: [0.55, 0.24, 0.07], spec: 0.1 }), white: this.mat({ color: [1.0, 0.96, 0.9], spec: 0.1 }),
-        pink: this.mat({ color: [1.0, 0.6, 0.66], spec: 0.25, shin: 20 }), eye: this.mat({ color: [0.06, 0.07, 0.1], spec: 1.3, shin: 80 }),
-        eyeHi: this.mat({ color: [1, 1, 1], unlit: true }), scarf: this.mat({ color: [0.10, 0.55, 0.84], spec: 0.35, shin: 30 }),
-        whisker: this.mat({ color: [0.95, 0.95, 0.95], unlit: true })
+        eyeHi: this.mat({ color: [1, 1, 1], unlit: true }), whisker: this.mat({ color: [0.95, 0.95, 0.95], unlit: true }),
+        ice: this.mat({ tex: T.ice, color: [0.82, 0.95, 1.0], alpha: 0.5, transparent: true, spec: 1.6, shin: 90, emis: [0.05, 0.09, 0.12] })
       };
       this.M = M;
 
@@ -1578,9 +1884,7 @@
       for (var side = -1; side <= 1; side += 2) {
         var wall = world.add(new Node(G.wall, M.wall)); wall.p = [side * (this.ROAD_W / 2 + 0.3), 0.25, -90];
       }
-      this.groundNode = ground; this.roadNode = road;
-
-      // ภูเขาไกล (อยู่นิ่ง ให้ความรู้สึกระยะทาง)
+      // ภูเขาไกล (อยู่นิ่ง ให้ความรู้สึกระยะทาง) และเมฆ
       var far = new Node();
       for (var mi = 0; mi < 9; mi++) {
         var hgt = 22 + hash(mi + 3) * 30, wid = 28 + hash(mi + 9) * 26;
@@ -1589,15 +1893,11 @@
         mnt.s = [wid, hgt, wid * 0.8]; mnt.r = [0, hash(mi + 5) * 3, 0];
         if (hgt > 38) { var snow = far.add(new Node(G.coneLo, M.snow)); snow.p = [mnt.p[0], hgt - 2 - hgt * 0.12, mnt.p[2] + 0.5]; snow.s = [wid * 0.26, hgt * 0.26, wid * 0.22]; snow.r = mnt.r.slice(); }
       }
-      // เมฆ
       for (var ci = 0; ci < 7; ci++) {
-        var cl = new Node(G.quad, M.cloud);
-        var cw = 34 + hash(ci + 30) * 30;
+        var cl = new Node(G.quad, M.cloud), cw = 34 + hash(ci + 30) * 30;
         cl.p = [-120 + ci * 40 + hash(ci + 40) * 15, 32 + hash(ci + 50) * 26, -175 - hash(ci + 60) * 20]; cl.s = [cw, cw * 0.5, 1];
         far.add(cl); this.clouds.push(cl);
       }
-      this.farNode = far;
-
       // ของประดับข้างทาง (หมุนเวียนใช้ซ้ำ)
       var types = ['round', 'pine', 'rock', 'round', 'sign', 'pine', 'bush', 'round', 'rock', 'pine', 'sign', 'bush'];
       var props = new Node();
@@ -1607,21 +1907,22 @@
         this.placeProp(it, k % 2 === 0 ? -1 : 1);
         props.add(it.node); this.props.push(it);
       }
-      // เหรียญ (สร้างเตรียมไว้ 8 เหรียญ)
-      var coinRoot = new Node();
-      for (var q = 0; q < 8; q++) {
-        var holder = coinRoot.add(new Node());
-        var spin = holder.add(new Node());
-        var disc = spin.add(new Node(G.coin, M.gold)); disc.r = [Math.PI / 2, 0, 0];
-        var rim = spin.add(new Node(G.coinRim, M.gold)); rim.r = [Math.PI / 2, 0, 0]; rim.p = [0, 0, 0.05];
-        var rim2 = spin.add(new Node(G.coinRim, M.gold)); rim2.r = [Math.PI / 2, 0, 0]; rim2.p = [0, 0, -0.05];
-        var csh = coinRoot.add(new Node(G.flat, M.shadow)); csh.s = [0.7, 1, 0.45];
-        holder.visible = false; csh.visible = false;
-        this.coins.push({ holder: holder, spin: spin, shadow: csh, active: false, z: 0, x: 0, ph: 0 });
+      // สัตว์ทั้ง 10 ชนิด (สร้างครั้งเดียว ซ่อนไว้ แสดงทีละตัว)
+      var foeRoot = new Node();
+      for (var t = 0; t < CFG.CREATURES.length; t++) {
+        var f = this.makeCreature(t);
+        foeRoot.add(f.root); foeRoot.add(f.shadow); this.foes.push(f);
       }
-      this.cat = this.buildCat();
-      this.roots = [world, far, props, coinRoot, this.cat.root, this.cat.shadow];
-      self.coinsActive = 0;
+      // ก้อนน้ำแข็งตอนโดนแช่แข็ง
+      var ice = new Node();
+      var blk = ice.add(new Node(G.box, M.ice)); blk.p = [0, 1.02, 0]; blk.s = [1.5, 2.1, 2.3];
+      var icicle = [[-0.55, -0.9], [0.55, -0.9], [-0.55, 0.9], [0.55, 0.9], [0, 0]];
+      for (var ii = 0; ii < icicle.length; ii++) { var ic = ice.add(new Node(G.coneLo, M.ice)); ic.p = [icicle[ii][0], 2.22, icicle[ii][1]]; ic.s = [0.13, 0.36, 0.13]; }
+      ice.visible = false; this.ice = ice;
+
+      this.skin = currentSkin();
+      this.cat = this.buildCat(this.skin);
+      this.roots = [world, far, props, foeRoot, this.cat.root, this.cat.shadow, ice];
     },
 
     makeProp: function (type, k) {
@@ -1669,73 +1970,424 @@
       }
     },
 
-    /** แมว 3 มิติ: ลำตัวลายส้ม หัวมีแก้ม หู ปากกระบอก ตา ผ้าพันคอปลิว ขา 4 ข้างวิ่งแบบควบ หางแกว่ง */
-    buildCat: function () {
-      var G = this.G, M = this.M, c = {};
+
+    /* =================== สกินแมว =================== */
+    skinMats: function (skin) {
+      if (this.skinCache[skin.id]) return this.skinCache[skin.id];
+      var f = skin.fur;
+      var S = {
+        body: this.mat({ tex: this.texture(Tex.furSkin(f)), spec: 0.12, shin: 10 }),
+        head: this.mat({ tex: this.texture(Tex.furHeadSkin(f)), spec: 0.12, shin: 10 }),
+        tip: this.mat({ color: hex3(f.tip), spec: 0.1 }),
+        belly: this.mat({ color: hex3(f.belly), spec: 0.1 }),
+        pink: this.mat({ color: hex3(f.inner || '#ff9aa8'), spec: 0.25, shin: 20 }),
+        eye: this.mat({ color: [0.06, 0.07, 0.1], spec: 1.3, shin: 80, emis: skin.eyeGlow ? hex3(skin.eyeGlow) : [0, 0, 0] }),
+        scarf: skin.scarf ? this.mat({ color: hex3(skin.scarf), spec: 0.35, shin: 30 }) : null
+      };
+      this.skinCache[skin.id] = S;
+      return S;
+    },
+    /** แมว 3 มิติตามสกิน: ลำตัว หัว แก้ม หู ปาก ตา ผ้าพันคอ ขา 4 ข้าง หาง + เครื่องประดับเฉพาะสกิน */
+    buildCat: function (skin) {
+      var G = this.G, M = this.M, S = this.skinMats(skin), b = skin.body || {}, c = { skin: skin, scarfTails: [] };
+      var fat = b.fat ? 1 : 0, buff = b.buff ? 1 : 0;
       c.root = new Node();
       c.body = c.root.add(new Node());
-      var torso = c.body.add(new Node(G.sphere, M.furS)); torso.p = [0, 0.78, 0.02]; torso.r = [Math.PI / 2, 0, 0]; torso.s = [0.46, 0.68, 0.43];
-      var chest = c.body.add(new Node(G.sphere, M.white)); chest.p = [0, 0.74, -0.42]; chest.s = [0.3, 0.32, 0.22];
-      var hipL = c.body.add(new Node(G.sphere, M.furS)); hipL.p = [-0.2, 0.74, 0.38]; hipL.s = [0.22, 0.28, 0.3];
-      var hipR = c.body.add(new Node(G.sphere, M.furS)); hipR.p = [0.2, 0.74, 0.38]; hipR.s = [0.22, 0.28, 0.3];
-
+      var torso = c.body.add(new Node(G.sphere, S.body)); torso.p = [0, 0.8 + fat * 0.04, 0.02]; torso.r = [Math.PI / 2, 0, 0];
+      torso.s = [0.46 + fat * 0.2 + buff * 0.05, 0.68 + fat * 0.04, 0.43 + fat * 0.2 + buff * 0.04];
+      var chest = c.body.add(new Node(G.sphere, S.belly)); chest.p = [0, 0.74, -0.42 - fat * 0.08]; chest.s = [0.3 + fat * 0.14, 0.32 + fat * 0.08, 0.22 + fat * 0.06];
+      if (fat) { var belly = c.body.add(new Node(G.sphere, S.belly)); belly.p = [0, 0.56, -0.12]; belly.s = [0.5, 0.36, 0.52]; }
+      for (var hx = -1; hx <= 1; hx += 2) {
+        var hip = c.body.add(new Node(G.sphere, S.body)); hip.p = [hx * (0.2 + fat * 0.1), 0.74, 0.38]; hip.s = [0.22 + fat * 0.06, 0.28 + fat * 0.04, 0.3];
+        if (buff) {
+          var sh = c.body.add(new Node(G.sphere, S.body)); sh.p = [hx * 0.34, 0.95, -0.34]; sh.s = [0.21, 0.21, 0.21];
+          var pec = c.body.add(new Node(G.sphere, S.body)); pec.p = [hx * 0.13, 0.86, -0.52]; pec.s = [0.17, 0.15, 0.1];
+        }
+      }
       // หัว
-      c.head = c.body.add(new Node()); c.head.p = [0, 1.18, -0.62];
-      var skull = c.head.add(new Node(G.sphere, M.furG)); skull.s = [0.4, 0.36, 0.37];
-      var cheekL = c.head.add(new Node(G.sphere, M.furG)); cheekL.p = [-0.2, -0.1, -0.08]; cheekL.s = [0.21, 0.17, 0.2];
-      var cheekR = c.head.add(new Node(G.sphere, M.furG)); cheekR.p = [0.2, -0.1, -0.08]; cheekR.s = [0.21, 0.17, 0.2];
+      c.head = c.body.add(new Node()); c.head.p = [0, 1.18 + fat * 0.05, -0.62 - fat * 0.08];
+      var skull = c.head.add(new Node(G.sphere, S.head)); skull.s = [0.4, 0.36, 0.37];
+      for (var ch = -1; ch <= 1; ch += 2) {
+        var cheek = c.head.add(new Node(G.sphere, S.head)); cheek.p = [ch * (0.2 + fat * 0.03), -0.1, -0.08]; cheek.s = [0.21 + fat * 0.05, 0.17 + fat * 0.03, 0.2];
+      }
       c.ears = [];
       for (var e = -1; e <= 1; e += 2) {
         var ear = c.head.add(new Node()); ear.p = [e * 0.22, 0.27, 0.02]; ear.r = [0, 0, -e * 0.32];
-        var outer = ear.add(new Node(G.cone, M.furG)); outer.p = [0, 0.12, 0]; outer.s = [0.15, 0.3, 0.1];
-        var inner = ear.add(new Node(G.cone, M.pink)); inner.p = [0, 0.1, -0.045]; inner.s = [0.09, 0.2, 0.05];
+        var outer = ear.add(new Node(G.cone, S.head)); outer.p = [0, 0.12, 0]; outer.s = [0.15, 0.3, 0.1];
+        var inner = ear.add(new Node(G.cone, S.pink)); inner.p = [0, 0.1, -0.045]; inner.s = [0.09, 0.2, 0.05];
         c.ears.push(ear);
       }
-      var muzL = c.head.add(new Node(G.sphere, M.white)); muzL.p = [-0.075, -0.13, -0.31]; muzL.s = [0.12, 0.095, 0.1];
-      var muzR = c.head.add(new Node(G.sphere, M.white)); muzR.p = [0.075, -0.13, -0.31]; muzR.s = [0.12, 0.095, 0.1];
-      var chin = c.head.add(new Node(G.sphere, M.white)); chin.p = [0, -0.2, -0.27]; chin.s = [0.09, 0.06, 0.08];
-      var nose = c.head.add(new Node(G.sphere, M.pink)); nose.p = [0, -0.06, -0.38]; nose.s = [0.055, 0.04, 0.04];
+      var muzL = c.head.add(new Node(G.sphere, S.belly)); muzL.p = [-0.075, -0.13, -0.31]; muzL.s = [0.12, 0.095, 0.1];
+      var muzR = c.head.add(new Node(G.sphere, S.belly)); muzR.p = [0.075, -0.13, -0.31]; muzR.s = [0.12, 0.095, 0.1];
+      var chin = c.head.add(new Node(G.sphere, S.belly)); chin.p = [0, -0.2, -0.27]; chin.s = [0.09, 0.06, 0.08];
+      var nose = c.head.add(new Node(G.sphere, S.pink)); nose.p = [0, -0.06, -0.38]; nose.s = [0.055, 0.04, 0.04];
+      var big = skin.bigEyes ? 1 : 0;
       for (var ey = -1; ey <= 1; ey += 2) {
-        var eye = c.head.add(new Node(G.sphere, M.eye)); eye.p = [ey * 0.15, 0.03, -0.31]; eye.s = [0.075, 0.085, 0.05];
-        var hi = c.head.add(new Node(G.sphereLo, M.eyeHi)); hi.p = [ey * 0.15 + 0.025, 0.065, -0.355]; hi.s = [0.022, 0.022, 0.012];
+        var eye = c.head.add(new Node(G.sphere, S.eye)); eye.p = [ey * 0.15, 0.03 + big * 0.01, -0.31]; eye.s = [0.075 + big * 0.03, 0.085 + big * 0.035, 0.05 + big * 0.01];
+        var hi = c.head.add(new Node(G.sphereLo, M.eyeHi)); hi.p = [ey * 0.15 + 0.025, 0.07 + big * 0.02, -0.355 - big * 0.01]; hi.s = [0.022 + big * 0.01, 0.022 + big * 0.01, 0.012];
         for (var wk = 0; wk < 2; wk++) {
           var wh = c.head.add(new Node(G.box, M.whisker)); wh.p = [ey * 0.27, -0.13 - wk * 0.04, -0.3]; wh.s = [0.3, 0.008, 0.008]; wh.r = [0, ey * 0.25, ey * (wk ? -0.12 : 0.1)];
         }
       }
-      // ผ้าพันคอ
-      var scarf = c.body.add(new Node(G.torus, M.scarf)); scarf.p = [0, 1.0, -0.47]; scarf.r = [1.1, 0, 0]; scarf.s = [1.05, 1.05, 1.05];
-      c.scarfTails = [];
-      for (var st = 0; st < 2; st++) {
-        var piv = c.body.add(new Node()); piv.p = [0.12 + st * 0.06, 1.08, -0.3];
-        var tail = piv.add(new Node(G.box, M.scarf)); tail.p = [0, 0, 0.24]; tail.s = [0.12, 0.03, 0.48];
-        c.scarfTails.push(piv);
+      // ผ้าพันคอ (ถ้าสกินมี)
+      if (S.scarf) {
+        var scarf = c.body.add(new Node(G.torus, S.scarf)); scarf.p = [0, 1.0, -0.47]; scarf.r = [1.1, 0, 0]; scarf.s = [1.05 + fat * 0.25, 1.05 + fat * 0.25, 1.05];
+        for (var st = 0; st < 2; st++) {
+          var piv = c.body.add(new Node()); piv.p = [0.12 + st * 0.06, 1.08, -0.3];
+          var tail = piv.add(new Node(G.box, S.scarf)); tail.p = [0, 0, 0.24]; tail.s = [0.12, 0.03, 0.48];
+          c.scarfTails.push(piv);
+        }
       }
       // ขา 4 ข้าง (จุดหมุนที่สะโพก/ไหล่)
       c.legs = [];
-      var hips = [[-0.2, 0.62, -0.38], [0.2, 0.62, -0.38], [-0.22, 0.64, 0.4], [0.22, 0.64, 0.4]];
+      var hips = [[-0.2 - fat * 0.08, 0.62, -0.38], [0.2 + fat * 0.08, 0.62, -0.38], [-0.22 - fat * 0.1, 0.64, 0.4], [0.22 + fat * 0.1, 0.64, 0.4]];
+      var lr = 0.095 + buff * 0.03 + fat * 0.02;
       for (var l = 0; l < 4; l++) {
         var leg = c.body.add(new Node()); leg.p = hips[l];
-        var up = leg.add(new Node(G.cyl, M.furG)); up.p = [0, -0.26, 0]; up.s = [0.095, 0.5, 0.095];
-        var paw = leg.add(new Node(G.sphere, M.white)); paw.p = [0, -0.53, -0.03]; paw.s = [0.11, 0.075, 0.14];
-        var pad = leg.add(new Node(G.sphereLo, M.pink)); pad.p = [0, -0.55, 0.08]; pad.s = [0.06, 0.04, 0.04];
+        var up = leg.add(new Node(G.cyl, S.head)); up.p = [0, -0.26, 0]; up.s = [lr, 0.5, lr];
+        if (buff && l < 2) { var bic = leg.add(new Node(G.sphere, S.head)); bic.p = [0, -0.16, 0]; bic.s = [0.15, 0.18, 0.15]; }
+        var paw = leg.add(new Node(G.sphere, S.belly)); paw.p = [0, -0.53, -0.03]; paw.s = [0.11 + fat * 0.02, 0.075, 0.14];
+        var pad = leg.add(new Node(G.sphereLo, S.pink)); pad.p = [0, -0.55, 0.08]; pad.s = [0.06, 0.04, 0.04];
         c.legs.push(leg);
       }
       // หาง (ต่อกันเป็นข้อ ๆ แกว่งเป็นคลื่น)
       c.tail = [];
-      var parent = c.body.add(new Node()); parent.p = [0, 0.92, 0.66];
+      var parent = c.body.add(new Node()); parent.p = [0, 0.92, 0.66 + fat * 0.12];
       for (var t = 0; t < 8; t++) {
         var seg = parent.add(new Node());
         if (t > 0) seg.p = [0, 0.13, 0];
-        var tm = t === 7 ? M.furDark : M.furG;
+        var tm = t === 7 ? S.tip : S.head;
         var cyl = seg.add(new Node(G.cyl, tm)); cyl.p = [0, 0.065, 0]; cyl.s = [0.085 - t * 0.004, 0.15, 0.085 - t * 0.004];
         var joint = seg.add(new Node(G.sphereLo, tm)); joint.s = [0.087 - t * 0.004, 0.087 - t * 0.004, 0.087 - t * 0.004];
         c.tail.push(seg); parent = seg;
       }
-      c.shadow = new Node(G.flat, this.M.shadow); c.shadow.p = [0, 0.05, 0.02]; c.shadow.s = [1.3, 1, 1.9];
+      c.shadow = new Node(G.flat, M.shadow); c.shadow.p = [0, 0.05, 0.02]; c.shadow.s = [1.3 + fat * 0.4, 1, 1.9];
+      this.addAccessories(c, skin, S);
+      this.poseIdle(c);
       return c;
     },
+    /** เครื่องประดับเฉพาะของแต่ละสกิน */
+    addAccessories: function (c, skin, S) {
+      var G = this.G, M = this.M, self = this;
+      function mt(hex, o) { o = o || {}; o.color = hex3(hex); if (o.spec == null) o.spec = 0.25; return self.mat(o); }
+      function put(parent, mesh, mat, p, s, r) { var n = parent.add(new Node(mesh, mat)); n.p = p; n.s = typeof s === 'number' ? [s, s, s] : s; if (r) n.r = r; return n; }
+      var H = c.head, B = c.body, side;
+      switch (skin.id) {
+        case 'muscle': // ผ้าคาดหัวสีแดง
+          put(H, G.torus, mt('#e63946'), [0, 0.12, 0], [1.34, 1.2, 1.25]);
+          put(H, G.box, mt('#e63946'), [0.08, 0.1, 0.4], [0.05, 0.04, 0.18], [0.5, 0.3, 0]);
+          put(H, G.box, mt('#e63946'), [-0.06, 0.08, 0.4], [0.05, 0.04, 0.16], [0.7, -0.3, 0]);
+          break;
+        case 'poop': // ผ้าอ้อม (มีควันลอยตามหลังตอนวิ่ง)
+          put(B, G.sphere, mt('#ffffff', { spec: 0.15 }), [0, 0.6, 0.42], [0.42, 0.3, 0.34]);
+          put(B, G.box, mt('#8fd3ff'), [-0.3, 0.68, 0.36], [0.06, 0.1, 0.1]);
+          put(B, G.box, mt('#8fd3ff'), [0.3, 0.68, 0.36], [0.06, 0.1, 0.1]);
+          // ควันเหม็นสีเขียวลอยรอบตัว และเหงื่อตก (มองเห็นได้จากทุกมุม)
+          var stink = mt('#9ccc65', { alpha: 0.55, transparent: true, emis: [0.05, 0.1, 0.0] });
+          put(B, G.sphereLo, stink, [0.42, 1.15, 0.55], 0.16); put(B, G.sphereLo, stink, [-0.38, 1.3, 0.75], 0.13);
+          put(B, G.sphereLo, stink, [0.15, 1.5, 0.85], 0.11); put(B, G.sphereLo, stink, [-0.5, 0.95, 0.2], 0.12);
+          put(H, G.sphereLo, mt('#7fd3ff', { spec: 1.2, shin: 60 }), [0.27, 0.2, -0.24], [0.04, 0.065, 0.04]);
+          put(H, G.box, mt('#7a3a10'), [-0.15, 0.17, -0.33], [0.1, 0.015, 0.015], [0, 0, 0.35]);
+          put(H, G.box, mt('#7a3a10'), [0.15, 0.17, -0.33], [0.1, 0.015, 0.015], [0, 0, -0.35]);
+          break;
+        case 'demonpig': // จมูกหมู เขาปีศาจ ปลายหางลูกศร ตาแดงเรืองแสง
+          var snout = mt('#f48fb1');
+          put(H, G.cyl, snout, [0, -0.1, -0.37], [0.13, 0.08, 0.1], [Math.PI / 2, 0, 0]);
+          put(H, G.sphereLo, mt('#7a2340'), [-0.045, -0.1, -0.42], [0.025, 0.035, 0.02]);
+          put(H, G.sphereLo, mt('#7a2340'), [0.045, -0.1, -0.42], [0.025, 0.035, 0.02]);
+          for (side = -1; side <= 1; side += 2) put(H, G.cone, mt('#c62828', { spec: 0.8, shin: 50 }), [side * 0.15, 0.36, -0.04], [0.06, 0.2, 0.06], [0, 0, -side * 0.35]);
+          put(c.tail[c.tail.length - 1], G.cone, mt('#c62828'), [0, 0.22, 0], [0.12, 0.16, 0.04]);
+          break;
+        case 'professor': // แว่นตา หมวกครุย หูกระต่าย
+          var rim = mt('#3b2f2a', { spec: 0.9, shin: 60 });
+          for (side = -1; side <= 1; side += 2) put(H, G.torus, rim, [side * 0.15, 0.03, -0.36], [0.34, 0.34, 0.34], [Math.PI / 2, 0, 0]);
+          put(H, G.box, rim, [0, 0.04, -0.38], [0.08, 0.015, 0.015]);
+          var blk = mt('#1d1f24', { spec: 0.3 });
+          put(H, G.cyl, blk, [0, 0.31, 0.02], [0.25, 0.12, 0.25]);
+          put(H, G.box, blk, [0, 0.38, 0.02], [0.64, 0.035, 0.64], [0, Math.PI / 4, 0]);
+          put(H, G.sphereLo, M.gold, [0, 0.405, 0.02], 0.03);
+          put(H, G.box, M.gold, [0.3, 0.3, 0.02], [0.02, 0.18, 0.02]);
+          put(H, G.sphereLo, M.gold, [0.3, 0.2, 0.02], [0.04, 0.05, 0.04]);
+          var bow = mt('#b71c1c');
+          put(B, G.cone, bow, [-0.08, 0.84, -0.84], [0.07, 0.11, 0.05], [0, 0, -Math.PI / 2]);
+          put(B, G.cone, bow, [0.08, 0.84, -0.84], [0.07, 0.11, 0.05], [0, 0, Math.PI / 2]);
+          put(B, G.sphereLo, bow, [0, 0.84, -0.86], 0.035);
+          break;
+        case 'dino': // หนามบนหลัง หัว และหาง
+          var spike = mt('#ff8a3d', { spec: 0.4 });
+          var zs = [-0.38, -0.18, 0.02, 0.22, 0.42];
+          for (var k = 0; k < zs.length; k++) {
+            var zz = zs[k], yy = 0.8 + 0.46 * Math.sqrt(Math.max(0, 1 - Math.pow((zz - 0.02) / 0.68, 2)));
+            put(B, G.cone, spike, [0, yy + 0.04, zz], [0.06, 0.2 - Math.abs(zz) * 0.08, 0.1]);
+          }
+          put(H, G.cone, spike, [0, 0.36, 0.06], [0.05, 0.16, 0.08]);
+          put(H, G.cone, spike, [0, 0.3, 0.22], [0.05, 0.14, 0.08], [0.5, 0, 0]);
+          for (var tk = 1; tk < 7; tk += 2) put(c.tail[tk], G.coneLo, spike, [0, 0.06, -0.08], [0.04, 0.1, 0.06], [-1.2, 0, 0]);
+          break;
+        case 'yada': // โบว์สีชมพู แก้มชมพู ตาโตเป็นประกาย
+          var pinkBow = mt('#ff5fa2', { spec: 0.6, shin: 40 });
+          for (side = -1; side <= 1; side += 2) put(H, G.sphere, pinkBow, [side * 0.13, 0.35, 0.04], [0.13, 0.09, 0.06], [0, 0, side * 0.4]);
+          put(H, G.sphere, pinkBow, [0, 0.35, 0.04], 0.05);
+          for (side = -1; side <= 1; side += 2) put(H, G.sphereLo, mt('#ff8fb1'), [side * 0.24, -0.07, -0.27], [0.07, 0.04, 0.025]);
+          break;
+        case 'perm': // แว่นกันแดด สร้อยทอง
+          var lens = mt('#3b2a8a', { spec: 1.8, shin: 110, metal: 0.5, emis: [0.06, 0.03, 0.16] });
+          for (side = -1; side <= 1; side += 2) {
+            put(H, G.box, lens, [side * 0.15, 0.04, -0.37], [0.17, 0.1, 0.03]);
+            put(H, G.box, M.gold, [side * 0.15, 0.095, -0.375], [0.19, 0.02, 0.035]);
+            put(H, G.box, M.gold, [side * 0.3, 0.06, -0.22], [0.02, 0.02, 0.3]);
+            put(H, G.box, M.eyeHi, [side * 0.15 - 0.04, 0.06, -0.39], [0.035, 0.012, 0.005], [0, 0, 0.6]);
+          }
+          put(H, G.box, M.gold, [0, 0.08, -0.38], [0.1, 0.02, 0.02]);
+          put(B, G.torus, M.gold, [0, 0.98, -0.47], [1.08, 1.08, 1.08], [1.1, 0, 0]);
+          put(B, G.sphere, M.gold, [0, 0.8, -0.8], [0.07, 0.07, 0.03]);
+          break;
+        case 'alien': // หนวดเสาอากาศเรืองแสง
+          for (side = -1; side <= 1; side += 2) {
+            put(H, G.cyl, mt('#1d8f7a'), [side * 0.13, 0.43, 0.02], [0.018, 0.22, 0.018], [0, 0, -side * 0.3]);
+            put(H, G.sphereLo, mt('#c6ff7a', { emis: [0.5, 0.8, 0.2], unlit: false }), [side * 0.2, 0.56, 0.02], 0.065);
+          }
+          break;
+        case 'juju': // มงกุฎดอกไม้
+          var cols = ['#ff7eb6', '#ffd23f', '#ffffff', '#b388ff', '#ff9e5e'];
+          for (var fi = 0; fi < 10; fi++) {
+            var a = fi / 10 * Math.PI * 2;
+            put(H, G.sphereLo, mt(cols[fi % cols.length], { spec: 0.4 }), [Math.cos(a) * 0.33, 0.24, Math.sin(a) * 0.31], 0.06);
+            if (fi % 2) put(H, G.sphereLo, mt('#5cbf3f'), [Math.cos(a + 0.3) * 0.34, 0.21, Math.sin(a + 0.3) * 0.32], [0.05, 0.02, 0.03]);
+          }
+          break;
+      }
+    },
+    poseIdle: function (c) {
+      for (var t = 0; t < c.tail.length; t++) c.tail[t].r = [t === 0 ? 0.75 : -0.12, 0, 0];
+      for (var s = 0; s < c.scarfTails.length; s++) c.scarfTails[s].r = [-0.2, s ? 0.25 : 0.1, 0];
+    },
+    setSkin: function (skin) {
+      if (!this.ready) return;
+      this.skin = skin;
+      this.cat = this.buildCat(skin);
+      this.roots[4] = this.cat.root; this.roots[5] = this.cat.shadow;
+      this.animateCat(0);
+    },
 
-    /* ----- ขนาดจอ ----- */
+    /* =================== สัตว์ 10 ชนิด (สร้างจากรูปทรงพื้นฐาน หันหน้าเข้าหาแมว +z) =================== */
+    makeCreature: function (tier) {
+      var self = this, G = this.G, M = this.M, def = CFG.CREATURES[tier];
+      var f = { def: def, tier: tier, root: new Node(), wob: [], type: 'walk', scale: 1, radius: 0.6, shadowS: 1.4, ember: false,
+        state: 'idle', x: 0, y: 0, z: -30, p: 0, t: 0, grow: 0 };
+      var B = f.body = f.root.add(new Node());
+      function mt(hex, o) { o = o || {}; o.color = hex3(hex); if (o.spec == null) o.spec = 0.25; return self.mat(o); }
+      function put(parent, mesh, mat, p, s, r) { var n = parent.add(new Node(mesh || null, mat || null)); if (p) n.p = p; if (s != null) n.s = typeof s === 'number' ? [s, s, s] : s; if (r) n.r = r; return n; }
+      function dirR(v) { var l = Math.hypot(v[0], v[1], v[2]) || 1; return [Math.atan2(v[2] / l, v[1] / l), 0, Math.asin(Math.max(-1, Math.min(1, -v[0] / l)))]; }
+      function seg(parent, a, b, rad, mat) { var d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]]; return put(parent, G.cyl, mat, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2], [rad, Math.hypot(d[0], d[1], d[2]), rad], dirR(d)); }
+      function wob(n, ax, amp, sp, ph) { n.rb = n.r.slice(); f.wob.push({ n: n, ax: ax, amp: amp, sp: sp, ph: ph || 0 }); }
+      var WHITE = mt('#ffffff', { spec: 0.3 }), BLACK = mt('#111318', { spec: 1.2, shin: 80 });
+      function eye(x, y, z, r, pupil) {
+        put(B, G.sphereLo, WHITE, [x, y, z], r);
+        put(B, G.sphereLo, pupil ? mt(pupil, { spec: 1 }) : BLACK, [x, y, z + r * 0.62], [r * 0.55, r * 0.6, r * 0.45]);
+        put(B, G.sphereLo, M.eyeHi, [x + r * 0.22, y + r * 0.25, z + r * 0.95], r * 0.2);
+      }
+      function leg(x, y, z, len, rad, mat, foot, ph) {
+        var piv = put(B, null, null, [x, y, z]);
+        put(piv, G.cyl, mat, [0, -len / 2, 0], [rad, len, rad]);
+        if (foot) put(piv, G.sphereLo, foot, [0, -len, 0.04], [rad * 1.35, rad * 0.8, rad * 1.7]);
+        wob(piv, 0, 0.55, 9, ph);
+        return piv;
+      }
+      var s, k, a, P = Math.PI;
+      switch (def.id) {
+        case 'frog':
+          f.type = 'hop'; f.scale = 0.95; f.radius = 0.55; f.shadowS = 1.5;
+          var G1 = mt('#5cbf3f'), G2 = mt('#c7e86b');
+          put(B, G.sphere, G1, [0, 0.42, 0], [0.55, 0.38, 0.6]);
+          put(B, G.sphere, G2, [0, 0.36, 0.2], [0.44, 0.28, 0.42]);
+          for (s = -1; s <= 1; s += 2) {
+            put(B, G.sphereLo, G1, [s * 0.22, 0.72, 0.14], 0.17); eye(s * 0.22, 0.8, 0.2, 0.15);
+            put(B, G.sphereLo, mt('#ff8fa3'), [s * 0.33, 0.5, 0.45], [0.08, 0.05, 0.03]);
+            put(B, G.sphere, G1, [s * 0.48, 0.22, -0.15], [0.2, 0.18, 0.34]);
+            put(B, G.sphereLo, G2, [s * 0.5, 0.04, 0.12], [0.16, 0.04, 0.22]);
+            put(B, G.sphereLo, G1, [s * 0.28, 0.12, 0.42], [0.08, 0.12, 0.08]);
+          }
+          put(B, G.box, mt('#7a1f2b'), [0, 0.42, 0.58], [0.42, 0.035, 0.04]);
+          break;
+        case 'rabbit':
+          f.type = 'hop'; f.scale = 1.0; f.radius = 0.5; f.shadowS = 1.3;
+          var W = mt('#f4f1ee'), PK = mt('#ffb3c1'), GR = mt('#d9d4ce');
+          put(B, G.sphere, W, [0, 0.55, -0.05], [0.42, 0.45, 0.48]);
+          put(B, G.sphere, W, [0, 1.08, 0.16], [0.32, 0.3, 0.3]);
+          for (s = -1; s <= 1; s += 2) {
+            var ear = put(B, null, null, [s * 0.12, 1.3, 0.08], null, [-0.15, 0, -s * 0.18]);
+            put(ear, G.sphere, W, [0, 0.28, 0], [0.08, 0.3, 0.05]); put(ear, G.sphere, PK, [0, 0.28, 0.03], [0.045, 0.22, 0.03]);
+            wob(ear, 2, s * 0.15, 6, 0);
+            eye(s * 0.13, 1.14, 0.38, 0.07);
+            put(B, G.sphere, GR, [s * 0.2, 0.08, 0.15], [0.13, 0.08, 0.26]);
+            put(B, G.sphereLo, W, [s * 0.18, 0.45, 0.38], [0.08, 0.12, 0.08]);
+          }
+          put(B, G.sphereLo, PK, [0, 1.04, 0.46], [0.05, 0.035, 0.03]);
+          put(B, G.box, WHITE, [0, 0.96, 0.44], [0.06, 0.06, 0.02]);
+          put(B, G.sphereLo, W, [0, 0.6, -0.52], 0.15);
+          break;
+        case 'penguin':
+          f.type = 'waddle'; f.scale = 1.0; f.radius = 0.45; f.shadowS = 1.2;
+          var K = mt('#1d2733', { spec: 0.5, shin: 40 }), OR = mt('#ff9f1c');
+          put(B, G.sphere, K, [0, 0.75, 0], [0.42, 0.72, 0.4]);
+          put(B, G.sphere, mt('#f7f7f2'), [0, 0.68, 0.15], [0.33, 0.58, 0.3]);
+          put(B, G.cone, OR, [0, 1.08, 0.45], [0.07, 0.2, 0.07], [P / 2, 0, 0]);
+          for (s = -1; s <= 1; s += 2) {
+            eye(s * 0.13, 1.2, 0.3, 0.075);
+            var fl = put(B, null, null, [s * 0.4, 0.95, 0]); put(fl, G.sphere, K, [s * 0.05, -0.25, 0], [0.08, 0.32, 0.18]); wob(fl, 2, s * 0.5, 9, 0);
+            put(B, G.sphereLo, OR, [s * 0.15, 0.04, 0.15], [0.13, 0.05, 0.2]);
+            put(B, G.sphereLo, mt('#ff8fa3'), [s * 0.24, 1.06, 0.33], [0.06, 0.035, 0.02]);
+          }
+          break;
+        case 'crab':
+          f.type = 'scuttle'; f.scale = 1.1; f.radius = 0.7; f.shadowS = 1.9;
+          var RD = mt('#e5383b', { spec: 0.6, shin: 40 }), SH = mt('#b71c1c');
+          put(B, G.sphere, RD, [0, 0.5, 0], [0.72, 0.32, 0.52]);
+          put(B, G.sphere, mt('#ff8a80'), [0, 0.42, 0.12], [0.55, 0.2, 0.4]);
+          for (s = -1; s <= 1; s += 2) {
+            put(B, G.cyl, RD, [s * 0.18, 0.85, 0.3], [0.03, 0.32, 0.03]); eye(s * 0.18, 1.02, 0.3, 0.08);
+            var arm = put(B, null, null, [s * 0.58, 0.55, 0.28]);
+            seg(arm, [0, 0, 0], [s * 0.3, 0.2, 0.35], 0.06, RD);
+            var claw = put(arm, null, null, [s * 0.3, 0.2, 0.35]);
+            put(claw, G.sphere, RD, [0, 0, 0], [0.24, 0.17, 0.2]);
+            var pin = put(claw, null, null, [0, 0.05, 0.16]); put(pin, G.cone, SH, [0, 0, 0.12], [0.07, 0.22, 0.06], [P / 2, 0, 0]); wob(pin, 0, -0.35, 7, 0);
+            put(claw, G.cone, SH, [0, -0.06, 0.28], [0.07, 0.2, 0.06], [P / 2, 0, 0]);
+            wob(arm, 0, 0.25, 4, s > 0 ? P : 0);
+            for (k = 0; k < 3; k++) { var lg = put(B, null, null, [s * 0.58, 0.45, -0.22 + k * 0.22]); seg(lg, [0, 0, 0], [s * 0.45, -0.42, 0], 0.035, SH); wob(lg, 0, 0.4, 12, k * 2 + (s > 0 ? 1 : 0)); }
+          }
+          break;
+        case 'slime':
+          f.type = 'squash'; f.scale = 1.1; f.radius = 0.65; f.shadowS = 1.7;
+          var SL = self.mat({ color: hex3('#5ee87a'), alpha: 0.78, transparent: true, spec: 1.4, shin: 70, emis: [0.02, 0.08, 0.02] });
+          put(B, G.sphere, mt('#2fbf55'), [0, 0.42, -0.05], [0.35, 0.28, 0.32]);
+          put(B, G.sphere, SL, [0, 0.5, 0], [0.68, 0.5, 0.62]);
+          put(B, G.sphere, SL, [0, 1.0, -0.02], [0.18, 0.16, 0.18]);
+          put(B, G.sphereLo, mt('#c8ffd2'), [0.3, 0.72, 0.2], 0.07); put(B, G.sphereLo, mt('#c8ffd2'), [-0.35, 0.4, 0.15], 0.05);
+          for (s = -1; s <= 1; s += 2) eye(s * 0.22, 0.66, 0.5, 0.13);
+          put(B, G.box, mt('#1b5e20'), [0, 0.45, 0.6], [0.2, 0.04, 0.03]);
+          break;
+        case 'ghost':
+          f.type = 'float'; f.scale = 1.1; f.radius = 0.55; f.shadowS = 1.3;
+          var GH = mt('#f4f8ff', { emis: [0.18, 0.2, 0.26], spec: 0.4 }), BL = mt('#2b2d42');
+          put(B, G.sphere, GH, [0, 1.35, 0], 0.5);
+          put(B, G.cone, GH, [0, 0.95, 0], [0.56, 0.95, 0.56]);
+          for (k = 0; k < 6; k++) { a = k / 6 * P * 2; put(B, G.sphereLo, GH, [Math.cos(a) * 0.48, 0.5, Math.sin(a) * 0.48], 0.14); }
+          for (s = -1; s <= 1; s += 2) {
+            put(B, G.sphere, BL, [s * 0.17, 1.42, 0.43], [0.08, 0.12, 0.05]);
+            put(B, G.sphereLo, mt('#ffb3c1'), [s * 0.28, 1.27, 0.38], [0.07, 0.04, 0.02]);
+            var ga = put(B, null, null, [s * 0.48, 1.0, 0.05]); put(ga, G.sphere, GH, [s * 0.1, 0, 0], [0.18, 0.09, 0.09]); wob(ga, 2, s * 0.5, 5, 0);
+          }
+          put(B, G.sphere, BL, [0, 1.2, 0.46], [0.08, 0.1, 0.04]);
+          break;
+        case 'unicorn':
+          f.type = 'gallop'; f.scale = 1.2; f.radius = 0.75; f.shadowS = 2.0;
+          var UW = mt('#fbf8ff', { spec: 0.4 }), HV = mt('#c9a227', { spec: 0.8, metal: 0.5 });
+          var mane = ['#ff6b9a', '#ffb347', '#fff275', '#7ee081', '#6ec6ff', '#b388ff'];
+          put(B, G.sphere, UW, [0, 1.0, 0], [0.42, 0.4, 0.72]);
+          seg(B, [0, 1.15, 0.45], [0, 1.65, 0.8], 0.17, UW);
+          put(B, G.sphere, UW, [0, 1.75, 0.95], [0.2, 0.22, 0.34]);
+          put(B, G.sphereLo, mt('#ffd6e7'), [0, 1.66, 1.24], [0.13, 0.11, 0.1]);
+          put(B, G.cone, M.gold, [0, 2.08, 0.98], [0.055, 0.36, 0.055], [0.45, 0, 0]);
+          for (s = -1; s <= 1; s += 2) { eye(s * 0.15, 1.82, 1.06, 0.06); put(B, G.cone, UW, [s * 0.1, 1.98, 0.82], [0.05, 0.12, 0.04]); }
+          for (k = 0; k < 5; k++) put(B, G.sphereLo, mt(mane[k]), [0, 1.3 + k * 0.15, 0.36 + k * 0.1], 0.11);
+          for (k = 0; k < 4; k++) put(B, G.sphereLo, mt(mane[k + 1]), [0, 1.05 - k * 0.13, -0.72 - k * 0.08], 0.12 - k * 0.01);
+          leg(-0.22, 0.85, 0.45, 0.82, 0.075, UW, HV, 0); leg(0.22, 0.85, 0.45, 0.82, 0.075, UW, HV, P);
+          leg(-0.22, 0.85, -0.45, 0.82, 0.075, UW, HV, P); leg(0.22, 0.85, -0.45, 0.82, 0.075, UW, HV, 0);
+          break;
+        case 'griffin':
+          f.type = 'gallop'; f.scale = 1.3; f.radius = 0.8; f.shadowS = 2.2;
+          var LN = mt('#d9a441', { spec: 0.3 }), WH = mt('#f6f1e7'), BK = mt('#ffcc33', { spec: 0.6 });
+          put(B, G.sphere, LN, [0, 1.0, -0.1], [0.44, 0.4, 0.7]);
+          put(B, G.sphere, WH, [0, 1.3, 0.5], [0.34, 0.36, 0.34]);
+          put(B, G.sphere, WH, [0, 1.68, 0.68], [0.28, 0.28, 0.3]);
+          put(B, G.cone, BK, [0, 1.62, 1.0], [0.08, 0.26, 0.07], [P / 2 + 0.35, 0, 0]);
+          for (s = -1; s <= 1; s += 2) {
+            eye(s * 0.15, 1.75, 0.88, 0.065, '#c77800');
+            put(B, G.cone, WH, [s * 0.13, 1.95, 0.6], [0.05, 0.16, 0.04], [-0.4, 0, -s * 0.2]);
+            var wp = put(B, null, null, [s * 0.35, 1.35, 0.15]);
+            put(wp, G.box, mt('#8d5524'), [s * 0.5, 0, -0.05], [1.0, 0.05, 0.5]);
+            put(wp, G.box, mt('#c68642'), [s * 0.85, -0.02, -0.25], [0.6, 0.04, 0.35]);
+            wob(wp, 2, s * 0.6, 6, 0);
+          }
+          leg(-0.22, 0.85, 0.4, 0.8, 0.08, WH, BK, 0); leg(0.22, 0.85, 0.4, 0.8, 0.08, WH, BK, P);
+          leg(-0.24, 0.85, -0.5, 0.8, 0.09, LN, LN, P); leg(0.24, 0.85, -0.5, 0.8, 0.09, LN, LN, 0);
+          seg(B, [0, 1.05, -0.75], [0, 0.7, -1.2], 0.04, LN); put(B, G.sphereLo, mt('#8d5524'), [0, 0.68, -1.22], 0.1);
+          break;
+        case 'phoenix':
+          f.type = 'fly'; f.scale = 1.3; f.radius = 0.7; f.shadowS = 1.8; f.ember = true;
+          var F1 = mt('#ff5722', { emis: [0.45, 0.12, 0.0], spec: 0.5 }), F2 = mt('#ffb300', { emis: [0.55, 0.35, 0.0] }), F3 = mt('#ffee58', { emis: [0.6, 0.55, 0.1] });
+          put(B, G.sphere, F1, [0, 1.4, 0], [0.34, 0.34, 0.55]);
+          put(B, G.sphere, F2, [0, 1.32, 0.2], [0.24, 0.24, 0.3]);
+          put(B, G.sphere, F1, [0, 1.78, 0.45], 0.22);
+          put(B, G.cone, F3, [0, 1.75, 0.72], [0.06, 0.2, 0.06], [P / 2, 0, 0]);
+          for (k = 0; k < 3; k++) put(B, G.cone, k % 2 ? F3 : F2, [0, 1.98 + k * 0.02, 0.38 - k * 0.1], [0.05, 0.25, 0.05], [-0.5 - k * 0.25, 0, 0]);
+          for (s = -1; s <= 1; s += 2) {
+            eye(s * 0.12, 1.84, 0.6, 0.055, '#3e0000');
+            var pw = put(B, null, null, [s * 0.3, 1.5, 0.05]);
+            put(pw, G.box, F1, [s * 0.55, 0, 0], [1.1, 0.05, 0.55]);
+            put(pw, G.box, F2, [s * 1.05, -0.02, -0.12], [0.6, 0.04, 0.45]);
+            put(pw, G.cone, F3, [s * 1.45, 0, -0.18], [0.08, 0.4, 0.06], [0, 0, -s * P / 2]);
+            wob(pw, 2, s * 0.8, 7, 0);
+          }
+          for (k = 0; k < 3; k++) {
+            var end = [(k - 1) * 0.35, 0.85, -1.4];
+            seg(B, [0, 1.35, -0.45], end, 0.07, k === 1 ? F3 : F2);
+            put(B, G.sphereLo, F3, end, 0.1);
+          }
+          break;
+        case 'dragon':
+          f.type = 'stomp'; f.scale = 1.3; f.radius = 0.95; f.shadowS = 2.8; f.ember = true;
+          var DG = mt('#6a3fb5', { spec: 0.6, shin: 40 }), DB = mt('#ffcf6b'), HN = mt('#f2e8cf'), WM = mt('#9c6ade', { spec: 0.3 }), SP = mt('#ff8a3d');
+          var EY = mt('#ffeb3b', { emis: [0.9, 0.7, 0.0] });
+          put(B, G.sphere, DG, [0, 1.1, -0.1], [0.55, 0.5, 0.85]);
+          put(B, G.sphere, DB, [0, 0.95, 0.15], [0.42, 0.38, 0.62]);
+          put(B, G.sphere, DG, [0, 1.5, 0.62], 0.3);
+          put(B, G.sphere, DG, [0, 1.82, 0.82], 0.26);
+          put(B, G.sphere, DG, [0, 2.05, 1.02], [0.32, 0.28, 0.4]);
+          put(B, G.sphere, DG, [0, 1.95, 1.36], [0.22, 0.17, 0.26]);
+          for (s = -1; s <= 1; s += 2) {
+            put(B, G.sphereLo, BLACK, [s * 0.08, 2.0, 1.6], 0.03);
+            put(B, G.cone, HN, [s * 0.15, 2.32, 0.9], [0.06, 0.3, 0.06], [-0.7, 0, -s * 0.25]);
+            put(B, G.sphereLo, EY, [s * 0.17, 2.12, 1.25], [0.07, 0.06, 0.05]);
+            put(B, G.box, BLACK, [s * 0.17, 2.12, 1.3], [0.012, 0.08, 0.01]);
+            put(B, G.cone, HN, [s * 0.1, 1.83, 1.5], [0.025, 0.06, 0.025], [P, 0, 0]);
+            var dw = put(B, null, null, [s * 0.4, 1.5, 0.05]);
+            seg(dw, [0, 0, 0], [s * 1.2, 0.5, -0.2], 0.05, DG);
+            put(dw, G.box, WM, [s * 0.75, 0.15, -0.35], [1.4, 0.04, 0.75], [0, 0, s * 0.3]);
+            wob(dw, 2, s * 0.5, 3.5, 0);
+          }
+          for (k = 0; k < 6; k++) {
+            var sz = 0.6 - k * 0.28, sy = 1.1 + 0.5 * Math.sqrt(Math.max(0, 1 - Math.pow((sz + 0.1) / 0.85, 2)));
+            put(B, G.cone, SP, [0, sy + 0.04, sz], [0.07, 0.2, 0.1]);
+          }
+          leg(-0.32, 0.9, 0.4, 0.85, 0.12, DG, HN, 0); leg(0.32, 0.9, 0.4, 0.85, 0.12, DG, HN, P);
+          leg(-0.32, 0.9, -0.55, 0.85, 0.13, DG, HN, P); leg(0.32, 0.9, -0.55, 0.85, 0.13, DG, HN, 0);
+          for (k = 0; k < 5; k++) put(B, G.sphere, DG, [0, 1.0 - k * 0.1, -0.95 - k * 0.32], 0.24 - k * 0.04);
+          put(B, G.cone, SP, [0, 0.52, -2.62], [0.12, 0.25, 0.04], [-P / 2, 0, 0]);
+          break;
+      }
+      // ทุกส่วนที่หมุน/แกว่ง ทำงานช้าลงตามสไตล์ของแต่ละตัว
+      for (k = 0; k < f.wob.length; k++) if (f.type === 'stomp') f.wob[k].sp *= 0.6;
+      f.shadow = new Node(G.flat, M.shadow);
+      f.root.visible = false; f.shadow.visible = false;
+      return f;
+    },
+    hideFoe: function () {
+      if (!this.foe) return;
+      this.foe.root.visible = false; this.foe.shadow.visible = false; this.foe = null;
+    },
+    spawnCreature: function (tier) {
+      this.hideFoe();
+      var f = this.foes[tier]; if (!f) return;
+      f.state = 'approach'; f.t = 0; f.grow = 0; f.p = 0; f.y = 0;
+      f.x = (Math.random() < 0.5 ? -1 : 1) * 1.05;   // วิ่งมาเลนซ้ายหรือขวา (ไม่โดนตัวแมวบัง)
+      f.startZ = -30; f.stopZ = -2.4 - f.radius * f.scale; f.z = f.startZ;
+      f.root.visible = true; f.shadow.visible = true;
+      this.foe = f;
+    },
+
+    /* ----- ขนาดจอ / ฉายตำแหน่ง ----- */
     resize: function () {
       if (!this.ready) return;
       var r = el.stage.getBoundingClientRect();
@@ -1747,16 +2399,6 @@
       if (this.fx) this.fx.setTransform(d2, 0, 0, d2, 0, 0);
       this.gl.viewport(0, 0, el.canvas3d.width, el.canvas3d.height);
     },
-    reset: function () {
-      this.speed = 0; this.targetSpeed = 0; this.runPhase = 0;
-      this.catLane = 0; this.catLaneTarget = 0; this.catX = 0; this.swerveT = 0; this.jumpT = 0; this.stumbleT = 0; this.celebrateT = 0;
-      this.yaw = 0; this.targetYaw = 0; this.sad = false;
-      for (var i = 0; i < this.coins.length; i++) this.deactivateCoin(this.coins[i]);
-      this.particles = []; this.floaters = []; this.flashA = 0; this.displayCoins = 0;
-      this.animateCat(0);
-    },
-
-    /* ----- ฉายตำแหน่ง 3 มิติ → ตำแหน่งบนจอ (ใช้วาดเอฟเฟกต์ 2 มิติทับ) ----- */
     project: function (x, y, z) {
       var m = this.vp, cw = m[3] * x + m[7] * y + m[11] * z + m[15];
       if (cw <= 0.0001) return { x: -999, y: -999 };
@@ -1768,80 +2410,95 @@
       p.u = this.h * 0.085;
       return p;
     },
+    reset: function () {
+      this.speed = 0; this.targetSpeed = 0; this.runPhase = 0; this.catX = 0; this.kickX = 0;
+      this.jumpT = 0; this.kickT = 0; this.celebrateT = 0; this.frozenT = 0; this.iceT = 0;
+      this.yaw = 0; this.targetYaw = 0; this.sad = false;
+      this.hideFoe(); if (this.ice) this.ice.visible = false;
+      this.particles = []; this.floaters = []; this.flashA = 0; this.displayCoins = 0; this.pendingCoins = 0;
+      this.animateCat(0);
+    },
 
     /* ----- เหตุการณ์จากเกม ----- */
-    activateCoin: function (z, x) {
-      for (var i = 0; i < this.coins.length; i++) {
-        var c = this.coins[i];
-        if (!c.active) { c.active = true; c.z = z; c.x = x; c.ph = Math.random() * 6; c.holder.visible = true; c.shadow.visible = true; return; }
-      }
-    },
-    deactivateCoin: function (c) { c.active = false; c.holder.visible = false; c.shadow.visible = false; },
-    celebrate: function (choiceIdx, coinCount, streak) {
-      this.catLaneTarget = choiceIdx === 0 ? -1 : 1; this.swerveT = 0.32;
-      this.jumpT = this.JUMP_TIME; this.celebrateT = 1.0;
-      for (var i = 0; i < coinCount; i++) this.activateCoin(-5.2 - i * 1.25, this.catLaneTarget * this.LANE_X);
+    kick: function (coins, streak) {
+      this.pendingCoins = coins;
+      this.jumpT = this.JUMP_TIME; this.kickT = this.KICK_TIME; this.celebrateT = 1.0;
       this.targetSpeed = (CFG.BASE_SPEED + Math.min(streak, 6) * 0.35) * 1.15;
-      var p = this.catPos();
-      this.burst(p.x, p.y - p.u * 0.6, streak >= CFG.COMBO_STREAK ? 26 : 14, ['#ffd23f', '#ffffff', '#4cc9f0', '#ff8a3d'], true);
+      var f = this.foe;
+      this.kickX = f ? f.x * 0.75 : 0;
+      if (f && f.state === 'approach') { f.state = 'rush'; f.rt = 0; f.rz0 = f.z; f.hitZ = -1.25 - f.radius * f.scale * 0.6; }
+      else this.impact();
     },
-    stumble: function (choiceIdx) {
-      if (choiceIdx === 0 || choiceIdx === 1) { this.catLaneTarget = choiceIdx === 0 ? -1 : 1; this.swerveT = 0.3; }
-      this.stumbleT = this.STUMBLE_TIME; this.flashA = 0.3; this.flashRGB = '230,57,70';
-      this.targetSpeed = CFG.BASE_SPEED * 1.15;
-      var p = this.catPos(), f = this.project(this.catX, 0.05, 0);
-      this.burst(f.x, f.y, 12, ['#b9a68c', '#d8c8b0', '#9a8b75'], false);
-      this.floaters.push({ text: '−❤️', x: p.x, y: p.y - p.u * 1.2, life: 1.1, max: 1.1, color: '#e63946' });
+    impact: function () {
+      var f = this.foe, p = f ? this.project(f.x, f.y + f.radius * f.scale * 1.1, f.z) : this.catPos();
+      this.burst(p.x, p.y, 26, ['#ffd23f', '#ffffff', '#ff4fd8', '#4cc9f0'], true);
+      this.floaters.push({ text: 'POW!', x: p.x, y: p.y - 16, life: 0.9, max: 0.9, color: '#d6336c', big: true });
+      if (this.pendingCoins) this.floaters.push({ text: '+' + this.pendingCoins + ' 🪙', x: p.x + 48, y: p.y + 20, life: 1.0, max: 1.0, color: '#b8860b' });
+      this.displayCoins = Math.min(game.coins, this.displayCoins + this.pendingCoins); this.pendingCoins = 0;
+      el.hudCoins.textContent = this.displayCoins;
+      audio.kick();
+      if (f) { f.state = 'kicked'; f.kt = 0; f.vx = (Math.random() - 0.5) * 5; f.vy = 7.5; f.vz = -13; f.spin = 0; }
+    },
+    freeze: function () {
+      this.frozenT = CFG.FREEZE_TIME; this.iceT = 0; this.speed = 0; this.targetSpeed = 0;
+      this.kickT = 0; this.jumpT = 0; this.celebrateT = 0;
+      this.flashA = 0.35; this.flashRGB = '120,200,255';
+      var p = this.catPos();
+      this.burst(p.x, p.y, 12, ['#ffffff', '#bfe9ff'], false);
+      var f = this.foe;
+      if (f && (f.state === 'approach' || f.state === 'rush')) { f.state = 'laugh'; f.lt = 0; }
+      audio.freeze();
+    },
+    shatter: function () {
+      var p = this.catPos();
+      this.burst(p.x, p.y, 26, ['#bfe9ff', '#ffffff', '#7fd3ff'], false);
+      this.floaters.push({ text: '💥', x: p.x, y: p.y - p.u, life: 0.6, max: 0.6, color: '#1f8fc4' });
+      audio.shatter();
+      if (game.state === STATE.PLAYING || game.state === STATE.ANSWERED) this.targetSpeed = CFG.BASE_SPEED * 1.15;
     },
     perfect: function () {
       this.flashA = 0.45; this.flashRGB = '255,210,63';
       var c = ['#ffd23f', '#ff8a3d', '#4cc9f0', '#6bd16b', '#ff4fd8', '#ffffff'];
       for (var i = 0; i < 4; i++) this.burst(this.w * (0.2 + i * 0.2), this.h * 0.35, 18, c, true);
     },
-    collect: function (coin) {
-      var p = this.project(coin.x, 0.95, coin.z);
-      this.deactivateCoin(coin);
-      if (this.displayCoins < game.coins) this.displayCoins++;
-      el.hudCoins.textContent = this.displayCoins;
-      this.burst(p.x, p.y, 8, ['#ffd23f', '#fff3b0', '#ffb703'], true);
-      this.floaters.push({ text: '+1 🪙', x: p.x, y: p.y - 20, life: 0.9, max: 0.9, color: '#b8860b' });
-      audio.coin();
-    },
     flushCoins: function () {
-      for (var i = 0; i < this.coins.length; i++) this.deactivateCoin(this.coins[i]);
-      this.displayCoins = game.coins;
+      this.displayCoins = game.coins; this.pendingCoins = 0;
       el.hudCoins.textContent = this.displayCoins;
     },
     onEnd: function (win) {
-      for (var i = 0; i < this.coins.length; i++) if (this.coins[i].active) this.collect(this.coins[i]);
+      if (this.foe && this.foe.state === 'rush') this.impact();
       this.targetSpeed = 0;
-      if (win) { this.targetYaw = Math.PI; this.celebrateT = 1.2; this.jumpT = this.JUMP_TIME; this.catLaneTarget = 0; this.swerveT = 0; }
+      if (win) { this.targetYaw = Math.PI; this.celebrateT = 1.2; this.jumpT = this.JUMP_TIME; }
       else this.sad = true;
     },
     finish: function () {
       this.flushCoins();
       this.speed = 0; this.targetSpeed = 0; this.yaw = this.targetYaw;
-      this.particles = []; this.floaters = []; this.flashA = 0; this.stumbleT = 0; this.jumpT = 0; this.celebrateT = 0;
-      this.catLane = this.catLaneTarget = 0;
+      this.particles = []; this.floaters = []; this.flashA = 0; this.jumpT = 0; this.kickT = 0; this.celebrateT = 0;
+      this.frozenT = 0; if (this.ice) this.ice.visible = false;
+      this.hideFoe();
       this.animateCat(0);
     },
 
     /* ----- อัปเดตการเคลื่อนไหว ----- */
     update: function (dt) {
       this.time += dt;
-      var goal = this.stumbleT > 0 ? this.targetSpeed * 0.3 : this.targetSpeed;
-      this.speed += (goal - this.speed) * Math.min(1, dt * 3);
-      if (this.speed < 0.01) this.speed = 0;
+      if (this.frozenT > 0) {
+        this.frozenT -= dt; this.iceT += dt; this.speed = 0;
+        if (this.frozenT <= 0) { this.frozenT = 0; this.shatter(); }
+      } else {
+        this.speed += (this.targetSpeed - this.speed) * Math.min(1, dt * 3);
+        if (this.speed < 0.01) this.speed = 0;
+      }
       var dz = this.speed * dt;
       this.dist += dz;
       this.runPhase += dt * this.speed * 1.45;
-      if (this.swerveT > 0) { this.swerveT -= dt; if (this.swerveT <= 0) this.catLaneTarget = 0; }
-      this.catLane += (this.catLaneTarget - this.catLane) * Math.min(1, dt * 10);
-      this.catX = this.catLane * this.LANE_X;
       if (this.jumpT > 0) this.jumpT = Math.max(0, this.jumpT - dt);
-      if (this.stumbleT > 0) this.stumbleT = Math.max(0, this.stumbleT - dt);
+      if (this.kickT > 0) this.kickT = Math.max(0, this.kickT - dt);
       if (this.celebrateT > 0) this.celebrateT = Math.max(0, this.celebrateT - dt);
       this.yaw += (this.targetYaw - this.yaw) * Math.min(1, dt * 5);
+      var goalX = (this.kickT > 0 || this.jumpT > 0) ? this.kickX : 0;   // เบี่ยงตัวไปถีบสัตว์ แล้วกลับกลางทาง
+      this.catX += (goalX - this.catX) * Math.min(1, dt * 10);
 
       // เลื่อนลายพื้น/ทาง/กำแพงให้ดูเหมือนวิ่งไปข้างหน้า
       this.M.grass.uvx[3] = -frac(this.dist / 3);
@@ -1858,59 +2515,134 @@
           it.bb.r[1] = Math.atan2(this.cam[0] - it.node.p[0], this.cam[2] - it.node.p[2]) - it.node.r[1];
         }
       }
-      for (var k = 0; k < this.coins.length; k++) {
-        var c = this.coins[k];
-        if (!c.active) continue;
-        c.z += dz;
-        c.x += (this.catX - c.x) * Math.min(1, dt * 6);
-        c.holder.p = [c.x, 0.95 + (reducedMotion ? 0 : Math.sin(this.time * 5 + c.ph) * 0.07), c.z];
-        c.spin.r[1] = reducedMotion ? 0 : this.time * 4 + c.ph;
-        c.shadow.p = [c.x, 0.05, c.z];
-        if (c.z >= -0.35) this.collect(c);
-      }
       for (var m = 0; m < this.clouds.length; m++) {
         var cl = this.clouds[m]; cl.p[0] += dt * 0.8;
         if (cl.p[0] > 170) cl.p[0] = -170;
       }
+      this.updateFoe(dt);
+      // ก้อนน้ำแข็ง: ขยายขึ้นเร็ว ๆ ตอนเริ่มแช่แข็ง
+      if (this.ice) {
+        this.ice.visible = this.frozenT > 0;
+        var ik = Math.min(1, this.iceT / 0.15);
+        this.ice.p = [this.catX, 0, 0]; this.ice.s = [ik, ik, ik];
+      }
+      // สกินขี้แตก: ควันลอยตามหลัง
+      if (this.skin && this.skin.trail === 'stink' && this.speed > 0.5) {
+        this.stinkT += dt;
+        if (this.stinkT > 0.09) {
+          this.stinkT = 0;
+          var sp = this.project(this.catX + (Math.random() - 0.5) * 0.3, 0.75 + this.cat.root.p[1], 0.8);
+          this.puff(sp.x, sp.y, Math.random() < 0.5 ? 'rgba(150,180,70,.55)' : 'rgba(120,100,50,.45)', 6 + Math.random() * 6);
+        }
+      }
       this.animateCat(dt);
       this.updateFx(dt);
     },
+    updateFoe: function (dt) {
+      var f = this.foe; if (!f) return;
+      f.t += dt; f.grow = Math.min(1, f.grow + dt * 4);
+      var sc = f.scale * f.grow, bob = 0, spinX = 0, spinY = 0;
+      if (f.state === 'approach') {
+        var pr = foeProgress(); if (pr != null) f.p = pr;
+        f.z = f.startZ + (f.stopZ - f.startZ) * f.p;
+      } else if (f.state === 'rush') {
+        f.rt += dt;
+        f.z = f.rz0 + (f.hitZ - f.rz0) * Math.min(1, f.rt / this.KICK_DELAY);
+        if (f.rt >= this.KICK_DELAY) { this.impact(); }
+      } else if (f.state === 'kicked') {
+        f.kt += dt; f.vy -= 16 * dt;
+        f.x += f.vx * dt; f.y += f.vy * dt; f.z += f.vz * dt; f.spin += dt * 11;
+        spinX = -f.spin; spinY = f.spin * 0.6;
+        if (f.kt > 1.4) { this.hideFoe(); return; }
+      } else if (f.state === 'laugh') {
+        f.lt += dt; bob = Math.abs(Math.sin(f.lt * 11)) * 0.3;
+        if (f.lt > 0.65) sc *= Math.max(0, 1 - (f.lt - 0.65) / 0.45);
+        if (f.lt > 1.1) { this.hideFoe(); return; }
+      }
+      // ท่าทางเฉพาะของแต่ละชนิด
+      var t = this.time, mo = reducedMotion ? 0 : 1, B = f.body;
+      B.p = [0, 0, 0]; B.s = [1, 1, 1]; B.r = [0, 0, 0];
+      if (f.type === 'hop') B.p[1] = Math.abs(Math.sin(t * 6)) * 0.28 * mo;
+      else if (f.type === 'float' || f.type === 'fly') B.p[1] = (f.type === 'fly' ? 0.3 : 0.15) + Math.sin(t * 3) * 0.14 * mo;
+      else if (f.type === 'squash') { var q = Math.sin(t * 7) * 0.1 * mo; B.s = [1 + q, 1 - q, 1 + q]; }
+      else if (f.type === 'waddle') B.r[2] = Math.sin(t * 7) * 0.15 * mo;
+      else if (f.type === 'stomp' || f.type === 'gallop') B.p[1] = Math.abs(Math.sin(t * (f.type === 'stomp' ? 4 : 8))) * 0.08 * mo;
+      var flail = f.state === 'kicked' ? 2.2 : 1;
+      for (var k = 0; k < f.wob.length; k++) {
+        var w = f.wob[k];
+        w.n.r[w.ax] = w.n.rb[w.ax] + Math.sin(t * w.sp * flail + w.ph) * w.amp * mo;
+      }
+      f.root.p = [f.x, f.y + bob, f.z]; f.root.r = [spinX, spinY, 0]; f.root.s = [sc, sc, sc];
+      var shS = f.shadowS * f.scale * f.grow * Math.max(0.2, 1 - Math.max(0, f.y) * 0.25);
+      f.shadow.visible = f.state !== 'kicked' || f.y < 2;
+      f.shadow.p = [f.x, 0.04, f.z]; f.shadow.s = [shS, 1, shS * 1.1];
+      // ประกายไฟจากนกฟีนิกซ์/มังกร
+      if (f.ember && f.state === 'approach' && !reducedMotion) {
+        this.emberT += dt;
+        if (this.emberT > 0.07) {
+          this.emberT = 0;
+          var ep = this.project(f.x + (Math.random() - 0.5) * 0.6 * f.scale, f.y + (f.def.id === 'dragon' ? 2.0 : 1.4) * f.scale, f.z + 0.6 * f.scale);
+          this.puff(ep.x, ep.y, Math.random() < 0.5 ? 'rgba(255,140,30,.7)' : 'rgba(255,220,80,.7)', 3 + Math.random() * 3);
+        }
+      }
+    },
     animateCat: function (dt) {
       var c = this.cat; if (!c) return;
-      var run = this.speed > 0.3, ph = this.runPhase, amp = run ? Math.min(1, this.speed / 6) * 0.85 : 0;
+      var frozen = this.frozenT > 0;
+      var run = this.speed > 0.3 && !frozen, ph = this.runPhase, amp = run ? Math.min(1, this.speed / 6) * 0.85 : 0;
       var jumpP = this.jumpT > 0 ? 1 - this.jumpT / this.JUMP_TIME : 0;
       var jh = this.jumpT > 0 ? Math.sin(Math.PI * jumpP) * 1.0 : 0;
+      var ke = this.kickT > 0 ? Math.sin(Math.PI * (1 - this.kickT / this.KICK_TIME)) : 0;   // ท่าถีบ
       c.root.p = [this.catX, jh + (run ? Math.abs(Math.sin(ph)) * 0.07 : 0), 0];
       c.root.r[1] = this.yaw;
-      var roll = (this.catLaneTarget - this.catLane) * 0.28;
-      if (this.stumbleT > 0) roll += Math.sin(this.stumbleT * 36) * (reducedMotion ? 0.04 : 0.16);
-      c.body.r = [run ? Math.sin(ph * 2) * 0.05 : 0, 0, roll];
-      c.legs[0].r[0] = Math.sin(ph) * amp; c.legs[1].r[0] = Math.sin(ph + 0.6) * amp;
-      c.legs[2].r[0] = Math.sin(ph + Math.PI) * amp; c.legs[3].r[0] = Math.sin(ph + Math.PI + 0.6) * amp;
-      var happy = this.celebrateT > 0;
-      c.head.r = [this.sad ? 0.38 : happy ? -0.18 : (run ? Math.sin(ph * 2) * 0.04 : 0), 0, 0];
-      for (var e = 0; e < 2; e++) c.ears[e].r[2] = (e === 0 ? 1 : -1) * (0.32 + (this.sad ? 0.55 : 0));
-      var tailSpeed = run ? 7 : 2.5, tailAmp = run ? 0.2 : 0.12;
-      for (var t = 0; t < c.tail.length; t++) {
-        var seg = c.tail[t];
-        seg.r[0] = t === 0 ? (this.sad ? 1.6 : happy ? 0.35 : 0.75) : (this.sad ? 0.05 : -0.12);
-        seg.r[2] = reducedMotion ? 0 : Math.sin(this.time * tailSpeed - t * 0.55) * tailAmp;
+      if (!frozen) {
+        c.body.r = [(run ? Math.sin(ph * 2) * 0.05 : 0) + ke * 0.45, 0, 0];
+        c.legs[0].r[0] = Math.sin(ph) * amp * (1 - ke) + ke * 1.35; c.legs[1].r[0] = Math.sin(ph + 0.6) * amp * (1 - ke) + ke * 1.35;
+        c.legs[2].r[0] = Math.sin(ph + Math.PI) * amp * (1 - ke) - ke * 0.85; c.legs[3].r[0] = Math.sin(ph + Math.PI + 0.6) * amp * (1 - ke) - ke * 0.85;
+        var happy = this.celebrateT > 0;
+        c.head.r = [this.sad ? 0.38 : happy ? -0.18 : (run ? Math.sin(ph * 2) * 0.04 : 0), 0, 0];
+        for (var e = 0; e < 2; e++) c.ears[e].r[2] = (e === 0 ? 1 : -1) * (0.32 + (this.sad ? 0.55 : 0));
+        var tailSpeed = run ? 7 : 2.5, tailAmp = run ? 0.2 : 0.12;
+        for (var t = 0; t < c.tail.length; t++) {
+          var seg = c.tail[t];
+          seg.r[0] = t === 0 ? (this.sad ? 1.6 : happy ? 0.35 : 0.75) : (this.sad ? 0.05 : -0.12);
+          seg.r[2] = reducedMotion ? 0 : Math.sin(this.time * tailSpeed - t * 0.55) * tailAmp;
+        }
+        for (var s = 0; s < c.scarfTails.length; s++) {
+          c.scarfTails[s].r[0] = -0.2 - Math.min(1, this.speed / 7) * 0.25 + (reducedMotion ? 0 : Math.sin(this.time * 14 + s * 1.7) * 0.18 * Math.min(1, this.speed / 5));
+          c.scarfTails[s].r[1] = (s ? 0.25 : 0.1);
+        }
       }
-      for (var s = 0; s < c.scarfTails.length; s++) {
-        c.scarfTails[s].r[0] = -0.2 - Math.min(1, this.speed / 7) * 0.25 + (reducedMotion ? 0 : Math.sin(this.time * 14 + s * 1.7) * 0.18 * Math.min(1, this.speed / 5));
-        c.scarfTails[s].r[1] = (s ? 0.25 : 0.1);
-      }
-      var sc = 1 - jh * 0.35;
-      c.shadow.p = [this.catX, 0.05, 0.02]; c.shadow.s = [1.3 * sc, 1, 1.9 * sc];
+      var sc = 1 - jh * 0.35, fat = c.skin.body && c.skin.body.fat ? 1.3 : 1;
+      c.shadow.p = [this.catX, 0.05, 0.02]; c.shadow.s = [1.3 * sc * fat, 1, 1.9 * sc];
     },
 
     /* ----- วาดภาพ ----- */
+    beginObjects: function (vp, cam) {
+      var gl = this.gl, U = this.U;
+      gl.useProgram(this.prog);
+      gl.enable(gl.DEPTH_TEST); gl.depthMask(true); gl.depthFunc(gl.LEQUAL);
+      gl.uniformMatrix4fv(U.uVP, false, vp);
+      gl.uniform3fv(U.uSunDir, this.sunDir); gl.uniform3f(U.uSunCol, 1.02, 0.94, 0.80);
+      gl.uniform3f(U.uSky, 0.56, 0.65, 0.78); gl.uniform3f(U.uGround, 0.36, 0.34, 0.25);
+      gl.uniform3fv(U.uFogCol, this.FOG); gl.uniform3fv(U.uCam, cam); gl.uniform1i(U.uTex, 0);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.enableVertexAttribArray(this.A.pos); gl.enableVertexAttribArray(this.A.nrm); gl.enableVertexAttribArray(this.A.uv);
+      this.trans = [];
+    },
+    flushTrans: function () {
+      var gl = this.gl;
+      this.trans.sort(function (a, b) { return a.world[14] - b.world[14]; });
+      gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
+      for (var t = 0; t < this.trans.length; t++) this.drawMesh(this.trans[t].mesh, this.trans[t].mat, this.trans[t].world);
+      gl.depthMask(true); gl.disable(gl.BLEND);
+    },
     draw: function () {
       if (!this.ready || this.failed) return;
       var gl = this.gl;
       var aspect = this.w / this.h, fov = (aspect < 0.9 ? 64 : aspect < 1.4 ? 56 : 50) * Math.PI / 180;
-      var shake = (this.stumbleT > 0 && !reducedMotion) ? Math.sin(this.time * 70) * 0.06 * (this.stumbleT / this.STUMBLE_TIME) : 0;
       var bob = (this.speed > 0.3 && !reducedMotion) ? Math.sin(this.runPhase * 2) * 0.03 : 0;
+      var shake = (this.frozenT > CFG.FREEZE_TIME - 0.25 && !reducedMotion) ? Math.sin(this.time * 70) * 0.05 : 0;
       this.cam = [this.catX * 0.35 + shake, 2.75 + bob, 5.6];
       this.target = [this.catX * 0.5, 1.0, -7];
       M4.perspective(this.proj, fov, aspect, 0.1, 320);
@@ -1930,25 +2662,12 @@
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       gl.disableVertexAttribArray(this.skyA);
 
-      // วัตถุ 3 มิติ
-      gl.useProgram(this.prog);
-      gl.enable(gl.DEPTH_TEST); gl.depthMask(true); gl.depthFunc(gl.LEQUAL);
+      // วัตถุ 3 มิติ: ทึบก่อน แล้วค่อยวาดวัตถุโปร่งแสง (เงา เมฆ วุ้น น้ำแข็ง) จากไกลไปใกล้
       gl.clear(gl.DEPTH_BUFFER_BIT);
-      var U = this.U;
-      gl.uniformMatrix4fv(U.uVP, false, this.vp);
-      gl.uniform3fv(U.uSunDir, this.sunDir); gl.uniform3f(U.uSunCol, 1.02, 0.94, 0.80);
-      gl.uniform3f(U.uSky, 0.56, 0.65, 0.78); gl.uniform3f(U.uGround, 0.36, 0.34, 0.25);
-      gl.uniform3fv(U.uFogCol, this.FOG); gl.uniform3fv(U.uCam, this.cam); gl.uniform1i(U.uTex, 0);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.enableVertexAttribArray(this.A.pos); gl.enableVertexAttribArray(this.A.nrm); gl.enableVertexAttribArray(this.A.uv);
-      this.trans = [];
+      this.beginObjects(this.vp, this.cam);
       var I = M4.create();
       for (var i = 0; i < this.roots.length; i++) this.renderNode(this.roots[i], I);
-      // วัตถุโปร่งแสง (เงา เมฆ) วาดทีหลัง เรียงจากไกลไปใกล้
-      this.trans.sort(function (a, b) { return a.world[14] - b.world[14]; });
-      gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
-      for (var t = 0; t < this.trans.length; t++) this.drawMesh(this.trans[t].mesh, this.trans[t].mat, this.trans[t].world);
-      gl.depthMask(true); gl.disable(gl.BLEND);
+      this.flushTrans();
 
       // เอฟเฟกต์ 2 มิติวาดทับ
       var ctx = this.fx;
@@ -1985,7 +2704,7 @@
       if (mesh.ib) { gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.ib); gl.drawElements(gl.TRIANGLES, mesh.count, gl.UNSIGNED_SHORT, 0); }
       else gl.drawArrays(gl.TRIANGLES, 0, mesh.count);
     },
-    /** ประกายดาวรอบตัวแมวตอนดีใจ และเครื่องหมาย ?! ตอนพลาด */
+    /** ประกายดาวรอบตัวแมวตอนดีใจ และเกล็ดหิมะตอนโดนแช่แข็ง */
     drawCatFx: function (ctx) {
       var p = this.catPos(), u = p.u;
       if (this.celebrateT > 0) {
@@ -1994,12 +2713,28 @@
           this.star(ctx, p.x + Math.cos(a) * u * 1.6, p.y + Math.sin(a) * u * 0.8, u * 0.2 * this.celebrateT, '#ffd23f');
         }
       }
-      if (this.stumbleT > 0) {
-        ctx.font = '600 ' + Math.round(u * 0.8) + 'px Mitr, Tahoma, sans-serif';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.lineWidth = 4; ctx.strokeStyle = '#fff'; ctx.fillStyle = '#e63946';
-        ctx.strokeText('?!', p.x + u * 1.0, p.y - u * 0.9); ctx.fillText('?!', p.x + u * 1.0, p.y - u * 0.9);
-      }
+      if (this.frozenT > 0) this.drawFrostFx(ctx, p.x, p.y, u * 1.2);
+    },
+    /** ภาพตัวอย่างสกินสำหรับร้านค้า: วาดแมวแต่ละสกินด้วยเอนจิน 3 มิติ แล้วเก็บเป็นรูป */
+    renderThumbs: function () {
+      if (!this.ready || this.failed) return null;
+      var gl = this.gl, cv = el.canvas3d, out = {}, S = 220;
+      try {
+        cv.width = S; cv.height = S; gl.viewport(0, 0, S, S);
+        var proj = M4.create(), view = M4.create(), vp = M4.create(), eye = [-1.85, 1.6, -2.95], tgt = [0, 0.98, -0.18];
+        M4.perspective(proj, 40 * Math.PI / 180, 1, 0.1, 60); M4.lookAt(view, eye, tgt, [0, 1, 0]); M4.mul(vp, proj, view);
+        var I = M4.create();
+        for (var i = 0; i < CFG.SKINS.length; i++) {
+          var skin = CFG.SKINS[i], cat = this.buildCat(skin);
+          gl.clearColor(0.9, 0.96, 1.0, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+          this.beginObjects(vp, eye);
+          this.renderNode(cat.root, I);
+          this.flushTrans();
+          out[skin.id] = cv.toDataURL('image/png');
+        }
+      } catch (e) { out = null; }
+      this.resize();
+      return out;
     }
   }, FX);
 
@@ -2186,7 +2921,7 @@
    * 12) ลำดับการเล่น (State Machine)
    * ===================================================================== */
   function hideOverlays() {
-    el.startScreen.hidden = true; el.overScreen.hidden = true; el.winScreen.hidden = true;
+    el.startScreen.hidden = true; el.overScreen.hidden = true; el.winScreen.hidden = true; el.shopScreen.hidden = true;
   }
 
   function startGame() {
@@ -2214,6 +2949,9 @@
     game.question = MathCore.generateQuestion(game.level, game.ops[game.qIndex], game.usedKeys);
     game.qIndex++;
     renderQuestion(game.question);
+    game.foeTier = Math.min(game.streak, CFG.CREATURES.length - 1);   // ยิ่ง Streak สูง ยิ่งเจอสัตว์แปลก
+    scene.spawnCreature(game.foeTier);
+    renderFoeTag(game.foeTier);
     game.paused = false;
     game.deadline = performance.now() + game.timeLimit;          // รีเซ็ตเวลาใหม่ทุกข้อ
     lastSec = null; updateTimerUI(game.timeLimit);
@@ -2256,10 +2994,13 @@
 
     revealAnswer(q, idx);
     el.feedback.className = 'ok';
-    el.feedback.textContent = '✔ ถูกต้อง! ' + fullEq(q) +
-      ' · +' + pts + ' คะแนน' + (pts > CFG.BASE_POINTS ? ' (โบนัส Streak)' : '');
+    var foe = CFG.CREATURES[game.foeTier];
+    el.feedback.textContent = '✔ ถูกต้อง! ' + fullEq(q) + ' · ถีบ' + foe.emoji + foe.name + ' · +' + pts + ' คะแนน' + (pts > CFG.BASE_POINTS ? ' (โบนัส)' : '');
     setMood('happy');
-    scene.celebrate(idx, coins, game.streak);
+    game.kicks++;
+    if (game.foeTier > game.bestTier) game.bestTier = game.foeTier;
+    addToWallet(coins);                        // เหรียญเข้ากระเป๋าทันที (ออกกลางคันก็ไม่หาย)
+    scene.kick(coins, game.streak, game.foeTier);
 
     if (game.streak >= CFG.TOTAL_Q) { showBanner('PERFECT RUN!', 'perfect'); scene.perfect(); audio.combo(); }
     else if (game.streak >= CFG.COMBO_STREAK) { showBanner('COMBO x' + game.streak + '!', 'combo'); audio.combo(); }
@@ -2276,8 +3017,8 @@
     el.feedback.className = 'bad';
     el.feedback.textContent = (kind === 'timeout' ? '⏰ หมดเวลา! ' : '✖ ยังไม่ถูกนะ ') + 'คำตอบที่ถูกคือ ' + fullEq(q) + hintFor(q);
     setMood('sad');
-    scene.stumble(idx);
-    showBanner(kind === 'timeout' ? '⏰ หมดเวลา!' : '✖ พลาด!', 'bad');
+    scene.freeze();
+    showBanner(kind === 'timeout' ? '⏰ หมดเวลา! โดนแช่แข็ง' : '🧊 โดนแช่แข็ง!', 'bad');
     if (!reducedMotion) restartAnim(el.stage, 'shake');
     var lostHeart = el.hudHearts.children[game.hearts];
     if (lostHeart) restartAnim(lostHeart, 'pop');
@@ -2303,6 +3044,7 @@
     setChoicesDisabled(true);
     el.timerNum.classList.remove('danger-num');
     scene.onEnd(win);
+    el.foeTag.hidden = true;
     if (game.score > bestOf(game.level)) { saved.best[game.level] = game.score; store.save(saved); }
     var round = game.round;
     game.endTimer = setTimeout(function () {
@@ -2316,12 +3058,15 @@
   }
   function statsBlock() {
     var miss = game.wrong + game.timeouts, unanswered = CFG.TOTAL_Q - game.answered;
-    var html = statHTML('⭐ คะแนนรวม', game.score) + statHTML('🪙 เหรียญ', game.coins) +
+    var best = game.bestTier >= 0 ? CFG.CREATURES[game.bestTier] : null;
+    var html = statHTML('⭐ คะแนนรวม', game.score) + statHTML('🪙 เหรียญรอบนี้', '+' + game.coins) +
       statHTML('✔ ตอบถูก', game.correct + ' / ' + CFG.TOTAL_Q) +
       statHTML('✖ ตอบผิด', miss + ' ข้อ' + (game.timeouts ? '<small>(หมดเวลา ' + game.timeouts + ' ข้อ)</small>' : '')) +
       statHTML('🔥 Streak สูงสุด', game.maxStreak) + statHTML('❤️ หัวใจที่เหลือ', game.hearts + ' / ' + CFG.MAX_HEARTS) +
-      statHTML('📗 ระดับ', CFG.LEVELS[game.level].name, unanswered === 0);
-    if (unanswered > 0) html += statHTML('📘 ยังไม่ได้ทำ', unanswered + ' ข้อ');
+      statHTML('🦶 ถีบสัตว์ได้', game.kicks + ' ตัว') + statHTML('🏆 ตัวที่แปลกที่สุด', best ? best.emoji + ' ' + best.name : '–');
+    if (unanswered > 0) html += statHTML('📗 ระดับ', CFG.LEVELS[game.level].name) + statHTML('📘 ยังไม่ได้ทำ', unanswered + ' ข้อ');
+    else html += statHTML('📗 ระดับ', CFG.LEVELS[game.level].name, true);
+    html += statHTML('💰 เหรียญสะสมทั้งหมด (ใช้ซื้อสกินในร้านค้า)', '🪙 ' + saved.wallet, true);
     return html;
   }
 
@@ -2377,9 +3122,109 @@
     hideOverlays();
     el.confetti.innerHTML = '';
     renderLevelButtons();
+    renderWallet();
+    el.foeTag.hidden = true;
     el.startScreen.hidden = false;
     scene.resize(); scene.draw();
     el.startBtn.focus({ preventScroll: true });
+  }
+
+  /* =====================================================================
+   * 12.5) ร้านค้าสกิน + กระเป๋าเหรียญ (บันทึกในเบราว์เซอร์ของผู้เล่นแต่ละเครื่อง)
+   * ===================================================================== */
+  var shopFrom = null, thumbs = null, confirmId = null, confirmTimer = null;
+
+  function renderWallet() {
+    var nodes = document.querySelectorAll('.wallet-num');
+    for (var i = 0; i < nodes.length; i++) nodes[i].textContent = saved.wallet;
+  }
+  function addToWallet(n) {
+    saved.wallet = Math.max(0, Math.floor(saved.wallet + n));
+    store.save(saved);
+    renderWallet();
+  }
+  function ownsSkin(id) { return saved.owned.indexOf(id) !== -1; }
+
+  function openShop() {
+    if (game.state === STATE.PLAYING || game.state === STATE.ANSWERED) return;
+    shopFrom = !el.overScreen.hidden ? el.overScreen : !el.winScreen.hidden ? el.winScreen : el.startScreen;
+    shopFrom.hidden = true;
+    if (!thumbs && scene3D.ready && !scene3D.failed) {
+      thumbs = scene3D.renderThumbs();
+      if (!rafId) scene.draw();
+    }
+    renderShop();
+    el.shopScreen.hidden = false;
+    el.shopClose.focus({ preventScroll: true });
+  }
+  function closeShop() {
+    if (el.shopScreen.hidden) return;
+    cancelConfirm(true);
+    el.shopScreen.hidden = true;
+    (shopFrom || el.startScreen).hidden = false;
+    shopFrom = null;
+  }
+  function cancelConfirm(silent) {
+    if (confirmTimer) { clearTimeout(confirmTimer); confirmTimer = null; }
+    if (confirmId !== null) { confirmId = null; if (!silent) renderShop(); }
+  }
+  function renderShop() {
+    renderWallet();
+    var html = '';
+    for (var i = 0; i < CFG.SKINS.length; i++) {
+      var s = CFG.SKINS[i], owned = ownsSkin(s.id), using = saved.skin === s.id;
+      var pic = thumbs && thumbs[s.id] ? '<img alt="" src="' + thumbs[s.id] + '">' : catFaceSVG(s);
+      var btn;
+      if (using) btn = '<button class="skin-btn using" type="button" disabled>✔ ใช้อยู่</button>';
+      else if (owned) btn = '<button class="skin-btn equip" type="button" data-act="equip" data-id="' + s.id + '" aria-label="สวมใส่ ' + s.name + '">สวมใส่</button>';
+      else if (saved.wallet >= s.price) {
+        var c = confirmId === s.id;
+        btn = '<button class="skin-btn' + (c ? ' confirm' : '') + '" type="button" data-act="buy" data-id="' + s.id + '" aria-label="ซื้อ ' + s.name + ' ราคา ' + s.price + ' เหรียญ">' +
+          (c ? 'แตะอีกครั้งเพื่อซื้อ' : 'ซื้อ 🪙 ' + s.price) + '</button>';
+      } else btn = '<button class="skin-btn" type="button" disabled aria-label="' + s.name + ' ราคา ' + s.price + ' เหรียญ ยังมีเหรียญไม่พอ">🪙 ' + s.price + '<small>ขาดอีก ' + (s.price - saved.wallet) + '</small></button>';
+      html += '<div class="skin-card' + (using ? ' equipped' : '') + (owned ? ' owned' : '') + '" data-skin="' + s.id + '">' +
+        '<div class="skin-thumb" aria-hidden="true">' + pic + '</div>' +
+        '<div class="skin-name">' + (i ? i + '. ' : '') + s.name + '</div>' + btn + '</div>';
+    }
+    el.skinGrid.innerHTML = html;
+  }
+  function equipSkin(id) {
+    var s = skinById(id);
+    if (!s || !ownsSkin(id)) return;
+    saved.skin = id; store.save(saved);
+    scene2D.setSkin(s); if (scene3D.ready) scene3D.setSkin(s);
+    refreshFaces();
+    renderShop();
+    if (!rafId) scene.draw();
+  }
+  function buySkin(id) {
+    var s = skinById(id);
+    if (!s || ownsSkin(id) || saved.wallet < s.price) return;
+    saved.wallet -= s.price;
+    saved.owned.push(id);
+    store.save(saved);
+    audio.buy();
+    confirmId = null;
+    equipSkin(id);
+  }
+  function onSkinGridClick(e) {
+    var b = e.target.closest ? e.target.closest('button[data-act]') : null;
+    if (!b || b.disabled) return;
+    var id = b.getAttribute('data-id'), act = b.getAttribute('data-act');
+    if (act === 'equip') { cancelConfirm(true); equipSkin(id); return; }
+    if (act === 'buy') {
+      if (confirmId === id) { cancelConfirm(true); buySkin(id); return; }
+      cancelConfirm(true);
+      confirmId = id; renderShop();
+      confirmTimer = setTimeout(function () { cancelConfirm(false); }, 3000);
+      var again = el.skinGrid.querySelector('button[data-id="' + id + '"]'); if (again) again.focus({ preventScroll: true });
+    }
+  }
+  function renderFoeTag(tier) {
+    var d = CFG.CREATURES[tier];
+    el.foeTag.textContent = 'คู่ต่อสู้: ' + d.emoji + ' ' + d.name + ' · ' + d.group;
+    el.foeTag.className = 'foe-tag' + (tier >= 6 ? ' myth' : tier >= 3 ? ' weird' : '');
+    el.foeTag.hidden = false;
   }
 
   /* =====================================================================
@@ -2402,6 +3247,11 @@
     saved.gfx = prefer3D ? '3d' : '2d'; store.save(saved);
     setGraphics(prefer3D);
   });
+  var shopBtns = document.querySelectorAll('.shop-open');
+  for (var sh = 0; sh < shopBtns.length; sh++) shopBtns[sh].addEventListener('click', openShop);
+  el.shopClose.addEventListener('click', closeShop);
+  el.skinGrid.addEventListener('click', onSkinGridClick);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !el.shopScreen.hidden) closeShop(); });
 
   document.addEventListener('keydown', function (e) {
     if (e.repeat || game.state !== STATE.PLAYING) return;
@@ -2457,6 +3307,12 @@
     for (var st = 1; st <= 10; st++) { s += Scoring.pointsFor(st); c += Scoring.coinsFor(st); }
     if (s !== 140) errors.push('คะแนนเต็มควรเป็น 140 แต่ได้ ' + s);
     if (c !== 18) errors.push('เหรียญเต็มควรเป็น 18 แต่ได้ ' + c);
+    if (CFG.CREATURES.length !== CFG.TOTAL_Q) errors.push('จำนวนสัตว์ควรเท่ากับจำนวนข้อ (' + CFG.TOTAL_Q + ')');
+    if (CFG.SKINS.length !== 11) errors.push('ควรมีสกิน 11 แบบ (ฟรี 1 + ร้านค้า 10)');
+    for (var si = 1; si < CFG.SKINS.length; si++) {
+      if (!CFG.SKINS[si].name) errors.push('สกินไม่มีชื่อ ' + CFG.SKINS[si].id);
+      if (!(CFG.SKINS[si].price > CFG.SKINS[si - 1].price)) errors.push('ราคาสกินควรเรียงจากถูกไปแพง ' + CFG.SKINS[si].id);
+    }
     var result = { passed: errors.length === 0, roundsPerLevel: rounds, errors: errors.slice(0, 20) };
     if (window.console) console.log('[CAT MATH RUN] selfTest', result);
     return result;
@@ -2465,14 +3321,24 @@
     selfTest: selfTest, MathCore: MathCore, Scoring: Scoring,
     getState: function () { return game.state; },
     getMode: function () { return scene.mode; },
-    getLevel: function () { return game.level; }
+    getLevel: function () { return game.level; },
+    getWallet: function () { return saved.wallet; },
+    getSkin: function () { return saved.skin; },
+    debug: {   // ใช้ทดสอบเท่านั้น
+      foe: function () { return scene.foe ? { id: scene.foe.def.id, state: scene.foe.state } : null; },
+      frozen: function () { return scene.frozenT > 0; },
+      show: function (tier, prog) { scene.spawnCreature(tier); if (scene.foe) { scene.foe.grow = 1; scene.foe.p = prog == null ? 0.8 : prog; if (scene.foe.x != null && scene.mode === '3d') scene.foe.x = 0; if (scene.foe.lane != null) scene.foe.lane = 0.5; } scene.update(0.016); scene.draw(); },
+      thumbs: function () { return thumbs ? Object.keys(thumbs).length : 0; },
+      hideCat: function (h) { if (scene.cat) { scene.cat.root.visible = !h; scene.cat.shadow.visible = !h; } }
+    }
   };
 
   /* =====================================================================
    * 15) เริ่มต้นหน้าเว็บ
    * ===================================================================== */
-  var face = catFaceSVG();
-  $('startCat').innerHTML = face; el.avatar.innerHTML = face; $('overCat').innerHTML = face; $('winCat').innerHTML = face;
+  refreshFaces();
+  renderWallet();
+  scene2D.setSkin(currentSkin());
   game.timeLimit = CFG.LEVELS[game.level].time;
   renderSoundButtons();
   renderLevelButtons();
