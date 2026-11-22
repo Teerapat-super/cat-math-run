@@ -79,6 +79,16 @@
   #banner.bad{color:#fff; text-shadow:0 3px 0 #9d0208,0 0 12px rgba(230,57,70,.9)}
   @keyframes bannerPop{0%{opacity:0;transform:translateX(-50%) scale(.4)}18%{opacity:1;transform:translateX(-50%) scale(1.15)}30%{transform:translateX(-50%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-24px) scale(1)}}
 
+  /* กล่องคำใบ้วิธีคิด: ซ้อนอยู่ด้านล่างของฉากวิ่ง จึงไม่ดันแผงโจทย์ให้เลื่อน */
+  #hintBox{position:absolute; left:8px; right:8px; bottom:8px; z-index:1; max-width:640px; margin:0 auto;
+    background:rgba(255,255,255,.97); border-radius:16px; border-left:6px solid var(--sky-d);
+    padding:8px 12px; box-shadow:0 4px 14px rgba(0,0,0,.22); text-align:left; font-size:.95rem; line-height:1.4}
+  #hintBox .hint-diag{font-weight:600; color:#c1121f}
+  #hintBox .hint-step{color:var(--navy)}
+  #hintBox .hint-step b{color:var(--sky-d)}
+  #hintBox svg{display:block; width:100%; height:auto; max-height:84px; margin-top:4px}
+  .retry-tag{display:inline-block; background:#fff1b8; color:#8a5a00; border-radius:99px; padding:0 8px; font-size:.8rem; margin-left:4px}
+
   /* แผงโจทย์ */
   #panel{
     background:var(--card); border-radius:22px 22px 0 0; padding:10px 12px;
@@ -103,17 +113,22 @@
   .danger-num{background:var(--red) !important; box-shadow:0 4px 0 #9d0208 !important; animation:pulse .5s infinite alternate}
   @keyframes pulse{to{transform:scale(1.08)}}
 
-  .choices{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .choices{display:grid; grid-template-columns:1fr 1fr; gap:10px}
   .choice{
-    position:relative; min-height:76px; border:none; border-radius:20px; color:#fff;
-    font-size:clamp(2rem,8vw,2.8rem); font-weight:600; display:flex; align-items:center; justify-content:center; gap:10px;
-    box-shadow:0 6px 0 rgba(0,0,0,.22); transition:transform .08s, filter .2s, opacity .2s;
+    position:relative; min-height:62px; border:none; border-radius:18px; color:#fff;
+    font-size:clamp(1.8rem,7.5vw,2.6rem); font-weight:600; display:flex; align-items:center; justify-content:center; gap:10px;
+    box-shadow:0 5px 0 rgba(0,0,0,.22); transition:transform .08s, filter .2s, opacity .2s;
   }
+  /* ตัวเลือก 4 ตัว: จอกว้าง/แนวนอน วางเรียง 4 ช่องในแถวเดียว · จอแคบ วางเป็นตาราง 2×2 */
+  @media (min-width:700px){ .choices{grid-template-columns:repeat(4,1fr)} .choice{min-height:72px} }
   #choice0{background:linear-gradient(#5fd3ff,#1f9ad6)}
   #choice1{background:linear-gradient(#ffc56b,#ff8a3d)}
+  #choice2{background:linear-gradient(#d3a6ff,#8e44ec)}
+  #choice3{background:linear-gradient(#6fe3d2,#139a8d)}
+  .choice .key{position:absolute; top:5px; left:8px; font-size:.78rem; font-weight:600; line-height:1.35; padding:0 6px;
+    border-radius:8px; background:rgba(255,255,255,.28)}
   .choice:active:not(:disabled){transform:translateY(4px); box-shadow:0 2px 0 rgba(0,0,0,.22)}
   .choice:disabled{cursor:default}
-  .choice .arrow{font-size:.5em; opacity:.85}
   .choice .mark{position:absolute; top:6px; right:10px; font-size:.95rem; font-weight:600; background:#fff; border-radius:99px; padding:0 8px; display:none}
   .choice.is-correct{background:linear-gradient(#7be07b,#2e9e3e) !important; outline:4px solid #1b5e20}
   .choice.is-correct .mark{display:block; color:#1b5e20}
@@ -223,6 +238,36 @@
   .stat{padding:6px 6px}
   .end-card-actions .btn{margin-top:8px}
 
+  /* ---------- สถิติส่วนตัว / ทบทวน / ตั้งค่าครู / สรุปครู ---------- */
+  .stat.record{background:#fff6d6}
+  .stat.record.new-best{background:linear-gradient(90deg,#fff3c4,#ffe0f0); outline:3px solid var(--yellow)}
+  .stat.review{background:#fff0f0; text-align:left}
+  .stat.review b{font-size:.95rem; font-weight:500; display:block}
+  .class-line{width:100%; font-size:.85rem; color:#2e7d32}
+  .teacher-set{margin-top:12px; text-align:left; background:#f6f3ff; border-radius:16px; padding:6px 12px; font-size:.9rem}
+  .teacher-set summary{cursor:pointer; font-weight:600; color:#6a3fc0; padding:4px 0; list-style-position:inside}
+  .set-row{display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; margin:8px 0}
+  .set-row label{font-weight:500}
+  .set-row select,.set-row input[type=number]{font-family:inherit; font-size:.92rem; padding:5px 8px; border:2px solid #d8d0f0; border-radius:10px; background:#fff; color:var(--navy)}
+  .set-row input[type=number]{width:96px}
+  .set-row input[type=checkbox]{width:20px; height:20px; accent-color:#8e44ec}
+  .set-note{font-size:.78rem; opacity:.8; margin:2px 0 6px}
+  .teacher-card{max-width:680px; text-align:left}
+  .teacher-card h2{margin:0 0 6px; color:#6a3fc0; font-size:1.45rem; text-align:center}
+  .t-sec{margin:10px 0 0}
+  .t-sec h3{margin:0 0 4px; font-size:1rem; color:var(--sky-d)}
+  .t-tbl{width:100%; border-collapse:collapse; font-size:.88rem}
+  .t-tbl th,.t-tbl td{border-bottom:1px solid #e3ecf3; padding:4px 6px; text-align:center}
+  .t-tbl th:first-child,.t-tbl td:first-child{text-align:left}
+  .t-tbl th{background:#f2fbff; font-weight:600}
+  .t-list{margin:0; padding-left:20px; font-size:.88rem; line-height:1.5}
+  .t-empty{font-size:.88rem; opacity:.7}
+  .t-actions{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px}
+  .t-actions .btn{margin-top:0; font-size:1rem; padding:10px 8px}
+  .btn-warn{background:linear-gradient(#ff9a9a,#d62828)}
+  #csvBox{width:100%; height:140px; margin-top:8px; font-family:monospace; font-size:.75rem}
+  .t-note{font-size:.8rem; opacity:.8; margin-top:8px}
+
   /* ---------- รองรับจอเล็ก / แนวนอน ---------- */
   @media (max-width:480px){
     .hud-top .lbl{display:none}
@@ -246,7 +291,7 @@
     .avatar{display:none}
     #equation{font-size:2rem}
     #equation.long{font-size:1.6rem}
-    .choice{min-height:56px; font-size:1.9rem}
+    .choice{min-height:50px; font-size:1.7rem}
     .timer-wrap{margin:5px 0 7px}
     #feedback{margin-top:4px; font-size:.9rem}
     .hud-item small{display:none}
@@ -268,8 +313,12 @@
     #equation.long{font-size:1.4rem}
     .timer-num{width:42px; height:42px; font-size:1.3rem}
     .timer-wrap{height:10px; margin:4px 0 6px}
-    .choice{min-height:48px; font-size:1.7rem}
+    .choices{grid-template-columns:repeat(4,1fr); gap:8px}
+    .choice{min-height:46px; font-size:1.55rem}
+    .choice .key{display:none}
     #feedback{min-height:1.2em; margin-top:3px; font-size:.82rem}
+    #hintBox{font-size:.82rem; padding:5px 10px}
+    #hintBox svg{max-height:54px}
     .key-hint{display:none !important}
   }
 
@@ -319,6 +368,7 @@
       <canvas id="scene"></canvas>
       <div id="banner"></div>
       <div id="foeTag" class="foe-tag" hidden></div>
+      <div id="hintBox" role="note" hidden></div>
     </section>
 
     <section id="panel" aria-label="โจทย์คณิตศาสตร์">
@@ -332,15 +382,21 @@
       </div>
       <div class="timer-wrap" id="timerWrap" aria-hidden="true"><div class="timer-bar" id="timerBar"></div></div>
       <div class="choices">
-        <button id="choice0" class="choice" type="button" disabled aria-label="ตัวเลือกซ้าย">
-          <span class="arrow" aria-hidden="true">◀</span><span class="num">?</span><span class="mark"></span>
+        <button id="choice0" class="choice" type="button" disabled aria-label="ตัวเลือกที่ 1">
+          <span class="key" aria-hidden="true">1</span><span class="num">?</span><span class="mark"></span>
         </button>
-        <button id="choice1" class="choice" type="button" disabled aria-label="ตัวเลือกขวา">
-          <span class="num">?</span><span class="arrow" aria-hidden="true">▶</span><span class="mark"></span>
+        <button id="choice1" class="choice" type="button" disabled aria-label="ตัวเลือกที่ 2">
+          <span class="key" aria-hidden="true">2</span><span class="num">?</span><span class="mark"></span>
+        </button>
+        <button id="choice2" class="choice" type="button" disabled aria-label="ตัวเลือกที่ 3">
+          <span class="key" aria-hidden="true">3</span><span class="num">?</span><span class="mark"></span>
+        </button>
+        <button id="choice3" class="choice" type="button" disabled aria-label="ตัวเลือกที่ 4">
+          <span class="key" aria-hidden="true">4</span><span class="num">?</span><span class="mark"></span>
         </button>
       </div>
       <div id="feedback" role="status" aria-live="polite"></div>
-      <div class="key-hint">คีย์บอร์ด: กด ← หรือ 1 = ซ้าย · กด → หรือ 2 = ขวา</div>
+      <div class="key-hint">คีย์บอร์ด: กดเลข 1 2 3 4 เพื่อเลือกคำตอบ</div>
     </section>
   </main>
 
@@ -360,10 +416,10 @@
       </div>
       <div class="level-desc" id="levelDesc"></div>
       <ul class="rules">
-        <li>🧮 โจทย์บวก–ลบ รอบละ 10 ข้อ เลือกคำตอบ 1 ใน 2</li>
+        <li>🧮 โจทย์บวก–ลบ รอบละ 10 ข้อ เลือกคำตอบ 1 ใน 4</li>
         <li>🦶 ตอบถูก แมวกระโดดถีบสัตว์ ยิ่งถูกติดกันยิ่งเจอสัตว์ในเทพนิยาย</li>
-        <li>🧊 ตอบผิด/หมดเวลา โดนแช่แข็ง เสียหัวใจ 1 ดวง (มี 3 ดวง)</li>
-        <li>⭐ ถูก 1 ข้อ = 10 คะแนน + 1 🪙 · ถูกติดกันตั้งแต่ข้อที่ 3 ได้ +5 คะแนน +1 🪙</li>
+        <li>🧊 ตอบผิด/หมดเวลา โดนแช่แข็ง เสียหัวใจ 1 ดวง (มี 3 ดวง) พร้อมคำใบ้วิธีคิด</li>
+        <li>⭐ ถูก 1 ข้อ = 10 คะแนน + 1 🪙 · ⚡ ตอบไวได้โบนัสอีกสูงสุด 5 คะแนน · ถูกติดกันตั้งแต่ข้อที่ 3 ได้ +5 คะแนน +1 🪙</li>
       </ul>
       <div class="start-row">
         <button id="startBtn" class="btn btn-primary" type="button">▶ เริ่มเกม</button>
@@ -374,7 +430,31 @@
         <button id="gfxBtn" class="pill-btn" type="button" aria-pressed="true" hidden>🧊 ภาพ 3 มิติ: เปิด</button>
         <span id="gfxNote" class="gfx-note" hidden>เครื่องนี้แสดงภาพแบบ 2 มิติ</span>
         <span id="bestScore" class="best"></span>
+        <span id="classLine" class="class-line"></span>
       </div>
+      <details class="teacher-set" id="teacherSet">
+        <summary>⚙️ ตั้งค่าสำหรับครู</summary>
+        <div class="set-row">
+          <label for="timeModeSel">⏱ เวลาต่อข้อ</label>
+          <select id="timeModeSel">
+            <option value="level">ตามระดับ (ค่าเริ่มต้น)</option>
+            <option value="auto">ปรับอัตโนมัติ (ให้ตอบถูกราว 75%)</option>
+            <option value="x1.5">เพิ่มเวลา ×1.5</option>
+            <option value="x2">เพิ่มเวลา ×2</option>
+            <option value="off">ไม่จับเวลา (โหมดฝึก)</option>
+          </select>
+        </div>
+        <p class="set-note">แนะนำให้ฝึก “แม่นก่อน แล้วค่อยเร็ว”: เริ่มจากโหมดไม่จับเวลาหรือเพิ่มเวลา แล้วค่อยเปลี่ยนเป็นตามระดับหรือปรับอัตโนมัติ</p>
+        <div class="set-row">
+          <input type="checkbox" id="retryChk">
+          <label for="retryChk">🔁 ทวนข้อที่ตอบผิดซ้ำภายในรอบ (ข้อที่ผิดจะกลับมาอีกครั้งหลังผ่านไป 2 ข้อ)</label>
+        </div>
+        <div class="set-row">
+          <label for="goalInput">🤝 เป้าหมายร่วมของห้อง</label>
+          <input type="number" id="goalInput" min="0" max="100000" step="10" inputmode="numeric" placeholder="เช่น 500"> <span>ตัว</span>
+        </div>
+        <button id="teacherBtn" class="pill-btn" type="button">📊 สรุปสำหรับครู</button>
+      </details>
     </div>
   </section>
 
@@ -403,6 +483,23 @@
       <button id="winRetry" class="btn btn-primary" type="button">🔄 เล่นอีกครั้ง</button>
       <button class="btn btn-shop shop-open" type="button">🛒 ร้านค้าสกิน · 🪙 <span class="wallet-num">0</span></button>
       <button id="winHome" class="btn btn-secondary" type="button">🏠 กลับหน้าหลัก</button>
+    </div>
+  </section>
+
+  <!-- ===================== สรุปสำหรับครู ===================== -->
+  <section id="teacherScreen" class="screen" hidden aria-labelledby="teacherTitle">
+    <div class="card teacher-card">
+      <h2 id="teacherTitle">📊 สรุปสำหรับครู (เครื่องนี้)</h2>
+      <div id="teacherBody"></div>
+      <div class="t-actions">
+        <button id="csvBtn" class="btn btn-secondary" type="button">⬇ ดาวน์โหลดข้อมูล (CSV)</button>
+        <button id="csvShowBtn" class="btn btn-secondary" type="button">📋 แสดงข้อมูลให้คัดลอก</button>
+        <button id="resetStatsBtn" class="btn btn-warn" type="button">🗑 ล้างข้อมูลสรุป</button>
+        <button id="teacherClose" class="btn btn-primary" type="button">↩ กลับ</button>
+      </div>
+      <textarea id="csvBox" readonly hidden aria-label="ข้อมูลรายข้อแบบ CSV"></textarea>
+      <p class="t-note">ข้อมูลทั้งหมดเก็บในเบราว์เซอร์ของเครื่องนี้เท่านั้น ไม่มีการส่งออกนอกเครื่อง ·
+        แนวทางการใช้: ให้นักเรียนเล่นวันละประมาณ 20 นาที ต่อเนื่อง 2 สัปดาห์ แล้วดูข้อที่ผิดบ่อยเพื่อสอนเสริม</p>
     </div>
   </section>
 
@@ -435,7 +532,16 @@
     BONUS_FROM_STREAK: 3,   // เริ่มให้โบนัสตั้งแต่ถูกติดกันข้อที่ 3
     COMBO_STREAK: 5,        // แสดง COMBO ตั้งแต่ถูกติดกัน 5 ข้อ
     NEXT_DELAY_OK: 950,     // หน่วงก่อนข้อต่อไป เมื่อตอบถูก
-    NEXT_DELAY_BAD: 1600,   // หน่วงก่อนข้อต่อไป เมื่อตอบผิด/หมดเวลา (ให้เห็นคำตอบที่ถูก)
+    NEXT_DELAY_BAD: 2800,   // หน่วงก่อนข้อต่อไป เมื่อตอบผิด/หมดเวลา (ให้อ่านคำตอบที่ถูกและคำใบ้วิธีคิดทัน)
+    CHOICES: 4,             // จำนวนตัวเลือกต่อข้อ (คำตอบถูก 1 + ตัวเลือกผิด 3)
+    SPEED_BONUS_MAX: 5,     // โบนัสตอบไวสูงสุดต่อข้อ (คิดตามสัดส่วนเวลาที่เหลือ)
+    RECORD_MIN_CORRECT: 5,  // ต้องตอบถูกอย่างน้อยกี่ข้อ จึงบันทึกสถิติความเร็ว
+    AUTO_TARGET: [0.65, 0.85], // โหมดอัตโนมัติ: ถูกต่ำกว่า 65% เพิ่มเวลา, ถูกตั้งแต่ 85% ลดเวลา (ให้อยู่ราว 75%)
+    AUTO_STEP: 0.1,         // ปรับครั้งละ 10% ของเวลามาตรฐานของระดับ
+    AUTO_MIN: 0.4,          // เวลาต่ำสุด 40% ของเวลามาตรฐาน
+    AUTO_MAX: 2,            // เวลาสูงสุด 200% ของเวลามาตรฐาน
+    RETRY_GAP: 2,           // ทวนข้อที่ผิด: กลับมาอีกครั้งหลังผ่านไปกี่ข้อ
+    LOG_MAX: 3000,          // จำนวนแถวข้อมูลรายข้อสูงสุดที่เก็บในเครื่อง (สำหรับครู/งานวิจัย)
     END_DELAY: 1100,        // หน่วงก่อนแสดงหน้าสรุป (ให้เห็นแอนิเมชันสุดท้าย)
     BASE_SPEED: 6.5,        // ความเร็ววิ่งพื้นฐานในฉาก
     STORAGE_KEY: 'catMathRun.v2',
@@ -579,47 +685,69 @@
     },
 
     /**
-     * สร้างคำตอบที่ผิดแบบสมเหตุสมผล ไม่ติดลบ ไม่เกินช่วงของระดับ และไม่ซ้ำคำตอบจริง
-     * - เลข 1 หลัก : ±1, ±2 หรือสลับบวก/ลบ
-     * - เลข 2 หลัก : ±1, ±2, ±10 และความผิดพลาดที่นักเรียนทำบ่อย
-     *   (ลืมทด, ลืมยืม/เอาตัวน้อยลบตัวมากในหลักหน่วย, ตั้งหลักผิด, สลับบวก/ลบ)
+     * สร้างตัวเลือกผิด n ตัว (ค่าเริ่มต้น 3) ไม่ซ้ำกัน ไม่ซ้ำคำตอบจริง และอยู่ในช่วงของระดับ
+     * แต่ละตัวมี kind = ชนิดความผิดพลาดที่ตัวเลือกนั้นจำลอง ใช้ทำคำใบ้และสรุปให้ครู
+     * - ความผิดพลาดที่นักเรียนทำบ่อย: carry ลืมทด, borrow เอาเลขน้อยลบเลขมาก, place ตั้งหลักผิด,
+     *   opSwap สลับบวก/ลบ, sign เครื่องหมายผิด, absAdd/absSub จัดการเครื่องหมายจำนวนเต็มผิด, negSub ลบด้วยจำนวนลบผิด
+     * - ความคลาดเคลื่อนทั่วไป: near (±1, ±2), tens (±10 ในเลข 2 หลัก)
+     * เลือกจากกลุ่มความผิดพลาดก่อนไม่เกิน 2 ตัว แล้วเติมด้วยความคลาดเคลื่อน เพื่อให้ตัวเลือกหลากหลาย
      */
-    makeWrongAnswer: function (q) {
-      var min = CFG.LEVELS[q.level].min, max = CFG.LEVELS[q.level].max, near = [], errs = [];
-      function add(list, v) {
-        if (v >= min && v <= max && v !== q.answer && near.indexOf(v) === -1 && errs.indexOf(v) === -1) list.push(v);
+    makeWrongAnswers: function (q, n) {
+      n = n || (CFG.CHOICES - 1);
+      var min = CFG.LEVELS[q.level].min, max = CFG.LEVELS[q.level].max, errs = [], near = [], kindOf = {};
+      function add(list, v, kind) {
+        if (v !== Math.floor(v) || v < min || v > max || v === q.answer || Object.prototype.hasOwnProperty.call(kindOf, v)) return;
+        kindOf[v] = kind; list.push(v);
       }
-      add(near, q.answer - 1); add(near, q.answer + 1); add(near, q.answer - 2); add(near, q.answer + 2);
       if (q.level === 'integer') {
-        // ความผิดพลาดที่พบบ่อยเรื่องจำนวนเต็ม
-        add(errs, -q.answer);                                                   // เครื่องหมายผิด
+        add(errs, -q.answer, 'sign');                                           // เครื่องหมายผิด
         var sb = q.op === '+' ? q.b : -q.b;                                     // เขียนใหม่เป็นการบวก: a + sb
-        if ((q.a < 0) !== (sb < 0)) {                                           // เครื่องหมายต่างกัน: เอาค่าสัมบูรณ์มาบวกกัน
-          add(errs, (q.answer < 0 ? -1 : 1) * (Math.abs(q.a) + Math.abs(sb)));
-        } else {                                                                // เครื่องหมายเหมือนกัน: เอาค่าสัมบูรณ์มาลบกัน
-          add(errs, (q.a < 0 ? -1 : 1) * Math.abs(Math.abs(q.a) - Math.abs(sb)));
+        if ((q.a < 0) !== (sb < 0)) {                                           // เครื่องหมายต่างกัน แต่เอาค่ามาบวกกัน
+          add(errs, (q.answer < 0 ? -1 : 1) * (Math.abs(q.a) + Math.abs(sb)), 'absAdd');
+        } else {                                                                // เครื่องหมายเหมือนกัน แต่เอาค่ามาลบกัน
+          add(errs, (q.a < 0 ? -1 : 1) * Math.abs(Math.abs(q.a) - Math.abs(sb)), 'absSub');
         }
-        if (q.op === '-' && q.b < 0) add(errs, q.a + q.b);                      // ลบด้วยจำนวนลบ แต่ลืมเปลี่ยนเป็นบวก
-        if (q.op === '-' && q.b > 0) add(errs, q.a + q.b);                      // สลับเป็นการบวก
+        if (q.op === '-' && q.b < 0) add(errs, q.a + q.b, 'negSub');            // ลบด้วยจำนวนลบ แต่ลืมเปลี่ยนเป็นบวก
+        if (q.op === '-' && q.b > 0) add(errs, q.a + q.b, 'opSwap');            // สลับเป็นการบวก
+        if (q.op === '+') add(errs, q.a - q.b, 'opSwap');                       // สลับเป็นการลบ
       } else if (q.level === 'easy') {
-        add(errs, q.op === '+' ? Math.abs(q.a - q.b) : q.a + q.b);
+        add(errs, q.op === '+' ? Math.abs(q.a - q.b) : q.a + q.b, 'opSwap');
       } else {
-        add(near, q.answer - 10); add(near, q.answer + 10);
         if (q.op === '+') {
-          if (MathCore.hasCarry(q.a, q.b)) add(errs, q.answer - 10);           // ลืมทด
-          if (q.b < 10) add(errs, q.a + q.b * 10);                              // ตั้งหลักผิด
+          if (MathCore.hasCarry(q.a, q.b)) add(errs, q.answer - 10, 'carry');  // ลืมทด
+          if (q.b < 10) add(errs, q.a + q.b * 10, 'place');                     // ตั้งหลักผิด
+          add(errs, q.a - q.b, 'opSwap');                                       // สลับเป็นการลบ
         } else {
           if (MathCore.hasBorrow(q.a, q.b)) {                                   // เอาตัวน้อยลบตัวมากในหลักหน่วย
-            add(errs, (Math.floor(q.a / 10) - Math.floor(q.b / 10)) * 10 + Math.abs(q.a % 10 - q.b % 10));
+            add(errs, (Math.floor(q.a / 10) - Math.floor(q.b / 10)) * 10 + Math.abs(q.a % 10 - q.b % 10), 'borrow');
           }
-          add(errs, q.a + q.b);                                                 // สลับเป็นการบวก
+          add(errs, q.a + q.b, 'opSwap');                                       // สลับเป็นการบวก
         }
       }
-      var pool = errs.length && Math.random() < 0.5 ? errs : near.concat(errs);
-      if (pool.length === 0) { // กันพลาดทางทฤษฎี
-        for (var k = min; k <= max; k++) if (k !== q.answer) pool.push(k);
+      add(near, q.answer - 1, 'near'); add(near, q.answer + 1, 'near'); add(near, q.answer - 2, 'near'); add(near, q.answer + 2, 'near');
+      if (q.level === 'medium' || q.level === 'hard') { add(near, q.answer - 10, 'tens'); add(near, q.answer + 10, 'tens'); }
+      MathCore.shuffle(errs); MathCore.shuffle(near);
+      var pick = errs.slice(0, Math.min(2, n));
+      for (var i = 0; pick.length < n && i < near.length; i++) pick.push(near[i]);
+      for (var j = 2; pick.length < n && j < errs.length; j++) pick.push(errs[j]);
+      for (var d = 3; pick.length < n && d <= max - min; d++) {               // กันพลาด: เติมค่าที่ห่างออกไปทีละขั้น
+        var extra = [];
+        add(extra, q.answer - d, 'near'); add(extra, q.answer + d, 'near');
+        for (var k = 0; pick.length < n && k < extra.length; k++) pick.push(extra[k]);
       }
-      return pool[MathCore.randInt(0, pool.length - 1)];
+      return pick.map(function (v) { return { v: v, kind: kindOf[v] }; });
+    },
+
+    /** สุ่มตำแหน่งคำตอบที่ถูก และใส่ตัวเลือกผิด (ใช้ทั้งโจทย์ใหม่และโจทย์ทวน) */
+    assignChoices: function (q) {
+      var wrongs = MathCore.makeWrongAnswers(q, CFG.CHOICES - 1), w = 0;
+      q.correctIndex = MathCore.randInt(0, CFG.CHOICES - 1);
+      q.choices = []; q.kinds = [];
+      for (var i = 0; i < CFG.CHOICES; i++) {
+        if (i === q.correctIndex) { q.choices.push(q.answer); q.kinds.push(null); }
+        else { q.choices.push(wrongs[w].v); q.kinds.push(wrongs[w].kind); w++; }
+      }
+      return q;
     },
 
     /** สร้างโจทย์ 1 ข้อ ตามระดับ โดยไม่ซ้ำกับโจทย์ในชุด usedKeys */
@@ -637,37 +765,161 @@
       var q = { a: p[0], b: p[1], op: op, level: level };
       q.key = q.a + op + q.b;
       q.answer = op === '+' ? q.a + q.b : q.a - q.b;
-      var wrong = MathCore.makeWrongAnswer(q);
-      q.correctIndex = MathCore.randInt(0, 1);
-      q.choices = q.correctIndex === 0 ? [q.answer, wrong] : [wrong, q.answer];
+      MathCore.assignChoices(q);
       usedKeys.add(q.key);
       return q;
+    },
+
+    /** สร้างโจทย์ทวนจากข้อที่เคยผิด: ตัวเลขเดิม แต่สลับตำแหน่งและตัวเลือกผิดใหม่ */
+    retryOf: function (q) {
+      var r = { a: q.a, b: q.b, op: q.op, level: q.level, key: q.key, answer: q.answer, isRetry: true };
+      return MathCore.assignChoices(r);
     }
   };
 
-  /** กติกาคะแนน: ใช้ Streak หลังจากนับข้อที่เพิ่งตอบถูกแล้ว (เหมือนกันทุกระดับ) */
+  /**
+   * กติกาคะแนน: ใช้ Streak หลังจากนับข้อที่เพิ่งตอบถูกแล้ว (เหมือนกันทุกระดับ)
+   * speedFrac = สัดส่วนเวลาที่เหลือตอนตอบ (0–1) · โหมดไม่จับเวลาไม่มีโบนัสตอบไว
+   * คะแนนต่อข้อ = 10 + โบนัสตอบไว (0–5) + โบนัส Streak (5 ตั้งแต่ข้อที่ 3 ที่ถูกติดกัน)
+   */
   var Scoring = {
-    pointsFor: function (streak) { return CFG.BASE_POINTS + (streak >= CFG.BONUS_FROM_STREAK ? CFG.BONUS_POINTS : 0); },
+    speedBonus: function (speedFrac) {
+      if (!(speedFrac > 0)) return 0;
+      return Math.round(CFG.SPEED_BONUS_MAX * Math.min(1, speedFrac));
+    },
+    streakBonus: function (streak) { return streak >= CFG.BONUS_FROM_STREAK ? CFG.BONUS_POINTS : 0; },
+    pointsFor: function (streak, speedFrac) { return CFG.BASE_POINTS + Scoring.streakBonus(streak) + Scoring.speedBonus(speedFrac); },
     coinsFor: function (streak) { return 1 + (streak >= CFG.BONUS_FROM_STREAK ? 1 : 0); }
+  };
+
+  /**
+   * โหมดเวลาอัตโนมัติ: ปรับเวลาต่อข้อหลังจบแต่ละรอบ ให้อัตราตอบถูกอยู่ราว 75%
+   * (แนวคิดจากระบบฝึกเลข Math Garden ที่เลือกความยากให้มีโอกาสตอบถูกประมาณ .75)
+   */
+  var AutoTime = {
+    base: function (level) { return CFG.LEVELS[level].time; },
+    clamp: function (level, ms) {
+      var b = AutoTime.base(level);
+      return Math.round(Math.max(b * CFG.AUTO_MIN, Math.min(b * CFG.AUTO_MAX, ms)) / 100) * 100;
+    },
+    next: function (level, current, correct, answered) {
+      var cur = AutoTime.clamp(level, current || AutoTime.base(level));
+      if (!(answered >= 3)) return cur;                      // ข้อมูลน้อยเกินไป ไม่ปรับ
+      var acc = correct / answered, step = AutoTime.base(level) * CFG.AUTO_STEP;
+      if (acc >= CFG.AUTO_TARGET[1]) return AutoTime.clamp(level, cur - step);
+      if (acc < CFG.AUTO_TARGET[0]) return AutoTime.clamp(level, cur + step);
+      return cur;
+    }
+  };
+
+  /* ---------- แสดงจำนวน: จำนวนลบใช้เครื่องหมายลบ (−) แบบตัวพิมพ์ และใส่วงเล็บเมื่ออยู่ในโจทย์ เช่น (−5) ---------- */
+  function fmtNum(n) { return n < 0 ? '−' + (-n) : String(n); }
+  function fmtTerm(n) { return n < 0 ? '(−' + (-n) + ')' : String(n); }
+  function speakNum(n) { return n < 0 ? 'ลบ ' + (-n) : String(n); }
+  function eqText(q) { return fmtTerm(q.a) + (q.op === '+' ? ' + ' : ' − ') + fmtTerm(q.b); }
+  function fullEq(q) { return eqText(q) + ' = ' + fmtNum(q.answer); }
+
+  /**
+   * คำใบ้วิธีคิด (ผลป้อนกลับเชิงกระบวนการ)
+   * - diagnose: บอกว่าตัวเลือกที่เลือกน่าจะมาจากความผิดพลาดแบบใด
+   * - strategy: บอกวิธีคิดทีละขั้นของโจทย์ข้อนั้น (ลงท้ายด้วยคำตอบเสมอ)
+   */
+  var Hints = {
+    KIND_NAME: {
+      near: 'คลาดเคลื่อนเล็กน้อย (±1, ±2)', tens: 'หลักสิบคลาด (±10)', carry: 'ลืมทด',
+      place: 'ตั้งหลักไม่ตรง', borrow: 'ไม่ยืม (เอาเลขน้อยลบเลขมากในหลักหน่วย)', opSwap: 'สลับเครื่องหมายบวก/ลบ',
+      sign: 'เครื่องหมายของคำตอบผิด', absAdd: 'เครื่องหมายต่างกันแต่นำค่ามาบวกกัน',
+      absSub: 'เครื่องหมายเหมือนกันแต่นำค่ามาลบกัน', negSub: 'ลบด้วยจำนวนลบแต่ไม่เปลี่ยนเป็นบวก', timeout: 'หมดเวลา'
+    },
+    diagnose: function (q, kind) {
+      switch (kind) {
+        case 'near': return 'คำตอบคลาดไปเล็กน้อย ลองคิดทีละขั้นอีกครั้ง';
+        case 'tens': return 'หลักหน่วยถูกแล้ว แต่หลักสิบคลาดไป 10';
+        case 'carry': return 'ลืมทด 1 ไปหลักสิบ';
+        case 'place': return 'ตั้งหลักไม่ตรง: ' + q.b + ' อยู่หลักหน่วย ต้องบวกกับหลักหน่วย';
+        case 'borrow': return 'หลักหน่วยลบไม่พอ ต้องยืม 1 สิบมาก่อน ไม่ใช่เอาเลขน้อยลบเลขมาก';
+        case 'opSwap': return 'ข้อนี้เป็นการ' + (q.op === '+' ? 'บวก' : 'ลบ') + ' ระวังเครื่องหมาย';
+        case 'sign': return 'ตัวเลขถูกแล้ว แต่เครื่องหมายของคำตอบผิด';
+        case 'absAdd': return 'เครื่องหมายต่างกัน ต้องเอาค่าที่มากลบค่าที่น้อย ไม่ใช่บวกกัน';
+        case 'absSub': return 'เครื่องหมายเหมือนกัน ต้องรวมค่ากัน แล้วใช้เครื่องหมายเดิม';
+        case 'negSub': return 'ลบด้วยจำนวนลบ = บวก';
+        default: return '';
+      }
+    },
+    strategy: function (q) {
+      var a = q.a, b = q.b, ans = q.answer;
+      if (q.level === 'integer') {
+        var step = q.op === '+' ? b : -b;
+        var pre = q.op === '-' ? 'ลบ ' + fmtTerm(b) + ' คือบวก ' + fmtTerm(-b) + ' · ' : '';
+        return pre + 'เริ่มที่ ' + fmtNum(a) + ' เดินไปทาง' + (step > 0 ? 'ขวา ' : 'ซ้าย ') + Math.abs(step) + ' ช่อง ถึง ' + fmtNum(ans);
+      }
+      if (q.level === 'easy') {
+        if (q.op === '+') {
+          if (a === 0 || b === 0) return 'บวกด้วย 0 ได้ค่าเดิม → ' + ans;
+          var big = Math.max(a, b), small = Math.min(a, b), seq = [];
+          for (var i = big + 1; i <= ans; i++) seq.push(i);
+          return 'เริ่มที่ ' + big + ' แล้วนับต่ออีก ' + small + (small > 1 ? ': ' + seq.join(', ') : '') + ' → ' + ans;
+        }
+        if (b === 0) return 'ลบด้วย 0 ได้ค่าเดิม → ' + ans;
+        if (a === b) return 'จำนวนที่เท่ากันลบกันได้ 0 → ' + ans;
+        return 'คิดย้อนเป็นการบวก: ' + b + ' + ? = ' + a + ' → ' + ans;
+      }
+      var ua = a % 10, ub = b % 10, ta = Math.floor(a / 10), tb = Math.floor(b / 10);
+      if (q.op === '+') {
+        var u = ua + ub;
+        if (u >= 10) return 'หลักหน่วย ' + ua + ' + ' + ub + ' = ' + u + ' เขียน ' + (u - 10) + ' ทด 1 · หลักสิบ ' + ta + ' + ' + tb + ' + 1 = ' + (ta + tb + 1) + ' → ' + ans;
+        return 'หลักหน่วย ' + ua + ' + ' + ub + ' = ' + u + ' · หลักสิบ ' + ta + ' + ' + tb + ' = ' + (ta + tb) + ' → ' + ans;
+      }
+      if (ua < ub) return 'หลักหน่วย ' + ua + ' ลบ ' + ub + ' ไม่พอ ยืม 1 สิบ: ' + (ua + 10) + ' − ' + ub + ' = ' + (ua + 10 - ub) + ' · หลักสิบ ' + ta + ' − 1 − ' + tb + ' = ' + (ta - 1 - tb) + ' → ' + ans;
+      return 'หลักหน่วย ' + ua + ' − ' + ub + ' = ' + (ua - ub) + ' · หลักสิบ ' + ta + ' − ' + tb + ' = ' + (ta - tb) + ' → ' + ans;
+    },
+    /** เส้นจำนวน (SVG) สำหรับระดับจำนวนเต็ม: จุดเริ่ม ลูกศรเดิน และจุดคำตอบ */
+    numberLine: function (q) {
+      var start = q.a, step = q.op === '+' ? q.b : -q.b, end = start + step;
+      var lo = Math.min(start, end, 0) - 1, hi = Math.max(start, end, 0) + 1;
+      while (hi - lo < 10) { lo--; if (hi - lo < 10) hi++; }
+      var W = 640, H = 96, pad = 22, dx = (W - pad * 2) / (hi - lo), y = 62;
+      function X(v) { return (pad + (v - lo) * dx).toFixed(1); }
+      var out = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="เส้นจำนวน เริ่มที่ ' +
+        speakNum(start) + ' เดิน ' + (step > 0 ? 'ไปทางขวา ' : 'ไปทางซ้าย ') + Math.abs(step) + ' ช่อง ถึง ' + speakNum(end) + '">';
+      out += '<defs><marker id="nlArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">' +
+        '<path d="M0 0 L10 5 L0 10 z" fill="#ff8a3d"/></marker></defs>';
+      out += '<line x1="' + (pad - 8) + '" y1="' + y + '" x2="' + (W - pad + 8) + '" y2="' + y + '" stroke="#23395b" stroke-width="3"/>';
+      for (var v = lo; v <= hi; v++) {
+        var key = v === 0 || v === start || v === end, h = key ? 9 : 5;
+        out += '<line x1="' + X(v) + '" y1="' + (y - h) + '" x2="' + X(v) + '" y2="' + (y + h) + '" stroke="#23395b" stroke-width="' + (v === 0 ? 3 : 1.6) + '"/>';
+        if (key || v % 5 === 0) {
+          out += '<text x="' + X(v) + '" y="' + (y + 28) + '" font-size="' + (key ? 20 : 15) + '" font-weight="' + (key ? 700 : 400) +
+            '" text-anchor="middle" fill="' + (v === end ? '#2e9e3e' : '#23395b') + '">' + fmtNum(v) + '</text>';
+        }
+      }
+      var x1 = +X(start), x2 = +X(end), mid = (x1 + x2) / 2;
+      out += '<path d="M' + x1 + ' ' + (y - 8) + ' Q' + mid.toFixed(1) + ' ' + (y - 58) + ' ' + x2 + ' ' + (y - 8) + '" fill="none" stroke="#ff8a3d" stroke-width="4" marker-end="url(#nlArrow)"/>';
+      out += '<text x="' + mid.toFixed(1) + '" y="' + (y - 38) + '" font-size="18" font-weight="700" text-anchor="middle" fill="#e0661a">' + (step > 0 ? '+' : '−') + Math.abs(step) + '</text>';
+      out += '<circle cx="' + x1 + '" cy="' + y + '" r="8" fill="#23395b"/><circle cx="' + x2 + '" cy="' + y + '" r="9" fill="#2e9e3e" stroke="#fff" stroke-width="2"/>';
+      return out + '</svg>';
+    }
   };
 
   /* =====================================================================
    * 3) สถานะเกม
    * ===================================================================== */
   var game = {
-    state: STATE.READY, round: 0, level: 'easy', timeLimit: CFG.LEVELS.easy.time,
+    state: STATE.READY, round: 0, level: 'easy', timeLimit: CFG.LEVELS.easy.time, timeMode: 'level',
     qIndex: 0, answered: 0, score: 0, coins: 0, hearts: CFG.MAX_HEARTS, streak: 0, maxStreak: 0,
     correct: 0, wrong: 0, timeouts: 0,
-    question: null, deadline: 0, paused: false, pausedRemaining: 0,
-    usedKeys: new Set(), ops: [], nextTimer: null, endTimer: null, backupTimer: null
+    question: null, deadline: 0, qStart: 0, pauseAt: 0, paused: false, pausedRemaining: 0,
+    usedKeys: new Set(), ops: [], retryQueue: [], misses: [], rtCorrect: [], endInfo: null,
+    nextTimer: null, endTimer: null, backupTimer: null
   };
 
   function resetGameData() {
     game.qIndex = 0; game.answered = 0; game.score = 0; game.coins = 0;
     game.hearts = CFG.MAX_HEARTS; game.streak = 0; game.maxStreak = 0;
     game.correct = 0; game.wrong = 0; game.timeouts = 0; game.kicks = 0; game.bestTier = -1; game.foeTier = 0;
-    game.question = null; game.deadline = 0; game.paused = false; game.pausedRemaining = 0;
+    game.question = null; game.deadline = 0; game.qStart = 0; game.pauseAt = 0; game.paused = false; game.pausedRemaining = 0;
     game.usedKeys = new Set(); game.ops = MathCore.buildOpSequence(CFG.TOTAL_Q);
+    game.retryQueue = []; game.misses = []; game.rtCorrect = []; game.endInfo = null; game.speedPts = 0;
   }
 
   function clearTimers() {
@@ -687,11 +939,14 @@
     hudScore: $('hudScore'), hudCoins: $('hudCoins'), hudHearts: $('hudHearts'),
     hudProgress: $('hudProgress'), hudRemain: $('hudRemain'), hudStreak: $('hudStreak'), hudBest: $('hudBest'),
     qLabel: $('qLabel'), equation: $('equation'), timerNum: $('timerNum'), timerBar: $('timerBar'), timerWrap: $('timerWrap'),
-    choices: [$('choice0'), $('choice1')], feedback: $('feedback'), avatar: $('avatar'),
+    choices: [$('choice0'), $('choice1'), $('choice2'), $('choice3')], feedback: $('feedback'), avatar: $('avatar'), hintBox: $('hintBox'),
     banner: $('banner'), stage: $('stage'), canvas: $('scene'), canvas3d: $('scene3d'),
     overStats: $('overStats'), overMsg: $('overMsg'), overRetry: $('overRetry'), overHome: $('overHome'),
     winStats: $('winStats'), winMsg: $('winMsg'), winStars: $('winStars'), winRetry: $('winRetry'), winHome: $('winHome'),
-    confetti: $('confetti'), foeTag: $('foeTag'), shopScreen: $('shopScreen'), shopClose: $('shopClose'), skinGrid: $('skinGrid')
+    confetti: $('confetti'), foeTag: $('foeTag'), shopScreen: $('shopScreen'), shopClose: $('shopClose'), skinGrid: $('skinGrid'),
+    classLine: $('classLine'), timeModeSel: $('timeModeSel'), retryChk: $('retryChk'), goalInput: $('goalInput'),
+    teacherBtn: $('teacherBtn'), teacherScreen: $('teacherScreen'), teacherBody: $('teacherBody'), teacherClose: $('teacherClose'),
+    csvBtn: $('csvBtn'), csvShowBtn: $('csvShowBtn'), csvBox: $('csvBox'), resetStatsBtn: $('resetStatsBtn')
   };
 
   var reducedMotion = false;
@@ -766,6 +1021,38 @@
   saved.owned = saved.owned.filter(function (id) { return !!skinById(id); });
   if (saved.owned.indexOf('classic') === -1) saved.owned.unshift('classic');
   if (!skinById(saved.skin) || saved.owned.indexOf(saved.skin) === -1) saved.skin = 'classic';
+  // การตั้งค่าครู + สถิติ + ข้อมูลรายข้อ (ข้อมูลเสียหาย/ไม่มี → เริ่มใหม่อย่างปลอดภัย)
+  var TIME_MODES = ['level', 'auto', 'x1.5', 'x2', 'off'];
+  function isObj(o) { return !!o && typeof o === 'object' && !Array.isArray(o); }
+  function newStats() { return { rounds: {}, items: {}, kinds: {}, recent: [] }; }
+  if (!isObj(saved.settings)) saved.settings = {};
+  if (TIME_MODES.indexOf(saved.settings.timeMode) === -1) saved.settings.timeMode = 'level';
+  saved.settings.retry = saved.settings.retry === true;
+  saved.settings.classGoal = typeof saved.settings.classGoal === 'number' && saved.settings.classGoal >= 0 && isFinite(saved.settings.classGoal) ?
+    Math.min(100000, Math.floor(saved.settings.classGoal)) : 0;
+  if (!isObj(saved.auto)) saved.auto = {};
+  if (!isObj(saved.records)) saved.records = {};
+  if (!isObj(saved.stats) || !isObj(saved.stats.items) || !isObj(saved.stats.kinds) || !isObj(saved.stats.rounds) || !Array.isArray(saved.stats.recent)) saved.stats = newStats();
+  if (!Array.isArray(saved.log)) saved.log = [];
+  if (typeof saved.kicksTotal !== 'number' || !(saved.kicksTotal >= 0) || !isFinite(saved.kicksTotal)) saved.kicksTotal = 0;
+  saved.kicksTotal = Math.floor(saved.kicksTotal);
+
+  /* ---------- เวลาต่อข้อตามโหมดที่ครูเลือก ---------- */
+  function timeLimitFor(level) {
+    var base = CFG.LEVELS[level].time, m = saved.settings.timeMode;
+    if (m === 'off') return 0;                                  // 0 = ไม่จับเวลา
+    if (m === 'x1.5') return base * 1.5;
+    if (m === 'x2') return base * 2;
+    if (m === 'auto') return AutoTime.clamp(level, saved.auto[level] || base);
+    return base;
+  }
+  function secText(ms) { return String(Math.round(ms / 100) / 10); }
+  function timeText(level) {
+    var m = saved.settings.timeMode;
+    if (m === 'off') return 'ไม่จับเวลา (โหมดฝึก)';
+    return 'ตอบภายใน ' + secText(timeLimitFor(level)) + ' วินาที' + (m === 'auto' ? ' (ปรับอัตโนมัติ)' : m !== 'level' ? ' (เพิ่มเวลา)' : '');
+  }
+  function recordOf(level, group) { return saved.records[level + '|' + group] || null; }
 
   function renderSoundButtons() {
     for (var i = 0; i < el.soundBtns.length; i++) {
@@ -787,8 +1074,21 @@
   }
   function bestOf(level) { return typeof saved.best[level] === 'number' ? saved.best[level] : 0; }
   function renderBest() {
-    var b = bestOf(game.level);
-    el.bestScore.textContent = b > 0 ? '🏆 คะแนนสูงสุดระดับ' + CFG.LEVELS[game.level].name + ' ' + b : '';
+    var b = bestOf(game.level), r = recordOf(game.level, 'timed'), parts = [];
+    if (b > 0) parts.push('🏆 คะแนนสูงสุดระดับ' + CFG.LEVELS[game.level].name + ' ' + b);
+    if (r && r.bestAvg) parts.push('⚡ เร็วสุดเฉลี่ย ' + secText(r.bestAvg) + ' วิ/ข้อ');
+    el.bestScore.textContent = parts.join(' · ');
+    renderClassLine();
+  }
+  function renderClassLine() {
+    var g = saved.settings.classGoal;
+    el.classLine.textContent = saved.kicksTotal > 0 || g > 0 ?
+      '🤝 เครื่องนี้ช่วยห้องถีบสัตว์แล้ว ' + saved.kicksTotal + ' ตัว' + (g > 0 ? ' · เป้าหมายห้อง ' + g + ' ตัว (ครูรวมยอดทุกเครื่อง)' : '') : '';
+  }
+  function renderSettings() {
+    el.timeModeSel.value = saved.settings.timeMode;
+    el.retryChk.checked = saved.settings.retry;
+    el.goalInput.value = saved.settings.classGoal > 0 ? saved.settings.classGoal : '';
   }
   function renderLevelButtons() {
     for (var i = 0; i < el.levelBtns.length; i++) {
@@ -796,13 +1096,13 @@
       btn.setAttribute('aria-pressed', btn.getAttribute('data-level') === game.level ? 'true' : 'false');
     }
     var L = CFG.LEVELS[game.level];
-    el.levelDesc.textContent = L.detail + ' · ตอบภายใน ' + (L.time / 1000) + ' วินาที';
+    el.levelDesc.textContent = L.detail + ' · ' + timeText(game.level);
     renderBest();
   }
   function selectLevel(level) {
     if (game.state !== STATE.READY || !CFG.LEVELS[level]) return;
     game.level = level;
-    game.timeLimit = CFG.LEVELS[level].time;
+    game.timeLimit = timeLimitFor(level);
     saved.level = level; store.save(saved);
     renderLevelButtons();
     lastSec = null; updateTimerUI(game.timeLimit);
@@ -864,7 +1164,11 @@
   function hex3(h) { h = String(h).replace('#', ''); return [parseInt(h.substr(0, 2), 16) / 255, parseInt(h.substr(2, 2), 16) / 255, parseInt(h.substr(4, 2), 16) / 255]; }
   /** ความคืบหน้าของเวลาในข้อปัจจุบัน 0→1 (สัตว์ค่อย ๆ วิ่งเข้าหาแมวตามเวลาที่เหลือ) หรือ null ถ้าไม่ได้อยู่ระหว่างตอบ */
   function foeProgress() {
-    if (game.state !== STATE.PLAYING || !(game.timeLimit > 0)) return null;
+    if (game.state !== STATE.PLAYING) return null;
+    if (!(game.timeLimit > 0)) {   // โหมดไม่จับเวลา: สัตว์ค่อย ๆ เดินเข้ามาช้า ๆ แล้วหยุดรอ ไม่กดดัน
+      var el2 = (game.paused ? game.pauseAt : performance.now()) - game.qStart;
+      return 0.75 * (1 - Math.exp(-Math.max(0, el2) / 5000));
+    }
     var rem = game.paused ? game.pausedRemaining : game.deadline - performance.now();
     return Math.max(0, Math.min(1, 1 - rem / game.timeLimit));
   }
@@ -2794,13 +3098,24 @@
     scene.draw();
   }
   function checkTimer() {
-    if (game.state !== STATE.PLAYING || game.paused) return;
+    if (game.state !== STATE.PLAYING || game.paused || !(game.timeLimit > 0)) return;
     var rem = game.deadline - performance.now();
     updateTimerUI(rem);
     if (rem <= 0) handleTimeout();
   }
   function updateTimerUI(rem) {
     var limit = game.timeLimit;
+    if (!(limit > 0)) {           // โหมดไม่จับเวลา
+      if (lastSec !== 'inf') {
+        el.timerNum.textContent = '∞';
+        el.timerNum.setAttribute('aria-label', 'ไม่จับเวลา');
+        lastSec = 'inf';
+      }
+      el.timerBar.style.transform = 'scaleX(1)';
+      el.timerWrap.classList.remove('danger');
+      el.timerNum.classList.remove('danger-num');
+      return;
+    }
     var r = Math.max(0, Math.min(limit, rem));
     var sec = Math.ceil(r / 1000);
     if (sec !== lastSec) {
@@ -2820,11 +3135,14 @@
     if (document.hidden) {
       if (game.state === STATE.PLAYING && !game.paused) {
         game.paused = true;
-        game.pausedRemaining = Math.max(0, game.deadline - performance.now());
+        game.pauseAt = performance.now();
+        game.pausedRemaining = Math.max(0, game.deadline - game.pauseAt);
       }
     } else {
       if (game.paused) {
-        game.deadline = performance.now() + game.pausedRemaining;
+        var nowV = performance.now();
+        game.deadline = nowV + game.pausedRemaining;
+        game.qStart += nowV - game.pauseAt;            // ไม่นับช่วงที่ซ่อนแท็บเป็นเวลาตอบ
         game.paused = false;
       }
       lastFrame = performance.now();
@@ -2864,28 +3182,29 @@
       b.classList.remove('is-correct', 'is-wrong', 'faded');
       b.querySelector('.num').textContent = '?';
       b.querySelector('.mark').textContent = '';
-      b.setAttribute('aria-label', i === 0 ? 'ตัวเลือกซ้าย' : 'ตัวเลือกขวา');
+      b.setAttribute('aria-label', 'ตัวเลือกที่ ' + (i + 1));
     }
+    hideHint();
     setChoicesDisabled(true);
     lastSec = null; updateTimerUI(game.timeLimit);
     el.timerNum.classList.remove('danger-num');
     setMood('normal');
   }
 
-  /** แสดงจำนวน: จำนวนลบใช้เครื่องหมายลบ (−) แบบตัวพิมพ์ และใส่วงเล็บเมื่ออยู่ในโจทย์ เช่น (−5) */
-  function fmtNum(n) { return n < 0 ? '−' + (-n) : String(n); }
-  function fmtTerm(n) { return n < 0 ? '(−' + (-n) + ')' : String(n); }
-  function speakNum(n) { return n < 0 ? 'ลบ ' + (-n) : String(n); }
-  function eqText(q) { return fmtTerm(q.a) + (q.op === '+' ? ' + ' : ' − ') + fmtTerm(q.b); }
-  function fullEq(q) { return eqText(q) + ' = ' + fmtNum(q.answer); }
-  /** คำใบ้สั้น ๆ เมื่อตอบผิดเรื่องการลบด้วยจำนวนลบ: a − (−b) = a + b */
-  function hintFor(q) {
-    if (q.level !== 'integer' || q.op !== '-' || q.b >= 0) return '';
-    return ' (ลบด้วยจำนวนลบ = บวก: ' + fmtTerm(q.a) + ' + ' + (-q.b) + ')';
+  /** กล่องคำใบ้วิธีคิด: บอกความผิดพลาดที่น่าจะเกิด + วิธีคิดทีละขั้น (+ เส้นจำนวนในระดับจำนวนเต็ม) */
+  function showHint(q, kind) {
+    var diag = kind === 'timeout' ? '⏰ หมดเวลา ลองใช้วิธีคิดนี้ในครั้งหน้า' : Hints.diagnose(q, kind);
+    var html = (diag ? '<div class="hint-diag">💡 ' + diag + '</div>' : '') +
+      '<div class="hint-step"><b>วิธีคิด:</b> ' + Hints.strategy(q) + '</div>';
+    if (q.level === 'integer') html += Hints.numberLine(q);
+    el.hintBox.innerHTML = html;      // ข้อความสร้างจากตัวเลขในเกมเท่านั้น
+    el.hintBox.hidden = false;
   }
+  function hideHint() { el.hintBox.hidden = true; el.hintBox.innerHTML = ''; }
 
   function renderQuestion(q) {
-    el.qLabel.textContent = 'ข้อที่ ' + game.qIndex + ' จาก ' + CFG.TOTAL_Q + ' · ระดับ' + CFG.LEVELS[game.level].name;
+    el.qLabel.textContent = 'ข้อที่ ' + game.qIndex + ' จาก ' + CFG.TOTAL_Q + ' · ระดับ' + CFG.LEVELS[game.level].name +
+      (q.isRetry ? ' · 🔁 ทวนข้อที่เคยผิด' : game.timeMode === 'off' ? ' · ไม่จับเวลา' : '');
     el.equation.textContent = eqText(q) + ' = ?';
     el.equation.classList.toggle('long', el.equation.textContent.length > 11);
     el.equation.setAttribute('aria-label', 'ข้อที่ ' + game.qIndex + ': ' + speakNum(q.a) + (q.op === '+' ? ' บวก ' : ' ลบ ') + speakNum(q.b) + ' เท่ากับเท่าไร');
@@ -2894,7 +3213,7 @@
       b.classList.remove('is-correct', 'is-wrong', 'faded');
       b.querySelector('.num').textContent = fmtNum(q.choices[i]);
       b.querySelector('.mark').textContent = '';
-      b.setAttribute('aria-label', (i === 0 ? 'ตัวเลือกซ้าย ' : 'ตัวเลือกขวา ') + speakNum(q.choices[i]));
+      b.setAttribute('aria-label', 'ตัวเลือกที่ ' + (i + 1) + ' ' + speakNum(q.choices[i]));
     }
     el.feedback.textContent = ''; el.feedback.className = '';
     setMood('normal');
@@ -2922,12 +3241,14 @@
    * ===================================================================== */
   function hideOverlays() {
     el.startScreen.hidden = true; el.overScreen.hidden = true; el.winScreen.hidden = true; el.shopScreen.hidden = true;
+    el.teacherScreen.hidden = true;
   }
 
   function startGame() {
     clearTimers();
     game.round++;                     // โทเคนรอบใหม่: ตัวจับเวลาของรอบเก่าจะไม่มีผล
-    game.timeLimit = CFG.LEVELS[game.level].time;
+    game.timeMode = saved.settings.timeMode;
+    game.timeLimit = timeLimitFor(game.level);
     resetGameData();
     audio.unlock();
     hideOverlays();
@@ -2946,19 +3267,23 @@
     if (game.state !== STATE.ANSWERED) return;                  // รับเฉพาะช่วงรอข้อถัดไป
     if (game.hearts <= 0 || game.qIndex >= CFG.TOTAL_Q) return; // ป้องกันเกิน 10 ข้อ
     game.nextTimer = null;
-    game.question = MathCore.generateQuestion(game.level, game.ops[game.qIndex], game.usedKeys);
+    hideHint();
+    var q = null;
+    if (game.retryQueue.length && game.retryQueue[0].due <= game.qIndex + 1) q = MathCore.retryOf(game.retryQueue.shift().q);
+    game.question = q || MathCore.generateQuestion(game.level, game.ops[game.qIndex], game.usedKeys);
     game.qIndex++;
     renderQuestion(game.question);
     game.foeTier = Math.min(game.streak, CFG.CREATURES.length - 1);   // ยิ่ง Streak สูง ยิ่งเจอสัตว์แปลก
     scene.spawnCreature(game.foeTier);
     renderFoeTag(game.foeTier);
     game.paused = false;
-    game.deadline = performance.now() + game.timeLimit;          // รีเซ็ตเวลาใหม่ทุกข้อ
+    game.qStart = performance.now();
+    game.deadline = game.qStart + game.timeLimit;                // รีเซ็ตเวลาใหม่ทุกข้อ
     lastSec = null; updateTimerUI(game.timeLimit);
     game.state = STATE.PLAYING;
     // ตัวตรวจสำรอง: ให้หมดเวลาตรงเวลาแม้เครื่องช้า/เฟรมกระตุก (checkTimer ตรวจสถานะเองจึงไม่หักหัวใจซ้ำ)
-    if (game.backupTimer) clearTimeout(game.backupTimer);
-    game.backupTimer = setTimeout(checkTimer, game.timeLimit + 15);
+    if (game.backupTimer) { clearTimeout(game.backupTimer); game.backupTimer = null; }
+    if (game.timeLimit > 0) game.backupTimer = setTimeout(checkTimer, game.timeLimit + 15);
     setChoicesDisabled(false);
   }
 
@@ -2966,56 +3291,74 @@
     if (game.state !== STATE.PLAYING || !game.question) return; // คลิกซ้ำ/คลิกหลังจบ จะไม่มีผล
     game.state = STATE.ANSWERED;                                 // ล็อกทันที: 1 ข้อ ตอบได้ครั้งเดียว
     setChoicesDisabled(true);
-    var q = game.question;
+    var q = game.question, now = performance.now();
+    var rt = Math.max(0, Math.round(now - game.qStart));                              // เวลาที่ใช้ตอบ (มิลลิวินาที)
+    var frac = game.timeLimit > 0 ? Math.max(0, game.deadline - now) / game.timeLimit : 0; // สัดส่วนเวลาที่เหลือ
     game.answered++;
-    if (q.choices[idx] === q.answer) onCorrect(q, idx);
-    else onMiss(q, idx, 'wrong');
+    if (q.choices[idx] === q.answer) onCorrect(q, idx, frac, rt);
+    else onMiss(q, idx, 'wrong', rt);
     resolveQuestion();
   }
 
   function handleTimeout() {
     if (game.state !== STATE.PLAYING || !game.question) return; // หักหัวใจได้ครั้งเดียวต่อข้อ
     game.state = STATE.ANSWERED;
+    game.timeoutAge = performance.now() - game.qStart;            // ใช้ตรวจความแม่นยำของตัวจับเวลา
     setChoicesDisabled(true);
     updateTimerUI(0);
     game.answered++;
-    onMiss(game.question, -1, 'timeout');
+    onMiss(game.question, -1, 'timeout', null);
     resolveQuestion();
   }
 
-  function onCorrect(q, idx) {
+  function onCorrect(q, idx, frac, rt) {
     game.correct++;
     game.streak++;
     if (game.streak > game.maxStreak) game.maxStreak = game.streak;
-    var pts = Scoring.pointsFor(game.streak);
+    var sp = Scoring.speedBonus(frac), stb = Scoring.streakBonus(game.streak);
+    var pts = Scoring.pointsFor(game.streak, frac);
     var coins = Scoring.coinsFor(game.streak);
     game.score += pts;
     game.coins += coins;
+    game.speedPts += sp;
+    game.rtCorrect.push(rt);
 
     revealAnswer(q, idx);
     el.feedback.className = 'ok';
-    var foe = CFG.CREATURES[game.foeTier];
-    el.feedback.textContent = '✔ ถูกต้อง! ' + fullEq(q) + ' · ถีบ' + foe.emoji + foe.name + ' · +' + pts + ' คะแนน' + (pts > CFG.BASE_POINTS ? ' (โบนัส)' : '');
+    var foe = CFG.CREATURES[game.foeTier], extra = [];
+    if (sp) extra.push('⚡ไว +' + sp);
+    if (stb) extra.push('🔥 +' + stb);
+    el.feedback.textContent = '✔ ถูกต้อง! ' + fullEq(q) + ' · ถีบ' + foe.emoji + foe.name + ' · +' + pts + ' คะแนน' + (extra.length ? ' (' + extra.join(' ') + ')' : '');
     setMood('happy');
     game.kicks++;
+    saved.kicksTotal++;
+    recordItem(q, idx, true, rt, null);
     if (game.foeTier > game.bestTier) game.bestTier = game.foeTier;
     addToWallet(coins);                        // เหรียญเข้ากระเป๋าทันที (ออกกลางคันก็ไม่หาย)
     scene.kick(coins, game.streak, game.foeTier);
 
     if (game.streak >= CFG.TOTAL_Q) { showBanner('PERFECT RUN!', 'perfect'); scene.perfect(); audio.combo(); }
     else if (game.streak >= CFG.COMBO_STREAK) { showBanner('COMBO x' + game.streak + '!', 'combo'); audio.combo(); }
-    else if (game.streak >= CFG.BONUS_FROM_STREAK) { showBanner('🔥 STREAK x' + game.streak + ' +' + CFG.BONUS_POINTS); audio.correct(); }
-    else { showBanner('+' + pts); audio.correct(); }
+    else if (game.streak >= CFG.BONUS_FROM_STREAK) { showBanner('🔥 STREAK x' + game.streak + ' +' + pts); audio.correct(); }
+    else { showBanner('+' + pts + (sp >= 4 ? ' ⚡' : '')); audio.correct(); }
   }
 
-  function onMiss(q, idx, kind) {
+  function onMiss(q, idx, kind, rt) {
     game.hearts = Math.max(0, game.hearts - 1);
     game.streak = 0;
     if (kind === 'timeout') game.timeouts++; else game.wrong++;
+    var errKind = kind === 'timeout' ? 'timeout' : (q.kinds[idx] || 'near');
+    game.misses.push({ q: q, kind: errKind });
+    recordItem(q, idx, false, rt, errKind);
+    // ทวนข้อที่ผิด (ถ้าครูเปิดไว้): ข้อเดิมกลับมาอีกครั้งหลังผ่านไป RETRY_GAP ข้อ
+    if (saved.settings.retry && !q.isRetry && game.qIndex < CFG.TOTAL_Q) {
+      game.retryQueue.push({ q: q, due: Math.min(CFG.TOTAL_Q, game.qIndex + CFG.RETRY_GAP + 1) });
+    }
 
     revealAnswer(q, idx);
     el.feedback.className = 'bad';
-    el.feedback.textContent = (kind === 'timeout' ? '⏰ หมดเวลา! ' : '✖ ยังไม่ถูกนะ ') + 'คำตอบที่ถูกคือ ' + fullEq(q) + hintFor(q);
+    el.feedback.textContent = (kind === 'timeout' ? '⏰ หมดเวลา! ' : '✖ ยังไม่ถูกนะ ') + 'คำตอบที่ถูกคือ ' + fullEq(q);
+    showHint(q, errKind);
     setMood('sad');
     scene.freeze();
     showBanner(kind === 'timeout' ? '⏰ หมดเวลา! โดนแช่แข็ง' : '🧊 โดนแช่แข็ง!', 'bad');
@@ -3045,7 +3388,8 @@
     el.timerNum.classList.remove('danger-num');
     scene.onEnd(win);
     el.foeTag.hidden = true;
-    if (game.score > bestOf(game.level)) { saved.best[game.level] = game.score; store.save(saved); }
+    if (game.timeMode !== 'off' && game.score > bestOf(game.level)) saved.best[game.level] = game.score;
+    finishRoundStats();
     var round = game.round;
     game.endTimer = setTimeout(function () {
       if (round !== game.round) return;
@@ -3053,8 +3397,54 @@
     }, CFG.END_DELAY);
   }
 
-  function statHTML(label, value, wide) {
-    return '<div class="stat' + (wide ? ' wide' : '') + '"><span>' + label + '</span><b>' + value + '</b></div>';
+  /** บันทึกผลรายข้อ: สรุปสำหรับครู + ข้อมูลดิบ (CSV) */
+  function recordItem(q, idx, ok, rt, kind) {
+    var st = saved.stats, lv = q.level;
+    var it = st.items[lv] || (st.items[lv] = { n: 0, ok: 0, rtSum: 0 });
+    it.n++;
+    if (ok) { it.ok++; it.rtSum += rt; }
+    else {
+      st.kinds[kind] = (st.kinds[kind] || 0) + 1;
+      st.recent.unshift({ lv: lv, eq: fullEq(q), pick: idx >= 0 ? fmtNum(q.choices[idx]) : '', kind: kind });
+      if (st.recent.length > 12) st.recent.length = 12;
+    }
+    saved.log.push([new Date().toISOString(), lv, game.timeMode, Math.round(game.timeLimit), q.a, q.op, q.b, q.answer,
+      idx >= 0 ? q.choices[idx] : '', ok ? 1 : 0, rt == null ? '' : rt, ok ? '' : kind, q.isRetry ? 1 : 0, q.choices.join('|')]);
+    if (saved.log.length > CFG.LOG_MAX) saved.log.splice(0, saved.log.length - CFG.LOG_MAX);
+    store.save(saved);
+  }
+
+  /** จบรอบ: สถิติส่วนตัว (เวลาเฉลี่ยข้อที่ตอบถูก) + ปรับเวลาโหมดอัตโนมัติ */
+  function finishRoundStats() {
+    var lv = game.level, group = game.timeMode === 'off' ? 'practice' : 'timed', key = lv + '|' + group;
+    var rec = saved.records[key] || { bestAvg: null, lastAvg: null, bestCorrect: 0, rounds: 0 };
+    var sum = 0;
+    for (var i = 0; i < game.rtCorrect.length; i++) sum += game.rtCorrect[i];
+    var avg = game.rtCorrect.length ? Math.round(sum / game.rtCorrect.length) : null;
+    var info = { group: group, avg: avg, valid: avg != null && game.correct >= CFG.RECORD_MIN_CORRECT,
+      prevBest: rec.bestAvg, prevLast: rec.lastAvg, improved: false, first: false, auto: null };
+    if (info.valid) {
+      if (rec.bestAvg == null) info.first = true;
+      else if (avg < rec.bestAvg) info.improved = true;
+      if (info.first || info.improved) rec.bestAvg = avg;
+    }
+    if (avg != null) rec.lastAvg = avg;
+    rec.bestCorrect = Math.max(rec.bestCorrect || 0, game.correct);
+    rec.rounds = (rec.rounds || 0) + 1;
+    saved.records[key] = rec;
+    saved.stats.rounds[lv] = (saved.stats.rounds[lv] || 0) + 1;
+    if (game.timeMode === 'auto') {
+      var from = game.timeLimit, to = AutoTime.next(lv, from, game.correct, game.answered);
+      saved.auto[lv] = to;
+      info.auto = { from: from, to: to };
+    }
+    game.endInfo = info;
+    store.save(saved);
+  }
+  function diffText(ms) { return ms >= 100 ? secText(ms) : (ms / 1000).toFixed(2); }
+
+  function statHTML(label, value, wide, cls) {
+    return '<div class="stat' + (wide ? ' wide' : '') + (cls ? ' ' + cls : '') + '"><span>' + label + '</span><b>' + value + '</b></div>';
   }
   function statsBlock() {
     var miss = game.wrong + game.timeouts, unanswered = CFG.TOTAL_Q - game.answered;
@@ -3066,6 +3456,34 @@
       statHTML('🦶 ถีบสัตว์ได้', game.kicks + ' ตัว') + statHTML('🏆 ตัวที่แปลกที่สุด', best ? best.emoji + ' ' + best.name : '–');
     if (unanswered > 0) html += statHTML('📗 ระดับ', CFG.LEVELS[game.level].name) + statHTML('📘 ยังไม่ได้ทำ', unanswered + ' ข้อ');
     else html += statHTML('📗 ระดับ', CFG.LEVELS[game.level].name, true);
+    var info = game.endInfo;
+    if (info) {
+      var rt;
+      if (info.avg == null) rt = '–<small>ยังไม่มีข้อที่ตอบถูกในรอบนี้</small>';
+      else {
+        rt = secText(info.avg) + ' วินาที/ข้อ';
+        if (!info.valid) rt += '<small>ตอบถูกอย่างน้อย ' + CFG.RECORD_MIN_CORRECT + ' ข้อ จึงจะบันทึกสถิติความเร็ว</small>';
+        else if (info.first) rt += '<small>🎯 บันทึกเป็นสถิติแรกแล้ว ครั้งหน้าลองทำให้เร็วขึ้น!</small>';
+        else if (info.improved) rt += '<small>🎉 ทำลายสถิติ! เร็วขึ้น ' + diffText(info.prevBest - info.avg) + ' วินาที (สถิติเดิม ' + secText(info.prevBest) + ')</small>';
+        else rt += '<small>สถิติดีที่สุด ' + secText(info.prevBest) + ' วินาที' + (info.prevLast != null ? ' · ครั้งก่อน ' + secText(info.prevLast) + ' วินาที' : '') + '</small>';
+      }
+      html += statHTML('⚡ เวลาเฉลี่ยข้อที่ตอบถูก' + (info.group === 'practice' ? ' (โหมดฝึก)' : '') + ' · โบนัสตอบไว +' + game.speedPts,
+        rt, true, 'record' + (info.improved || info.first ? ' new-best' : ''));
+      if (info.auto) {
+        var a = info.auto, note = a.to < a.from ? 'ตอบถูกมาก ลดเวลาลงให้ท้าทายขึ้น' : a.to > a.from ? 'เพิ่มเวลาให้คิดได้ทันขึ้น' : 'เวลานี้เหมาะแล้ว คงเวลาเดิม';
+        html += statHTML('⏱ เวลาต่อข้อรอบหน้า (ปรับอัตโนมัติ)', secText(a.from) + ' → ' + secText(a.to) + ' วินาที<small>' + note + '</small>', true);
+      }
+    }
+    if (game.misses.length) {
+      var seen = {}, items = [];
+      for (var mi = 0; mi < game.misses.length && items.length < 3; mi++) {
+        var m = game.misses[mi], eq = fullEq(m.q);
+        if (seen[eq]) continue;
+        seen[eq] = 1;
+        items.push('• ' + eq + ' <small style="display:inline">(' + Hints.KIND_NAME[m.kind] + ')</small>');
+      }
+      html += statHTML('📝 ข้อที่ควรทบทวน', items.join('<br>'), true, 'review');
+    }
     html += statHTML('💰 เหรียญสะสมทั้งหมด (ใช้ซื้อสกินในร้านค้า)', '🪙 ' + saved.wallet, true);
     return html;
   }
@@ -3081,8 +3499,8 @@
       el.winStars.textContent = '★★★'.slice(0, stars) + '☆☆☆'.slice(0, 3 - stars);
       el.winStars.setAttribute('aria-label', 'ได้ ' + stars + ' ดาว จาก 3');
       el.winStats.innerHTML = statsBlock();
-      el.winMsg.textContent = game.correct === CFG.TOTAL_Q ? 'สุดยอด! ตอบถูกครบทุกข้อ 🎉' :
-        'เก่งมาก! ผ่านครบ 10 ข้อแล้ว ลองทำให้ถูกครบทุกข้อดูนะ';
+      el.winMsg.textContent = (game.endInfo && game.endInfo.improved ? '⚡ ทำลายสถิติความเร็ว! ' : '') +
+        (game.correct === CFG.TOTAL_Q ? 'สุดยอด! ตอบถูกครบทุกข้อ 🎉' : 'เก่งมาก! ผ่านครบ 10 ข้อแล้ว ลองทำให้ถูกครบทุกข้อดูนะ');
       makeConfetti();
       el.winScreen.hidden = false;
       audio.win();
@@ -3123,6 +3541,7 @@
     el.confetti.innerHTML = '';
     renderLevelButtons();
     renderWallet();
+    renderSettings();
     el.foeTag.hidden = true;
     el.startScreen.hidden = false;
     scene.resize(); scene.draw();
@@ -3220,6 +3639,101 @@
       var again = el.skinGrid.querySelector('button[data-id="' + id + '"]'); if (again) again.focus({ preventScroll: true });
     }
   }
+  /* =====================================================================
+   * 12.6) สรุปสำหรับครู + ส่งออกข้อมูลรายข้อ (CSV)
+   * ===================================================================== */
+  var resetArmed = false, resetTimer = null;
+  var LEVEL_ORDER = ['easy', 'medium', 'hard', 'integer'];
+
+  function openTeacher() {
+    if (game.state !== STATE.READY) return;
+    el.startScreen.hidden = true;
+    el.csvBox.hidden = true; el.csvBox.value = '';
+    renderTeacher();
+    el.teacherScreen.hidden = false;
+    el.teacherClose.focus({ preventScroll: true });
+  }
+  function closeTeacher() {
+    if (el.teacherScreen.hidden) return;
+    disarmReset();
+    el.teacherScreen.hidden = true;
+    el.startScreen.hidden = false;
+    renderBest();
+  }
+  function renderTeacher() {
+    var st = saved.stats, rows = '', totN = 0, totOk = 0, totR = 0;
+    for (var i = 0; i < LEVEL_ORDER.length; i++) {
+      var lv = LEVEL_ORDER[i], it = st.items[lv] || { n: 0, ok: 0, rtSum: 0 }, r = st.rounds[lv] || 0;
+      totN += it.n; totOk += it.ok; totR += r;
+      rows += '<tr><td>' + CFG.LEVELS[lv].name + '</td><td>' + r + '</td><td>' + it.n + '</td><td>' +
+        (it.n ? Math.round(100 * it.ok / it.n) + '%' : '–') + '</td><td>' + (it.ok ? secText(it.rtSum / it.ok) + ' วิ' : '–') + '</td></tr>';
+    }
+    var html = '<p style="margin:0">เล่นแล้ว <b>' + totR + '</b> รอบ · ตอบ <b>' + totN + '</b> ข้อ · ถูก <b>' +
+      (totN ? Math.round(100 * totOk / totN) + '%' : '–') + '</b> · 🤝 ถีบสัตว์รวม <b>' + saved.kicksTotal + '</b> ตัว' +
+      (saved.settings.classGoal > 0 ? ' (เป้าหมายห้อง ' + saved.settings.classGoal + ' ตัว)' : '') + '</p>';
+    html += '<div class="t-sec"><h3>ผลรายระดับ</h3><table class="t-tbl"><thead><tr><th>ระดับ</th><th>รอบ</th><th>ข้อ</th><th>ถูก</th><th>เวลาเฉลี่ย (ข้อที่ถูก)</th></tr></thead><tbody>' +
+      rows + '</tbody></table></div>';
+    var kinds = Object.keys(st.kinds).filter(function (k) { return st.kinds[k] > 0 && Hints.KIND_NAME[k]; })
+      .sort(function (x, y) { return st.kinds[y] - st.kinds[x]; });
+    var missTot = 0;
+    for (var k = 0; k < kinds.length; k++) missTot += st.kinds[kinds[k]];
+    html += '<div class="t-sec"><h3>ความผิดพลาดที่พบบ่อย (จากตัวเลือกที่นักเรียนเลือก)</h3>' + (kinds.length ? '<ol class="t-list">' +
+      kinds.map(function (kk) { return '<li>' + Hints.KIND_NAME[kk] + ' — ' + st.kinds[kk] + ' ครั้ง (' + Math.round(100 * st.kinds[kk] / missTot) + '%)</li>'; }).join('') +
+      '</ol>' : '<p class="t-empty">ยังไม่มีข้อที่ตอบผิด</p>') + '</div>';
+    html += '<div class="t-sec"><h3>ข้อที่ตอบผิดล่าสุด</h3>' + (st.recent.length ? '<ul class="t-list">' +
+      st.recent.slice(0, 8).map(function (r) {
+        return '<li>[' + (CFG.LEVELS[r.lv] ? CFG.LEVELS[r.lv].name : '') + '] ' + r.eq + (r.pick ? ' · เลือก ' + r.pick : '') + ' (' + (Hints.KIND_NAME[r.kind] || '') + ')</li>';
+      }).join('') + '</ul>' : '<p class="t-empty">ยังไม่มีข้อมูล</p>') + '</div>';
+    html += '<p class="t-note">ข้อมูลรายข้อที่เก็บไว้: ' + saved.log.length + ' แถว (สูงสุด ' + CFG.LOG_MAX + ' แถว ข้อมูลเก่าสุดจะถูกแทนที่)</p>';
+    el.teacherBody.innerHTML = html;
+  }
+  function csvCell(v) {
+    var t = String(v == null ? '' : v);
+    return /[",\r\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+  }
+  function csvText() {
+    var lines = [['timestamp', 'level', 'time_mode', 'time_limit_ms', 'a', 'op', 'b', 'answer', 'picked', 'correct',
+      'response_ms', 'error_type', 'error_type_th', 'retry', 'choices'].join(',')];
+    for (var i = 0; i < saved.log.length; i++) {
+      var r = saved.log[i];
+      var row = r.slice(0, 12).concat([r[11] ? (Hints.KIND_NAME[r[11]] || '') : '', r[12], r[13]]);
+      lines.push(row.map(csvCell).join(','));
+    }
+    return lines.join('\r\n');
+  }
+  function showCsv() {
+    el.csvBox.value = csvText();
+    el.csvBox.hidden = false;
+    try { el.csvBox.focus({ preventScroll: true }); el.csvBox.select(); } catch (e) { /* ไม่เป็นไร */ }
+  }
+  function downloadCsv() {
+    try {
+      var blob = new Blob(['\ufeff' + csvText()], { type: 'text/csv;charset=utf-8' });
+      var url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url; a.download = 'cat-math-run-data-' + new Date().toISOString().slice(0, 10) + '.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    } catch (e) { showCsv(); }    // บางที่ (เช่น ฝังใน Apps Script) ดาวน์โหลดไม่ได้ → แสดงให้คัดลอกแทน
+  }
+  function disarmReset() {
+    resetArmed = false;
+    if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
+    el.resetStatsBtn.textContent = '🗑 ล้างข้อมูลสรุป';
+  }
+  function onResetStats() {
+    if (!resetArmed) {
+      resetArmed = true;
+      el.resetStatsBtn.textContent = 'แตะอีกครั้งเพื่อยืนยันการล้าง';
+      resetTimer = setTimeout(disarmReset, 3000);
+      return;
+    }
+    disarmReset();
+    saved.stats = newStats(); saved.log = []; saved.kicksTotal = 0;   // เหรียญ สกิน และสถิติส่วนตัวของนักเรียนไม่ถูกล้าง
+    store.save(saved);
+    el.csvBox.hidden = true; el.csvBox.value = '';
+    renderTeacher();
+  }
+
   function renderFoeTag(tier) {
     var d = CFG.CREATURES[tier];
     el.foeTag.textContent = 'คู่ต่อสู้: ' + d.emoji + ' ' + d.name + ' · ' + d.group;
@@ -3235,8 +3749,27 @@
   el.winRetry.addEventListener('click', function () { if (game.state === STATE.VICTORY) startGame(); });
   el.overHome.addEventListener('click', goHome);
   el.winHome.addEventListener('click', goHome);
-  el.choices[0].addEventListener('click', function () { answer(0); });
-  el.choices[1].addEventListener('click', function () { answer(1); });
+  el.choices.forEach(function (btn, i) { btn.addEventListener('click', function () { answer(i); }); });
+  el.timeModeSel.addEventListener('change', function () {
+    if (game.state !== STATE.READY || TIME_MODES.indexOf(this.value) === -1) return;
+    saved.settings.timeMode = this.value; store.save(saved);
+    game.timeLimit = timeLimitFor(game.level);
+    renderLevelButtons();
+    lastSec = null; updateTimerUI(game.timeLimit);
+  });
+  el.retryChk.addEventListener('change', function () { saved.settings.retry = !!this.checked; store.save(saved); });
+  el.goalInput.addEventListener('change', function () {
+    var v = parseInt(this.value, 10);
+    if (!(v >= 0)) v = 0;
+    saved.settings.classGoal = Math.min(100000, v); store.save(saved);
+    this.value = saved.settings.classGoal > 0 ? saved.settings.classGoal : '';
+    renderClassLine();
+  });
+  el.teacherBtn.addEventListener('click', openTeacher);
+  el.teacherClose.addEventListener('click', closeTeacher);
+  el.csvBtn.addEventListener('click', downloadCsv);
+  el.csvShowBtn.addEventListener('click', showCsv);
+  el.resetStatsBtn.addEventListener('click', onResetStats);
   for (var sb = 0; sb < el.soundBtns.length; sb++) el.soundBtns[sb].addEventListener('click', toggleSound);
   for (var lb = 0; lb < el.levelBtns.length; lb++) {
     el.levelBtns[lb].addEventListener('click', function () { selectLevel(this.getAttribute('data-level')); });
@@ -3251,13 +3784,16 @@
   for (var sh = 0; sh < shopBtns.length; sh++) shopBtns[sh].addEventListener('click', openShop);
   el.shopClose.addEventListener('click', closeShop);
   el.skinGrid.addEventListener('click', onSkinGridClick);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !el.shopScreen.hidden) closeShop(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (!el.shopScreen.hidden) closeShop();
+    else if (!el.teacherScreen.hidden) closeTeacher();
+  });
 
   document.addEventListener('keydown', function (e) {
     if (e.repeat || game.state !== STATE.PLAYING) return;
-    var k = e.key;
-    if (k === 'ArrowLeft' || k === '1' || k === 'a' || k === 'A') { e.preventDefault(); answer(0); }
-    else if (k === 'ArrowRight' || k === '2' || k === 'd' || k === 'D') { e.preventDefault(); answer(1); }
+    var n = ['1', '2', '3', '4'].indexOf(e.key);
+    if (n !== -1 && n < CFG.CHOICES) { e.preventDefault(); answer(n); }
   });
 
   var resizeTimer = null;
@@ -3294,19 +3830,39 @@
             var regroup = q.op === '+' ? MathCore.hasCarry(q.a, q.b) : MathCore.hasBorrow(q.a, q.b);
             if (regroup !== (lv === 'hard')) errors.push('เงื่อนไขทด/ยืมไม่ตรงระดับ ' + tag);
           }
-          if (q.choices.length !== 2 || q.choices[0] === q.choices[1]) errors.push('ตัวเลือกซ้ำ ' + tag);
+          if (q.choices.length !== CFG.CHOICES || new Set(q.choices).size !== CFG.CHOICES) errors.push('ตัวเลือกไม่ครบ ' + CFG.CHOICES + ' ตัวหรือซ้ำกัน ' + tag);
           if (q.choices[q.correctIndex] !== q.answer) errors.push('ตำแหน่งคำตอบถูกผิด ' + tag);
-          var wv = q.choices[1 - q.correctIndex];
-          if (wv < min || wv > max || wv === q.answer || wv !== Math.floor(wv)) errors.push('ตัวเลือกผิดไม่ถูกต้อง ' + tag + ' → ' + wv);
+          for (var ci = 0; ci < q.choices.length; ci++) {
+            if (ci === q.correctIndex) { if (q.kinds[ci] !== null) errors.push('คำตอบถูกไม่ควรมีชนิดความผิดพลาด ' + tag); continue; }
+            var wv = q.choices[ci];
+            if (wv < min || wv > max || wv === q.answer || wv !== Math.floor(wv)) errors.push('ตัวเลือกผิดไม่ถูกต้อง ' + tag + ' → ' + wv);
+            if (!Hints.KIND_NAME[q.kinds[ci]] || q.kinds[ci] === 'timeout') errors.push('ชนิดความผิดพลาดไม่ถูกต้อง ' + tag + ' → ' + q.kinds[ci]);
+            else if (!Hints.diagnose(q, q.kinds[ci])) errors.push('ไม่มีคำใบ้สำหรับ ' + q.kinds[ci] + ' ' + tag);
+          }
+          var stg = Hints.strategy(q);
+          if (!stg || stg.slice(-fmtNum(q.answer).length - 1) !== ' ' + fmtNum(q.answer)) errors.push('วิธีคิดไม่ลงท้ายด้วยคำตอบ ' + tag + ' → ' + stg);
+          if (lv === 'integer' && Hints.numberLine(q).indexOf('>' + fmtNum(q.answer) + '<') === -1) errors.push('เส้นจำนวนไม่แสดงคำตอบ ' + tag);
+          var rq = MathCore.retryOf(q);
+          if (rq.answer !== q.answer || rq.choices[rq.correctIndex] !== q.answer || new Set(rq.choices).size !== CFG.CHOICES) errors.push('โจทย์ทวนไม่ถูกต้อง ' + tag);
         }
         if (plus !== 5) errors.push('สัดส่วนบวก/ลบไม่เท่ากัน ' + lv + ': บวก ' + plus);
         if (errors.length > 20) break;
       }
     }
-    var s = 0, c = 0;
-    for (var st = 1; st <= 10; st++) { s += Scoring.pointsFor(st); c += Scoring.coinsFor(st); }
-    if (s !== 140) errors.push('คะแนนเต็มควรเป็น 140 แต่ได้ ' + s);
+    var s = 0, sMax = 0, c = 0;
+    for (var st = 1; st <= 10; st++) { s += Scoring.pointsFor(st, 0); sMax += Scoring.pointsFor(st, 1); c += Scoring.coinsFor(st); }
+    if (s !== 140) errors.push('คะแนนเต็ม (ไม่รวมโบนัสตอบไว) ควรเป็น 140 แต่ได้ ' + s);
+    if (sMax !== 190) errors.push('คะแนนสูงสุด (รวมโบนัสตอบไวเต็ม) ควรเป็น 190 แต่ได้ ' + sMax);
     if (c !== 18) errors.push('เหรียญเต็มควรเป็น 18 แต่ได้ ' + c);
+    if (Scoring.speedBonus(0.5) !== 3 || Scoring.speedBonus(0.09) !== 0 || Scoring.speedBonus(-1) !== 0 || Scoring.speedBonus(2) !== 5) errors.push('โบนัสตอบไวคำนวณผิด');
+    // โหมดเวลาอัตโนมัติ (ระดับง่าย เวลามาตรฐาน 5 วินาที)
+    var at = [[5000, 10, 10, 4500], [5000, 5, 10, 5500], [5000, 7, 10, 5000], [5000, 8, 10, 5000], [2000, 10, 10, 2000],
+      [10000, 0, 3, 10000], [5000, 0, 2, 5000], [4500, 6, 10, 5000]];
+    for (var ai = 0; ai < at.length; ai++) {
+      var got = AutoTime.next('easy', at[ai][0], at[ai][1], at[ai][2]);
+      if (got !== at[ai][3]) errors.push('AutoTime ' + at[ai].slice(0, 3).join('/') + ' ควรได้ ' + at[ai][3] + ' แต่ได้ ' + got);
+    }
+    if (AutoTime.next('hard', 10000, 10, 10) !== 9000 || AutoTime.next('integer', 8000, 2, 10) !== 8800) errors.push('AutoTime ระดับอื่นคำนวณผิด');
     if (CFG.CREATURES.length !== CFG.TOTAL_Q) errors.push('จำนวนสัตว์ควรเท่ากับจำนวนข้อ (' + CFG.TOTAL_Q + ')');
     if (CFG.SKINS.length !== 11) errors.push('ควรมีสกิน 11 แบบ (ฟรี 1 + ร้านค้า 10)');
     for (var si = 1; si < CFG.SKINS.length; si++) {
@@ -3324,7 +3880,14 @@
     getLevel: function () { return game.level; },
     getWallet: function () { return saved.wallet; },
     getSkin: function () { return saved.skin; },
+    Hints: Hints, AutoTime: AutoTime,
     debug: {   // ใช้ทดสอบเท่านั้น
+      question: function () { var q = game.question; return q ? JSON.parse(JSON.stringify(q)) : null; },
+      hold: function () { if (game.nextTimer) { clearTimeout(game.nextTimer); game.nextTimer = null; } },   // หยุดไว้เพื่อถ่ายภาพหน้าจอ
+      setRemaining: function (ms) { if (game.state === STATE.PLAYING) game.deadline = performance.now() + ms; },
+      saved: function () { return JSON.parse(JSON.stringify(saved)); },
+      game: function () { return { score: game.score, correct: game.correct, answered: game.answered, hearts: game.hearts, qIndex: game.qIndex,
+        timeLimit: game.timeLimit, timeMode: game.timeMode, timeoutAge: game.timeoutAge, retryQueue: game.retryQueue.length, endInfo: game.endInfo, speedPts: game.speedPts }; },
       foe: function () { return scene.foe ? { id: scene.foe.def.id, state: scene.foe.state } : null; },
       frozen: function () { return scene.frozenT > 0; },
       show: function (tier, prog) { scene.spawnCreature(tier); if (scene.foe) { scene.foe.grow = 1; scene.foe.p = prog == null ? 0.8 : prog; if (scene.foe.x != null && scene.mode === '3d') scene.foe.x = 0; if (scene.foe.lane != null) scene.foe.lane = 0.5; } scene.update(0.016); scene.draw(); },
@@ -3339,7 +3902,9 @@
   refreshFaces();
   renderWallet();
   scene2D.setSkin(currentSkin());
-  game.timeLimit = CFG.LEVELS[game.level].time;
+  game.timeMode = saved.settings.timeMode;
+  game.timeLimit = timeLimitFor(game.level);
+  renderSettings();
   renderSoundButtons();
   renderLevelButtons();
   resetGameData();
