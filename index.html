@@ -168,8 +168,11 @@
   @keyframes float{50%{transform:translateY(-8px)}}
   .tagline{margin:2px 0 8px; font-size:1.1rem; font-weight:600; color:var(--green)}
   .pick-label{font-weight:600; font-size:.95rem; margin:0 0 6px; text-align:left}
-  .levels{display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:0 0 6px}
-  @media (max-width:420px){ .levels{grid-template-columns:repeat(2,1fr)} .level-btn{padding:6px 4px} }
+  /* 5 ระดับ: แถวบน 3 ปุ่ม (ง่าย/ปานกลาง/ท้าทาย) แถวล่าง 2 ปุ่ม (จำนวนเต็ม 1 หลัก/2 หลัก) */
+  .levels{display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin:0 0 6px}
+  .levels .level-btn{grid-column:span 2}
+  .levels .level-btn.int{grid-column:span 3}
+  @media (max-width:420px){ .levels{grid-template-columns:repeat(2,1fr)} .levels .level-btn,.levels .level-btn.int{grid-column:span 1; padding:6px 4px} .levels .level-btn.int.int2{grid-column:span 2} }
   .level-btn{
     border:3px solid #d8e6f0; background:#fff; border-radius:16px; padding:8px 4px; font-size:1.02rem; font-weight:600;
     color:var(--navy); line-height:1.25; box-shadow:0 3px 0 #d8e6f0;
@@ -412,7 +415,8 @@
         <button class="level-btn" type="button" data-level="easy" aria-pressed="true">ง่าย<small>เลข 1 หลัก</small></button>
         <button class="level-btn" type="button" data-level="medium" aria-pressed="false">ปานกลาง<small>2 หลัก ไม่ทด/ไม่ยืม</small></button>
         <button class="level-btn" type="button" data-level="hard" aria-pressed="false">ท้าทาย<small>2 หลัก มีทด/ยืม</small></button>
-        <button class="level-btn" type="button" data-level="integer" aria-pressed="false">จำนวนเต็ม<small>มีจำนวนลบ</small></button>
+        <button class="level-btn int" type="button" data-level="integer" aria-pressed="false">จำนวนเต็ม<small>มีจำนวนลบ เลข 1 หลัก</small></button>
+        <button class="level-btn int int2" type="button" data-level="integer2" aria-pressed="false">จำนวนเต็ม 2 หลัก<small>มีจำนวนลบ −99 ถึง 99</small></button>
       </div>
       <div class="level-desc" id="levelDesc"></div>
       <ul class="rules">
@@ -551,7 +555,9 @@
       medium:  { name: 'ปานกลาง',  detail: 'บวก–ลบเลข 2 หลัก ไม่มีการทด/ไม่มีการยืม ผลลัพธ์ไม่เกิน 99', time: 7000,  min: 0, max: 99 },
       hard:    { name: 'ท้าทาย',    detail: 'บวก–ลบเลข 2 หลัก มีการทด/มีการยืม ผลลัพธ์ไม่เกิน 99',     time: 10000, min: 0, max: 99 },
       // range = ขนาดสูงสุดของตัวเลขแต่ละตัว (−range ถึง range) ผลลัพธ์จึงอยู่ระหว่าง −2×range ถึง 2×range
-      integer: { name: 'จำนวนเต็ม', detail: 'บวก–ลบจำนวนเต็มบวกและลบ (−10 ถึง 10) เช่น (−5) + 3, 4 − (−6)', time: 8000, min: -20, max: 20, range: 10 }
+      integer: { name: 'จำนวนเต็ม', detail: 'บวก–ลบจำนวนเต็มบวกและลบ (−10 ถึง 10) เช่น (−5) + 3, 4 − (−6)', time: 8000, min: -20, max: 20, range: 10 },
+      // จำนวนเต็ม 2 หลัก: ตัวเลขทั้งสองตัวเป็นเลข 2 หลัก (ค่าสัมบูรณ์ 10–99) และคำตอบอยู่ระหว่าง −99 ถึง 99
+      integer2: { name: 'จำนวนเต็ม 2 หลัก', detail: 'บวก–ลบจำนวนเต็ม 2 หลัก (−99 ถึง 99) เช่น (−45) + 27, 38 − (−16)', time: 15000, min: -99, max: 99, range: 99, minAbs: 10 }
     }
   };
 
@@ -610,6 +616,9 @@
   ];
   function skinById(id) { for (var i = 0; i < CFG.SKINS.length; i++) if (CFG.SKINS[i].id === id) return CFG.SKINS[i]; return null; }
 
+  /** ระดับจำนวนเต็ม (มีจำนวนลบ) ทั้งแบบ 1 หลักและ 2 หลัก */
+  function isIntLevel(level) { return level === 'integer' || level === 'integer2'; }
+
   var STATE = { READY: 'READY', PLAYING: 'PLAYING', ANSWERED: 'ANSWERED', GAME_OVER: 'GAME_OVER', VICTORY: 'VICTORY' };
 
   /* =====================================================================
@@ -644,17 +653,21 @@
      * - hard  : ตัวตั้ง 10–99, ตัวบวก/ตัวลบ 1–99, ผลบวก ≤ 99, ต้องมีการทด / ต้องมีการยืม, ผลลบ ≥ 0
      * - integer: ตัวเลข −10 ถึง 10 ทุกข้อต้องมีจำนวนลบอย่างน้อย 1 จุด (ตัวตั้ง ตัวบวก/ตัวลบ หรือคำตอบ)
      *            ตัดโจทย์ที่ง่ายเกินไป: มี 0 เป็นตัวเลขตัวใดตัวหนึ่ง
+     * - integer2: ตัวตั้งและตัวบวก/ตัวลบเป็นเลข 2 หลัก (−99 ถึง −10 หรือ 10 ถึง 99) คำตอบ −99 ถึง 99
+     *            และทุกข้อต้องมีจำนวนลบอย่างน้อย 1 จุด
      */
     validPairs: function (level, op) {
       var key = level + op;
       if (MathCore.cache[key]) return MathCore.cache[key];
       var list = [], a, b;
-      if (level === 'integer') {
-        var R = CFG.LEVELS.integer.range;
+      if (isIntLevel(level)) {
+        var L = CFG.LEVELS[level], R = L.range, mA = L.minAbs || 1;
         for (a = -R; a <= R; a++) {
+          if (Math.abs(a) < mA) continue;
           for (b = -R; b <= R; b++) {
-            if (a === 0 || b === 0) continue;
+            if (Math.abs(b) < mA) continue;
             var ans = op === '+' ? a + b : a - b;
+            if (ans < L.min || ans > L.max) continue;
             if (a < 0 || b < 0 || ans < 0) list.push([a, b]);
           }
         }
@@ -699,7 +712,7 @@
         if (v !== Math.floor(v) || v < min || v > max || v === q.answer || Object.prototype.hasOwnProperty.call(kindOf, v)) return;
         kindOf[v] = kind; list.push(v);
       }
-      if (q.level === 'integer') {
+      if (isIntLevel(q.level)) {
         add(errs, -q.answer, 'sign');                                           // เครื่องหมายผิด
         var sb = q.op === '+' ? q.b : -q.b;                                     // เขียนใหม่เป็นการบวก: a + sb
         if ((q.a < 0) !== (sb < 0)) {                                           // เครื่องหมายต่างกัน แต่เอาค่ามาบวกกัน
@@ -725,7 +738,7 @@
         }
       }
       add(near, q.answer - 1, 'near'); add(near, q.answer + 1, 'near'); add(near, q.answer - 2, 'near'); add(near, q.answer + 2, 'near');
-      if (q.level === 'medium' || q.level === 'hard') { add(near, q.answer - 10, 'tens'); add(near, q.answer + 10, 'tens'); }
+      if (q.level === 'medium' || q.level === 'hard' || q.level === 'integer2') { add(near, q.answer - 10, 'tens'); add(near, q.answer + 10, 'tens'); }
       MathCore.shuffle(errs); MathCore.shuffle(near);
       var pick = errs.slice(0, Math.min(2, n));
       for (var i = 0; pick.length < n && i < near.length; i++) pick.push(near[i]);
@@ -834,7 +847,7 @@
     diagnose: function (q, kind) {
       switch (kind) {
         case 'near': return 'คำตอบคลาดไปเล็กน้อย ลองคิดทีละขั้นอีกครั้ง';
-        case 'tens': return 'หลักหน่วยถูกแล้ว แต่หลักสิบคลาดไป 10';
+        case 'tens': return 'หลักหน่วยถูกแล้ว แต่หลักสิบคลาดไป 10 ลองตรวจการทด/การยืมอีกครั้ง';
         case 'carry': return 'ลืมทด 1 ไปหลักสิบ';
         case 'place': return 'ตั้งหลักไม่ตรง: ' + q.b + ' อยู่หลักหน่วย ต้องบวกกับหลักหน่วย';
         case 'borrow': return 'หลักหน่วยลบไม่พอ ต้องยืม 1 สิบมาก่อน ไม่ใช่เอาเลขน้อยลบเลขมาก';
@@ -848,10 +861,21 @@
     },
     strategy: function (q) {
       var a = q.a, b = q.b, ans = q.answer;
-      if (q.level === 'integer') {
+      if (isIntLevel(q.level)) {
         var step = q.op === '+' ? b : -b;
         var pre = q.op === '-' ? 'ลบ ' + fmtTerm(b) + ' คือบวก ' + fmtTerm(-b) + ' · ' : '';
-        return pre + 'เริ่มที่ ' + fmtNum(a) + ' เดินไปทาง' + (step > 0 ? 'ขวา ' : 'ซ้าย ') + Math.abs(step) + ' ช่อง ถึง ' + fmtNum(ans);
+        if (q.level === 'integer') {
+          return pre + 'เริ่มที่ ' + fmtNum(a) + ' เดินไปทาง' + (step > 0 ? 'ขวา ' : 'ซ้าย ') + Math.abs(step) + ' ช่อง ถึง ' + fmtNum(ans);
+        }
+        // เลข 2 หลัก: ใช้กฎเครื่องหมาย (เดินทีละช่องบนเส้นจำนวนไม่สะดวก)
+        var x = Math.abs(a), y = Math.abs(step);
+        if ((a < 0) === (step < 0)) {
+          return pre + 'เครื่องหมายเหมือนกัน: รวมค่า ' + x + ' + ' + y + ' = ' + (x + y) + ' แล้วใช้เครื่องหมายเดิม (' + (a < 0 ? 'ลบ' : 'บวก') + ') → ' + fmtNum(ans);
+        }
+        if (x === y) return pre + 'ค่าเท่ากันแต่เครื่องหมายต่างกัน หักล้างกันได้ → ' + fmtNum(ans);
+        var bigV = x > y ? a : step;
+        return pre + 'เครื่องหมายต่างกัน: เอาค่ามากลบค่าน้อย ' + Math.max(x, y) + ' − ' + Math.min(x, y) + ' = ' + Math.abs(x - y) +
+          ' แล้วใช้เครื่องหมายของ ' + fmtNum(bigV) + ' เพราะอยู่ห่างจาก 0 มากกว่า → ' + fmtNum(ans);
       }
       if (q.level === 'easy') {
         if (q.op === '+') {
@@ -873,30 +897,53 @@
       if (ua < ub) return 'หลักหน่วย ' + ua + ' ลบ ' + ub + ' ไม่พอ ยืม 1 สิบ: ' + (ua + 10) + ' − ' + ub + ' = ' + (ua + 10 - ub) + ' · หลักสิบ ' + ta + ' − 1 − ' + tb + ' = ' + (ta - 1 - tb) + ' → ' + ans;
       return 'หลักหน่วย ' + ua + ' − ' + ub + ' = ' + (ua - ub) + ' · หลักสิบ ' + ta + ' − ' + tb + ' = ' + (ta - tb) + ' → ' + ans;
     },
-    /** เส้นจำนวน (SVG) สำหรับระดับจำนวนเต็ม: จุดเริ่ม ลูกศรเดิน และจุดคำตอบ */
+    /**
+     * เส้นจำนวน (SVG) สำหรับระดับจำนวนเต็ม: จุดเริ่ม ลูกศรเดิน และจุดคำตอบ
+     * เลข 1 หลักมีขีดทุก 1 ช่อง · ช่วงกว้าง (เลข 2 หลัก) มีขีดทุก 10 ช่อง
+     */
     numberLine: function (q) {
       var start = q.a, step = q.op === '+' ? q.b : -q.b, end = start + step;
-      var lo = Math.min(start, end, 0) - 1, hi = Math.max(start, end, 0) + 1;
-      while (hi - lo < 10) { lo--; if (hi - lo < 10) hi++; }
-      var W = 640, H = 96, pad = 22, dx = (W - pad * 2) / (hi - lo), y = 62;
-      function X(v) { return (pad + (v - lo) * dx).toFixed(1); }
+      var mn = Math.min(start, end, 0), mx = Math.max(start, end, 0), unit = mx - mn > 30 ? 10 : 1, lo, hi;
+      if (unit === 1) {
+        lo = mn - 1; hi = mx + 1;
+        while (hi - lo < 10) { lo--; if (hi - lo < 10) hi++; }
+      } else {
+        lo = Math.floor(mn / 10) * 10 - 10; hi = Math.ceil(mx / 10) * 10 + 10;
+      }
+      var W = 640, H = 120, pad = 22, dx = (W - pad * 2) / (hi - lo), y = 62;
+      function X(v) { return pad + (v - lo) * dx; }
       var out = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="เส้นจำนวน เริ่มที่ ' +
         speakNum(start) + ' เดิน ' + (step > 0 ? 'ไปทางขวา ' : 'ไปทางซ้าย ') + Math.abs(step) + ' ช่อง ถึง ' + speakNum(end) + '">';
       out += '<defs><marker id="nlArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">' +
         '<path d="M0 0 L10 5 L0 10 z" fill="#ff8a3d"/></marker></defs>';
       out += '<line x1="' + (pad - 8) + '" y1="' + y + '" x2="' + (W - pad + 8) + '" y2="' + y + '" stroke="#23395b" stroke-width="3"/>';
-      for (var v = lo; v <= hi; v++) {
-        var key = v === 0 || v === start || v === end, h = key ? 9 : 5;
-        out += '<line x1="' + X(v) + '" y1="' + (y - h) + '" x2="' + X(v) + '" y2="' + (y + h) + '" stroke="#23395b" stroke-width="' + (v === 0 ? 3 : 1.6) + '"/>';
-        if (key || v % 5 === 0) {
-          out += '<text x="' + X(v) + '" y="' + (y + 28) + '" font-size="' + (key ? 20 : 15) + '" font-weight="' + (key ? 700 : 400) +
-            '" text-anchor="middle" fill="' + (v === end ? '#2e9e3e' : '#23395b') + '">' + fmtNum(v) + '</text>';
+      // ป้ายของจุดสำคัญ (0, จุดเริ่ม, คำตอบ) ถ้าอยู่ใกล้กันเกินไปจะเลื่อนลงแถวที่สอง
+      var keys = [0, start, end].filter(function (v, i, arr) { return arr.indexOf(v) === i; }).sort(function (p, r) { return p - r; });
+      var keyX = keys.map(X), rows = [], lastX = [-1e9, -1e9];
+      for (var k = 0; k < keys.length; k++) {
+        var row = keyX[k] - lastX[0] >= 46 ? 0 : 1;
+        rows.push(row); lastX[row] = keyX[k];
+      }
+      for (var v = lo; v <= hi; v += unit) {
+        var h = v === 0 ? 9 : 5;
+        out += '<line x1="' + X(v).toFixed(1) + '" y1="' + (y - h) + '" x2="' + X(v).toFixed(1) + '" y2="' + (y + h) + '" stroke="#23395b" stroke-width="' + (v === 0 ? 3 : 1.6) + '"/>';
+        var nearKey = false;
+        for (var kk = 0; kk < keys.length; kk++) if (Math.abs(X(v) - keyX[kk]) < 34) nearKey = true;
+        if (!nearKey && v % (unit * 5) === 0) {
+          out += '<text x="' + X(v).toFixed(1) + '" y="' + (y + 28) + '" font-size="15" text-anchor="middle" fill="#5b6b80">' + fmtNum(v) + '</text>';
         }
       }
-      var x1 = +X(start), x2 = +X(end), mid = (x1 + x2) / 2;
-      out += '<path d="M' + x1 + ' ' + (y - 8) + ' Q' + mid.toFixed(1) + ' ' + (y - 58) + ' ' + x2 + ' ' + (y - 8) + '" fill="none" stroke="#ff8a3d" stroke-width="4" marker-end="url(#nlArrow)"/>';
+      for (var j = 0; j < keys.length; j++) {
+        var kv = keys[j];
+        if (kv !== 0 && kv !== start && kv !== end) continue;
+        out += '<line x1="' + keyX[j].toFixed(1) + '" y1="' + (y - 9) + '" x2="' + keyX[j].toFixed(1) + '" y2="' + (y + 9) + '" stroke="#23395b" stroke-width="' + (kv === 0 ? 3 : 2) + '"/>';
+        out += '<text x="' + keyX[j].toFixed(1) + '" y="' + (y + 28 + rows[j] * 24) + '" font-size="20" font-weight="700" text-anchor="middle" fill="' +
+          (kv === end ? '#2e9e3e' : '#23395b') + '">' + fmtNum(kv) + '</text>';
+      }
+      var x1 = X(start), x2 = X(end), mid = (x1 + x2) / 2;
+      out += '<path d="M' + x1.toFixed(1) + ' ' + (y - 8) + ' Q' + mid.toFixed(1) + ' ' + (y - 58) + ' ' + x2.toFixed(1) + ' ' + (y - 8) + '" fill="none" stroke="#ff8a3d" stroke-width="4" marker-end="url(#nlArrow)"/>';
       out += '<text x="' + mid.toFixed(1) + '" y="' + (y - 38) + '" font-size="18" font-weight="700" text-anchor="middle" fill="#e0661a">' + (step > 0 ? '+' : '−') + Math.abs(step) + '</text>';
-      out += '<circle cx="' + x1 + '" cy="' + y + '" r="8" fill="#23395b"/><circle cx="' + x2 + '" cy="' + y + '" r="9" fill="#2e9e3e" stroke="#fff" stroke-width="2"/>';
+      out += '<circle cx="' + x1.toFixed(1) + '" cy="' + y + '" r="8" fill="#23395b"/><circle cx="' + x2.toFixed(1) + '" cy="' + y + '" r="9" fill="#2e9e3e" stroke="#fff" stroke-width="2"/>';
       return out + '</svg>';
     }
   };
@@ -3196,7 +3243,7 @@
     var diag = kind === 'timeout' ? '⏰ หมดเวลา ลองใช้วิธีคิดนี้ในครั้งหน้า' : Hints.diagnose(q, kind);
     var html = (diag ? '<div class="hint-diag">💡 ' + diag + '</div>' : '') +
       '<div class="hint-step"><b>วิธีคิด:</b> ' + Hints.strategy(q) + '</div>';
-    if (q.level === 'integer') html += Hints.numberLine(q);
+    if (isIntLevel(q.level)) html += Hints.numberLine(q);
     el.hintBox.innerHTML = html;      // ข้อความสร้างจากตัวเลขในเกมเท่านั้น
     el.hintBox.hidden = false;
   }
@@ -3643,7 +3690,7 @@
    * 12.6) สรุปสำหรับครู + ส่งออกข้อมูลรายข้อ (CSV)
    * ===================================================================== */
   var resetArmed = false, resetTimer = null;
-  var LEVEL_ORDER = ['easy', 'medium', 'hard', 'integer'];
+  var LEVEL_ORDER = ['easy', 'medium', 'hard', 'integer', 'integer2'];
 
   function openTeacher() {
     if (game.state !== STATE.READY) return;
@@ -3807,7 +3854,7 @@
    * ===================================================================== */
   function selfTest(rounds) {
     rounds = rounds || 1000;
-    var errors = [], levels = ['easy', 'medium', 'hard', 'integer'];
+    var errors = [], levels = ['easy', 'medium', 'hard', 'integer', 'integer2'];
     for (var li = 0; li < levels.length; li++) {
       var lv = levels[li], min = CFG.LEVELS[lv].min, max = CFG.LEVELS[lv].max;
       for (var r = 0; r < rounds; r++) {
@@ -3819,9 +3866,9 @@
           var real = q.op === '+' ? q.a + q.b : q.a - q.b;
           if (real !== q.answer) errors.push('คำตอบผิด ' + tag);
           if (q.answer < min || q.answer > max) errors.push('คำตอบเกินช่วง ' + tag);
-          if (lv === 'integer') {
-            var RR = CFG.LEVELS.integer.range;
-            if (q.a < -RR || q.a > RR || q.b < -RR || q.b > RR || q.a === 0 || q.b === 0) errors.push('ตัวเลขไม่อยู่ในช่วง ' + tag);
+          if (isIntLevel(lv)) {
+            var RR = CFG.LEVELS[lv].range, MA = CFG.LEVELS[lv].minAbs || 1;
+            if (Math.abs(q.a) > RR || Math.abs(q.b) > RR || Math.abs(q.a) < MA || Math.abs(q.b) < MA) errors.push('ตัวเลขไม่อยู่ในช่วง ' + tag);
             if (!(q.a < 0 || q.b < 0 || q.answer < 0)) errors.push('ไม่มีจำนวนลบ ' + tag);
           } else if (lv === 'easy') {
             if (q.a < 0 || q.a > 9 || q.b < 0 || q.b > 9) errors.push('ไม่ใช่เลข 1 หลัก ' + tag);
@@ -3841,7 +3888,7 @@
           }
           var stg = Hints.strategy(q);
           if (!stg || stg.slice(-fmtNum(q.answer).length - 1) !== ' ' + fmtNum(q.answer)) errors.push('วิธีคิดไม่ลงท้ายด้วยคำตอบ ' + tag + ' → ' + stg);
-          if (lv === 'integer' && Hints.numberLine(q).indexOf('>' + fmtNum(q.answer) + '<') === -1) errors.push('เส้นจำนวนไม่แสดงคำตอบ ' + tag);
+          if (isIntLevel(lv) && Hints.numberLine(q).indexOf('>' + fmtNum(q.answer) + '<') === -1) errors.push('เส้นจำนวนไม่แสดงคำตอบ ' + tag);
           var rq = MathCore.retryOf(q);
           if (rq.answer !== q.answer || rq.choices[rq.correctIndex] !== q.answer || new Set(rq.choices).size !== CFG.CHOICES) errors.push('โจทย์ทวนไม่ถูกต้อง ' + tag);
         }
@@ -3862,7 +3909,13 @@
       var got = AutoTime.next('easy', at[ai][0], at[ai][1], at[ai][2]);
       if (got !== at[ai][3]) errors.push('AutoTime ' + at[ai].slice(0, 3).join('/') + ' ควรได้ ' + at[ai][3] + ' แต่ได้ ' + got);
     }
-    if (AutoTime.next('hard', 10000, 10, 10) !== 9000 || AutoTime.next('integer', 8000, 2, 10) !== 8800) errors.push('AutoTime ระดับอื่นคำนวณผิด');
+    if (AutoTime.next('hard', 10000, 10, 10) !== 9000 || AutoTime.next('integer', 8000, 2, 10) !== 8800 || AutoTime.next('integer2', 15000, 10, 10) !== 13500) errors.push('AutoTime ระดับอื่นคำนวณผิด');
+    // ระดับจำนวนเต็ม 2 หลัก: มีโจทย์ครบทุกแบบเครื่องหมาย (ยกเว้นบวก+บวก ซึ่งไม่มีจำนวนลบ)
+    var kindsSeen = {};
+    ['+', '-'].forEach(function (op) {
+      MathCore.validPairs('integer2', op).forEach(function (p) { kindsSeen[op + (p[0] < 0 ? 'n' : 'p') + (p[1] < 0 ? 'n' : 'p')] = 1; });
+    });
+    if (Object.keys(kindsSeen).length !== 7 || kindsSeen['+pp']) errors.push('ระดับจำนวนเต็ม 2 หลักมีรูปแบบเครื่องหมายไม่ครบ ' + Object.keys(kindsSeen).join(','));
     if (CFG.CREATURES.length !== CFG.TOTAL_Q) errors.push('จำนวนสัตว์ควรเท่ากับจำนวนข้อ (' + CFG.TOTAL_Q + ')');
     if (CFG.SKINS.length !== 11) errors.push('ควรมีสกิน 11 แบบ (ฟรี 1 + ร้านค้า 10)');
     for (var si = 1; si < CFG.SKINS.length; si++) {
